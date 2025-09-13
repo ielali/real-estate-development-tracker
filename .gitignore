@@ -8,6 +8,8 @@ jspm_packages/
 dist/
 build/
 out/
+.next/
+.turbo/
 target/
 *.dll
 *.exe
@@ -16,7 +18,11 @@ target/
 *.dylib
 
 # IDE and editor files
-.vscode/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
 .claude/
 .cursor/
 .bmad-core/
@@ -35,10 +41,20 @@ Thumbs.db
 *.iml
 
 .windsurfrules
+
+# Vercel
+.vercel
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
 # Environment and config
 .env
 .env.local
 .env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -52,6 +68,9 @@ lerna-debug.log*
 coverage/
 .nyc_output/
 *.lcov
+test-results/
+playwright-report/
+playwright/.cache/
 .coverage
 htmlcov/
 *.cover
@@ -121,10 +140,11 @@ pids/
 *.seed
 *.pid.lock
 
-# Package manager locks (comment out if you want to track them)
-# package-lock.json
-# yarn.lock
-# pnpm-lock.yaml
+# Package manager locks
+bun.lockb
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
 
 # Custom folders
 .ignore/
@@ -136,6 +156,7 @@ pids/
 *.sqlite
 *.sqlite3
 *.db
+*.db-journal
 
 # Compressed files
 *.zip
