@@ -1,0 +1,153 @@
+# Dependencies
+node_modules/
+vendor/
+bower_components/
+jspm_packages/
+
+# Build outputs
+dist/
+build/
+out/
+target/
+*.dll
+*.exe
+*.o
+*.so
+*.dylib
+
+# IDE and editor files
+.vscode/
+.claude/
+.cursor/
+.bmad-core/
+.superdesign/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+*.sublime-project
+*.sublime-workspace
+.project
+.classpath
+.settings/
+*.iml
+
+.windsurfrules
+# Environment and config
+.env
+.env.local
+.env.*.local
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.npm/
+.yarn/
+.pnp.*
+
+# Testing
+coverage/
+.nyc_output/
+*.lcov
+.coverage
+htmlcov/
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+venv/
+env/
+ENV/
+
+# Java
+*.class
+*.jar
+*.war
+*.ear
+.gradle/
+gradle-app.setting
+
+# Ruby
+*.gem
+*.rbc
+.bundle/
+.config
+InstalledFiles
+pkg/
+spec/reports/
+test/tmp/
+test/version_tmp/
+tmp/
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Desktop.ini
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
+~*
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Package manager locks (comment out if you want to track them)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# Custom folders
+.ignore/
+.cache/
+.temp/
+.tmp/
+
+# Database
+*.sqlite
+*.sqlite3
+*.db
+
+# Compressed files
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# Media files (uncomment if needed)
+# *.jpg
+# *.jpeg
+# *.png
+# *.gif
+# *.mp4
+# *.mov
+# *.avi
