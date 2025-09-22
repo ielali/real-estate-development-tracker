@@ -51,5 +51,8 @@
     "@realestate-portfolio/web",
     "es5-ext",
     "unrs-resolver"
-  ]
+  ],
+  "dependencies": {
+    "better-auth": "^1.3.13"
+  }
 }

@@ -52,6 +52,7 @@ describe("Database Operations", () => {
         .insert(users)
         .values({
           email: "test@example.com",
+          password: "temp_password",
           firstName: "Test",
           lastName: "User",
           role: "partner",
@@ -72,6 +73,7 @@ describe("Database Operations", () => {
         .insert(users)
         .values({
           email: "update@example.com",
+          password: "temp_password",
           firstName: "Original",
           lastName: "Name",
         })
@@ -92,6 +94,7 @@ describe("Database Operations", () => {
     it("should enforce unique email constraint", async () => {
       await db.insert(users).values({
         email: "duplicate@example.com",
+        password: "temp_password",
         firstName: "First",
         lastName: "User",
       })
@@ -99,6 +102,7 @@ describe("Database Operations", () => {
       await expect(
         db.insert(users).values({
           email: "duplicate@example.com",
+          password: "temp_password",
           firstName: "Second",
           lastName: "User",
         })
@@ -114,6 +118,7 @@ describe("Database Operations", () => {
         .insert(users)
         .values({
           email: "owner@example.com",
+          password: "temp_password",
           firstName: "Project",
           lastName: "Owner",
           role: "admin",
@@ -196,6 +201,7 @@ describe("Database Operations", () => {
         .insert(users)
         .values({
           email: "cost-user@example.com",
+          password: "temp_password",
           firstName: "Cost",
           lastName: "Creator",
         })
@@ -268,6 +274,7 @@ describe("Database Operations", () => {
         .insert(users)
         .values({
           email: "soft-delete@example.com",
+          password: "temp_password",
           firstName: "Delete",
           lastName: "Test",
         })

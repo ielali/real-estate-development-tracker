@@ -35,10 +35,14 @@ async function seed() {
     await db.insert(categories).values(CATEGORIES)
 
     console.log("Creating users...")
+    const bcrypt = await import("bcryptjs")
+    const hashedPassword = await bcrypt.hash("password123", 10)
+
     const adminUser = await db
       .insert(users)
       .values({
         email: "admin@example.com",
+        password: hashedPassword,
         firstName: "John",
         lastName: "Admin",
         role: "admin",
@@ -50,6 +54,7 @@ async function seed() {
       .insert(users)
       .values({
         email: "partner1@example.com",
+        password: hashedPassword,
         firstName: "Sarah",
         lastName: "Partner",
         role: "partner",
@@ -61,6 +66,7 @@ async function seed() {
       .insert(users)
       .values({
         email: "partner2@example.com",
+        password: hashedPassword,
         firstName: "Mike",
         lastName: "Investor",
         role: "partner",
