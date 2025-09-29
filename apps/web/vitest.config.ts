@@ -6,6 +6,12 @@ export default defineConfig({
     environment: "jsdom",
     globals: true,
     setupFiles: ["./src/test/setup.ts"],
+    isolate: true,
+    pool: "threads",
+    env: {
+      NODE_ENV: "test",
+      DATABASE_URL: "file:./data/test.db",
+    },
   },
   resolve: {
     alias: {

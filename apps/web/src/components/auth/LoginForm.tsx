@@ -3,7 +3,8 @@
 import React, { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
+import { z } from "zod"
+import Link from "next/link"
 import { Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -16,11 +17,13 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
+import { authClient } from "@/lib/auth-client"
+import { emailSchema } from "@/lib/validation/auth"
 
 const loginSchema = z.object({
-  email: z.string().email("Invalid email address"),
+  email: emailSchema,
   password: z.string().min(1, "Password is required"),
-  rememberMe: z.boolean().optional().default(false),
+  rememberMe: z.boolean().default(false),
 })
 
 type LoginFormValues = z.infer<typeof loginSchema>
@@ -47,23 +50,25 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
     setErrorMessage(null)
 
     try {
-      const response = await fetch("/api/auth/sign-in", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: values.email,
-          password: values.password,
-          rememberMe: values.rememberMe,
-        }),
+      const { data, error } = await authClient.signIn.email({
+        email: values.email,
+        password: values.password,
+        rememberMe: values.rememberMe,
       })
 
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.message || "Invalid credentials")
+      if (error) {
+        throw new Error(error.message || "Invalid credentials")
       }
 
-      onSuccess?.()
+      if (data) {
+        // Call the success handler if provided
+        if (onSuccess) {
+          onSuccess()
+        } else {
+          // Default redirect to home page
+          window.location.href = "/"
+        }
+      }
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "An error occurred")
     } finally {
@@ -118,18 +123,26 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="rememberMe"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-center space-x-2 space-y-0">
-              <FormControl>
-                <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-              </FormControl>
-              <FormLabel className="text-sm font-normal">Remember me for 30 days</FormLabel>
-            </FormItem>
-          )}
-        />
+        <div className="flex items-center justify-between">
+          <FormField
+            control={form.control}
+            name="rememberMe"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center space-x-2 space-y-0">
+                <FormControl>
+                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                </FormControl>
+                <FormLabel className="text-sm font-normal">Remember me</FormLabel>
+              </FormItem>
+            )}
+          />
+
+          <div className="text-sm">
+            <Link href="/forgot-password" className="font-medium text-blue-600 hover:text-blue-500">
+              Forgot your password?
+            </Link>
+          </div>
+        </div>
 
         <Button type="submit" className="w-full" disabled={isLoading}>
           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

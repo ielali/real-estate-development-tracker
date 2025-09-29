@@ -1,14 +1,26 @@
 "use client"
 
-import { createContext, useContext, useEffect, useState } from "react"
+import { createContext, useContext } from "react"
 import { useRouter } from "next/navigation"
+import { authClient } from "@/lib/auth-client"
 
 interface User {
   id: string
   email: string
-  firstName: string
-  lastName: string
-  role: "admin" | "partner"
+  name: string
+  role?: "admin" | "partner"
+  emailVerified?: boolean
+  createdAt?: string
+}
+
+interface SessionUser {
+  id: string
+  email: string
+  name: string
+  role?: "admin" | "partner"
+  emailVerified?: boolean
+  createdAt?: Date
+  [key: string]: unknown // For any additional fields from Better Auth
 }
 
 interface AuthContextType {
@@ -27,53 +39,42 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
+  const { data: session, isPending: isLoading } = authClient.useSession()
 
-  useEffect(() => {
-    checkSession()
-  }, [])
-
-  const checkSession = async () => {
-    try {
-      const response = await fetch("/api/auth/session")
-      if (response.ok) {
-        const data = await response.json()
-        if (data.user) {
-          setUser(data.user)
-        }
+  const user = session?.user
+    ? {
+        id: session.user.id,
+        email: session.user.email,
+        name: session.user.name,
+        role: (session.user as SessionUser).role || "admin",
+        emailVerified: (session.user as SessionUser).emailVerified,
+        createdAt: (session.user as SessionUser).createdAt?.toISOString(),
       }
-    } catch (error) {
-      console.error("Session check failed:", error)
-    } finally {
-      setIsLoading(false)
-    }
-  }
+    : null
 
   const login = async (email: string, password: string) => {
-    const response = await fetch("/api/auth/sign-in", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
+    const { data, error } = await authClient.signIn.email({
+      email,
+      password,
     })
 
-    if (!response.ok) {
-      const data = await response.json()
-      throw new Error(data.message || "Login failed")
+    if (error) {
+      throw new Error(error.message || "Login failed")
     }
 
-    const data = await response.json()
-    setUser(data.user)
-    router.push("/dashboard")
+    if (data) {
+      router.push("/")
+    }
   }
 
   const logout = async () => {
-    await fetch("/api/auth/sign-out", {
-      method: "POST",
-    })
-    setUser(null)
-    router.push("/login")
+    try {
+      await authClient.signOut()
+      router.push("/login")
+    } catch (error) {
+      console.error("Logout failed:", error)
+    }
   }
 
   const register = async (data: {
@@ -82,20 +83,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     email: string
     password: string
   }) => {
-    const response = await fetch("/api/auth/sign-up", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...data, role: "admin" }),
+    const { data: result, error } = await authClient.signUp.email({
+      email: data.email,
+      password: data.password,
+      name: `${data.firstName} ${data.lastName}`,
+      callbackURL: "/",
     })
 
-    if (!response.ok) {
-      const responseData = await response.json()
-      throw new Error(responseData.message || "Registration failed")
+    if (error) {
+      throw new Error(error.message || "Registration failed")
     }
 
-    const responseData = await response.json()
-    setUser(responseData.user)
-    router.push("/dashboard")
+    if (result) {
+      router.push("/")
+    }
   }
 
   return (

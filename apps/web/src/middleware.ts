@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
-const publicRoutes = ["/login", "/register", "/api/auth"]
+const publicRoutes = ["/login", "/register", "/forgot-password", "/reset-password", "/api/auth"]
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -12,7 +12,8 @@ export function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  const sessionCookie = request.cookies.get("realestate-session")
+  // Better Auth uses "better-auth.session_token" as the default cookie name
+  const sessionCookie = request.cookies.get("better-auth.session_token")
 
   if (!sessionCookie) {
     return NextResponse.redirect(new URL("/login", request.url))

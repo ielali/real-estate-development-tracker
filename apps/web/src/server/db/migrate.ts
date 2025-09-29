@@ -4,7 +4,7 @@ import { drizzle } from "drizzle-orm/better-sqlite3"
 import * as path from "path"
 import * as fs from "fs"
 
-const dbUrl = process.env.DATABASE_URL || "file:./dev.db"
+const dbUrl = process.env.DATABASE_URL || "file:./data/dev.db"
 const dbPath = dbUrl.replace("file:", "")
 
 const dbDir = path.dirname(dbPath)

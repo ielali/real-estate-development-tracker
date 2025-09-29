@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
+import { z } from "zod"
 import { Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -16,19 +16,15 @@ import {
   FormMessage,
   FormDescription,
 } from "@/components/ui/form"
+import { authClient } from "@/lib/auth-client"
+import { emailSchema, passwordSchema } from "@/lib/validation/auth"
 
 const registrationSchema = z
   .object({
     firstName: z.string().min(1, "First name is required"),
     lastName: z.string().min(1, "Last name is required"),
-    email: z.string().email("Invalid email address"),
-    password: z
-      .string()
-      .min(8, "Password must be at least 8 characters")
-      .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-        "Password must contain at least one uppercase letter, one lowercase letter, and one number"
-      ),
+    email: emailSchema,
+    password: passwordSchema,
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -62,22 +58,49 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
     setErrorMessage(null)
 
     try {
-      const response = await fetch("/api/auth/sign-up", {
+      // Use Better Auth's built-in sign-up endpoint
+      const response = await fetch("/api/auth/sign-up/email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          firstName: values.firstName,
-          lastName: values.lastName,
           email: values.email,
           password: values.password,
+          name: `${values.firstName} ${values.lastName}`,
+        }),
+      })
+
+      let data
+      try {
+        data = await response.json()
+      } catch {
+        throw new Error("Invalid server response format")
+      }
+
+      if (!response.ok) {
+        throw new Error(data.message || data.error || "Registration failed")
+      }
+
+      // Update the user record with firstName, lastName, and role
+      await fetch("/api/auth/update-user-fields", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: data.user?.id,
+          firstName: values.firstName,
+          lastName: values.lastName,
           role: "admin",
         }),
       })
 
-      const data = await response.json()
+      // Sign in after successful registration
+      const { error } = await authClient.signIn.email({
+        email: values.email,
+        password: values.password,
+        callbackURL: "/",
+      })
 
-      if (!response.ok) {
-        throw new Error(data.message || "Registration failed")
+      if (error) {
+        throw new Error(error.message || "Sign in after registration failed")
       }
 
       onSuccess?.()
@@ -161,7 +184,8 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
                 />
               </FormControl>
               <FormDescription>
-                Must be at least 8 characters with uppercase, lowercase, and numbers
+                Must be at least 8 characters with uppercase, lowercase, and number. All special
+                characters and symbols are allowed.
               </FormDescription>
               <FormMessage />
             </FormItem>

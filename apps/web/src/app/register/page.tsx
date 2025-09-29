@@ -1,14 +1,37 @@
 "use client"
 
 import { useRouter } from "next/navigation"
+import { useEffect } from "react"
 import Link from "next/link"
 import { RegistrationForm } from "@/components/auth/RegistrationForm"
+import { useAuth } from "@/components/providers/AuthProvider"
 
 export default function RegisterPage() {
   const router = useRouter()
+  const { user, isLoading } = useAuth()
+
+  useEffect(() => {
+    if (!isLoading && user) {
+      router.push("/")
+    }
+  }, [user, isLoading, router])
 
   const handleSuccess = () => {
-    router.push("/dashboard")
+    router.push("/")
+  }
+
+  // Show loading while checking auth status
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-gray-600">Loading...</div>
+      </div>
+    )
+  }
+
+  // Don't render the form if user is logged in (will redirect)
+  if (user) {
+    return null
   }
 
   return (

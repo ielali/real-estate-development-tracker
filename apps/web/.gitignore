@@ -34,7 +34,8 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 .DS_Store
 
 # Database files
-*.db
-*.db-shm
-*.db-wal
+data/
 backups/
+
+# Scratchpad for debugging utilities and temporary scripts
+scratchpad/

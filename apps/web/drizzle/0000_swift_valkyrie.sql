@@ -1,12 +1,50 @@
 CREATE TABLE `users` (
 	`id` text PRIMARY KEY NOT NULL,
-	`created_at` integer DEFAULT (unixepoch()) NOT NULL,
-	`updated_at` integer DEFAULT (unixepoch()) NOT NULL,
+	`created_at` integer NOT NULL,
+	`updated_at` integer NOT NULL,
 	`deleted_at` integer,
 	`email` text NOT NULL,
-	`first_name` text NOT NULL,
-	`last_name` text NOT NULL,
+	`name` text DEFAULT '' NOT NULL,
+	`email_verified` integer DEFAULT 0 NOT NULL,
+	`first_name` text DEFAULT '' NOT NULL,
+	`last_name` text DEFAULT '' NOT NULL,
 	`role` text DEFAULT 'partner' NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE `accounts` (
+	`id` text PRIMARY KEY NOT NULL,
+	`user_id` text NOT NULL,
+	`account_id` text NOT NULL,
+	`provider_id` text NOT NULL,
+	`access_token` text,
+	`refresh_token` text,
+	`id_token` text,
+	`access_token_expires_at` integer,
+	`refresh_token_expires_at` integer,
+	`scope` text,
+	`password` text,
+	`created_at` integer,
+	`updated_at` integer
+);
+--> statement-breakpoint
+CREATE TABLE `sessions` (
+	`id` text PRIMARY KEY NOT NULL,
+	`user_id` text NOT NULL,
+	`expires_at` integer NOT NULL,
+	`token` text NOT NULL,
+	`created_at` integer,
+	`updated_at` integer,
+	`ip_address` text,
+	`user_agent` text
+);
+--> statement-breakpoint
+CREATE TABLE `verifications` (
+	`id` text PRIMARY KEY NOT NULL,
+	`identifier` text NOT NULL,
+	`value` text NOT NULL,
+	`expires_at` integer NOT NULL,
+	`created_at` integer,
+	`updated_at` integer
 );
 --> statement-breakpoint
 CREATE TABLE `addresses` (
@@ -155,8 +193,7 @@ CREATE TABLE `categories` (
 	`id` text PRIMARY KEY NOT NULL,
 	`type` text NOT NULL,
 	`display_name` text NOT NULL,
-	`parent_id` text,
-	FOREIGN KEY (`parent_id`) REFERENCES `categories`(`id`) ON UPDATE no action ON DELETE no action
+	`parent_id` text
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `users_email_unique` ON `users` (`email`);--> statement-breakpoint

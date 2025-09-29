@@ -1,6 +1,7 @@
 import {
   db,
   users,
+  accounts,
   addresses,
   projects,
   costs,
@@ -28,6 +29,7 @@ async function seed() {
     await db.delete(contacts)
     await db.delete(projects)
     await db.delete(addresses)
+    await db.delete(accounts)
     await db.delete(users)
     await db.delete(categories)
 
@@ -35,16 +37,17 @@ async function seed() {
     await db.insert(categories).values(CATEGORIES)
 
     console.log("Creating users...")
-    const bcrypt = await import("bcryptjs")
-    const hashedPassword = await bcrypt.hash("password123", 10)
 
+    // Create basic user records for seeding purposes
+    // Note: Passwords will be set through Better Auth API later
     const adminUser = await db
       .insert(users)
       .values({
-        email: "admin@example.com",
-        password: hashedPassword,
-        firstName: "John",
-        lastName: "Admin",
+        id: crypto.randomUUID(),
+        email: "admin@realestate-portfolio.com",
+        name: "Admin User",
+        firstName: "Admin",
+        lastName: "User",
         role: "admin",
       })
       .returning()
@@ -53,10 +56,11 @@ async function seed() {
     const partnerUser1 = await db
       .insert(users)
       .values({
+        id: crypto.randomUUID(),
         email: "partner1@example.com",
-        password: hashedPassword,
-        firstName: "Sarah",
-        lastName: "Partner",
+        name: "Partner One",
+        firstName: "Partner",
+        lastName: "One",
         role: "partner",
       })
       .returning()
@@ -65,10 +69,11 @@ async function seed() {
     const partnerUser2 = await db
       .insert(users)
       .values({
+        id: crypto.randomUUID(),
         email: "partner2@example.com",
-        password: hashedPassword,
-        firstName: "Mike",
-        lastName: "Investor",
+        name: "Partner Two",
+        firstName: "Partner",
+        lastName: "Two",
         role: "partner",
       })
       .returning()

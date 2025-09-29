@@ -7,7 +7,7 @@ async function reset() {
   console.log("🔄 Starting database reset...")
 
   try {
-    const dbPath = (process.env.DATABASE_URL || "file:./dev.db").replace("file:", "")
+    const dbPath = (process.env.DATABASE_URL || "file:./data/dev.db").replace("file:", "")
 
     console.log("Closing database connections...")
     await db.run(sql`PRAGMA wal_checkpoint(TRUNCATE)`)

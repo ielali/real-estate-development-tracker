@@ -2,8 +2,16 @@ import React from "react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen, fireEvent, waitFor } from "@testing-library/react"
 import { LoginForm } from "../LoginForm"
+import { authClient } from "@/lib/auth-client"
 
-global.fetch = vi.fn()
+// Mock the auth client
+vi.mock("@/lib/auth-client", () => ({
+  authClient: {
+    signIn: {
+      email: vi.fn(),
+    },
+  },
+}))
 
 describe("LoginForm", () => {
   const mockOnSuccess = vi.fn()
@@ -28,17 +36,17 @@ describe("LoginForm", () => {
     fireEvent.click(submitButton)
 
     await waitFor(() => {
-      expect(screen.getByText(/invalid email address/i)).toBeInTheDocument()
+      expect(screen.getByText(/email is required/i)).toBeInTheDocument()
       expect(screen.getByText(/password is required/i)).toBeInTheDocument()
     })
   })
 
   it("submits form with valid credentials", async () => {
-    const mockFetch = vi.mocked(fetch)
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ user: { id: "1", email: "test@example.com" } }),
-    } as Response)
+    const mockSignIn = vi.mocked(authClient.signIn.email)
+    mockSignIn.mockResolvedValueOnce({
+      data: { user: { id: "1", email: "test@example.com" } },
+      error: null,
+    })
 
     render(<LoginForm onSuccess={mockOnSuccess} />)
 
@@ -51,25 +59,21 @@ describe("LoginForm", () => {
     fireEvent.click(submitButton)
 
     await waitFor(() => {
-      expect(mockFetch).toHaveBeenCalledWith("/api/auth/sign-in", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: "test@example.com",
-          password: "password123",
-          rememberMe: false,
-        }),
+      expect(mockSignIn).toHaveBeenCalledWith({
+        email: "test@example.com",
+        password: "password123",
+        rememberMe: false,
       })
       expect(mockOnSuccess).toHaveBeenCalled()
     })
   })
 
   it("displays error message on failed login", async () => {
-    const mockFetch = vi.mocked(fetch)
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      json: async () => ({ message: "Invalid credentials" }),
-    } as Response)
+    const mockSignIn = vi.mocked(authClient.signIn.email)
+    mockSignIn.mockResolvedValueOnce({
+      data: null,
+      error: { message: "Invalid credentials" },
+    })
 
     render(<LoginForm onSuccess={mockOnSuccess} />)
 
@@ -87,11 +91,11 @@ describe("LoginForm", () => {
   })
 
   it("handles remember me checkbox", async () => {
-    const mockFetch = vi.mocked(fetch)
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ user: { id: "1", email: "test@example.com" } }),
-    } as Response)
+    const mockSignIn = vi.mocked(authClient.signIn.email)
+    mockSignIn.mockResolvedValueOnce({
+      data: { user: { id: "1", email: "test@example.com" } },
+      error: null,
+    })
 
     render(<LoginForm onSuccess={mockOnSuccess} />)
 
@@ -106,14 +110,10 @@ describe("LoginForm", () => {
     fireEvent.click(submitButton)
 
     await waitFor(() => {
-      expect(mockFetch).toHaveBeenCalledWith("/api/auth/sign-in", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: "test@example.com",
-          password: "password123",
-          rememberMe: true,
-        }),
+      expect(mockSignIn).toHaveBeenCalledWith({
+        email: "test@example.com",
+        password: "password123",
+        rememberMe: true,
       })
     })
   })

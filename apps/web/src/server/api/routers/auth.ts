@@ -1,7 +1,7 @@
 import { z } from "zod"
 import bcrypt from "bcryptjs"
 import { createTRPCRouter, publicProcedure } from "../trpc"
-import { users } from "@/server/db/schema"
+import { users, accounts } from "@/server/db/schema"
 import { TRPCError } from "@trpc/server"
 import { eq } from "drizzle-orm"
 
@@ -32,16 +32,29 @@ export const authRouter = createTRPCRouter({
 
       const hashedPassword = await bcrypt.hash(input.password, 10)
 
+      const userId = crypto.randomUUID()
+
       const [newUser] = await ctx.db
         .insert(users)
         .values({
+          id: userId,
           firstName: input.firstName,
           lastName: input.lastName,
+          name: `${input.firstName} ${input.lastName}`,
           email: input.email,
-          password: hashedPassword,
           role: input.role,
         })
         .returning()
+
+      // Store password in accounts table for Better Auth compatibility
+      await ctx.db.insert(accounts).values({
+        id: crypto.randomUUID(),
+        userId: userId,
+        accountId: userId,
+        providerId: "credential",
+        password: hashedPassword,
+        updatedAt: new Date(),
+      })
 
       return {
         id: newUser.id,
