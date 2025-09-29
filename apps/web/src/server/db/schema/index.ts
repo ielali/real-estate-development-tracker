@@ -1,5 +1,6 @@
 export * from "./base"
 export * from "./users"
+export * from "./auth"
 export * from "./addresses"
 export * from "./projects"
 export * from "./costs"

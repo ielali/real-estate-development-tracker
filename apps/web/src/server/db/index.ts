@@ -4,20 +4,36 @@ import * as schema from "./schema"
 import * as fs from "fs"
 import * as path from "path"
 
-const dbUrl = process.env.DATABASE_URL || "file:./dev.db"
-const dbPath = dbUrl.replace("file:", "")
-
-const dbDir = path.dirname(dbPath)
-if (!fs.existsSync(dbDir) && dbDir !== ".") {
-  fs.mkdirSync(dbDir, { recursive: true })
+// Determine database URL based on environment
+const getDbUrl = (): string => {
+  if (process.env.NODE_ENV === "test") {
+    return process.env.DATABASE_URL || `file:${path.join(process.cwd(), "data", "test.db")}`
+  }
+  return process.env.DATABASE_URL || `file:${path.join(process.cwd(), "data", "dev.db")}`
 }
 
-const sqlite = new Database(dbPath)
+// Create database connection function for better test isolation
+const createDatabase = () => {
+  const dbUrl = getDbUrl()
+  const dbPath = dbUrl.replace("file:", "")
 
-sqlite.pragma("journal_mode = WAL")
-sqlite.pragma("foreign_keys = ON")
+  const dbDir = path.dirname(dbPath)
+  if (!fs.existsSync(dbDir) && dbDir !== ".") {
+    fs.mkdirSync(dbDir, { recursive: true })
+  }
 
-export const db = drizzle(sqlite, { schema })
+  const sqlite = new Database(dbPath)
+
+  sqlite.pragma("journal_mode = WAL")
+  sqlite.pragma("foreign_keys = ON")
+
+  return drizzle(sqlite, { schema })
+}
+
+export const db = createDatabase()
+
+// Export database path for cleanup purposes (useful in tests)
+export const exportedDbPath = getDbUrl().replace("file:", "")
 
 export type Database = typeof db
 

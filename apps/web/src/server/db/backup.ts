@@ -7,7 +7,7 @@ async function backup() {
   console.log("💾 Starting database backup...")
 
   try {
-    const dbPath = (process.env.DATABASE_URL || "file:./dev.db").replace("file:", "")
+    const dbPath = (process.env.DATABASE_URL || "file:./data/dev.db").replace("file:", "")
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, -1)
     const backupDir = path.join(process.cwd(), "backups")
     const backupPath = path.join(backupDir, `backup-${timestamp}.db`)

@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach } from "vitest"
+import { describe, it, expect, beforeEach, beforeAll, afterAll } from "vitest"
+import { createTestDb } from "@/test/test-db"
 import {
-  db,
   users,
   addresses,
   projects,
@@ -11,6 +11,7 @@ import {
   projectAccess,
   projectContact,
   auditLog,
+  categories,
 } from "../db"
 import {
   formatAddress,
@@ -22,6 +23,18 @@ import { sql } from "drizzle-orm"
 import { eq } from "drizzle-orm"
 
 describe("Database Operations", () => {
+  let testDbConnection: ReturnType<typeof createTestDb>
+  let db: ReturnType<typeof createTestDb>["db"]
+
+  beforeAll(() => {
+    testDbConnection = createTestDb()
+    db = testDbConnection.db
+  })
+
+  afterAll(() => {
+    testDbConnection.cleanup()
+  })
+
   beforeEach(async () => {
     await db.delete(auditLog)
     await db.delete(projectContact)
@@ -31,6 +44,8 @@ describe("Database Operations", () => {
     await db.delete(costs)
     await db.delete(contacts)
     await db.delete(projects)
+    await db.delete(addresses)
+    await db.delete(categories)
     await db.delete(users)
   })
 
@@ -51,7 +66,9 @@ describe("Database Operations", () => {
       const user = await db
         .insert(users)
         .values({
+          id: crypto.randomUUID(),
           email: "test@example.com",
+          name: "Test User",
           firstName: "Test",
           lastName: "User",
           role: "partner",
@@ -71,7 +88,9 @@ describe("Database Operations", () => {
       const user = await db
         .insert(users)
         .values({
+          id: crypto.randomUUID(),
           email: "update@example.com",
+          name: "Original Name",
           firstName: "Original",
           lastName: "Name",
         })
@@ -91,14 +110,18 @@ describe("Database Operations", () => {
 
     it("should enforce unique email constraint", async () => {
       await db.insert(users).values({
+        id: crypto.randomUUID(),
         email: "duplicate@example.com",
+        name: "First User",
         firstName: "First",
         lastName: "User",
       })
 
       await expect(
         db.insert(users).values({
+          id: crypto.randomUUID(),
           email: "duplicate@example.com",
+          name: "Second User",
           firstName: "Second",
           lastName: "User",
         })
@@ -113,7 +136,9 @@ describe("Database Operations", () => {
       testUser = await db
         .insert(users)
         .values({
+          id: crypto.randomUUID(),
           email: "owner@example.com",
+          name: "Project Owner",
           firstName: "Project",
           lastName: "Owner",
           role: "admin",
@@ -192,10 +217,25 @@ describe("Database Operations", () => {
     let testProject: typeof projects.$inferSelect
 
     beforeEach(async () => {
+      // Create required categories first
+      await db.insert(categories).values([
+        { id: "materials", type: "cost", displayName: "Materials", parentId: null },
+        { id: "labour", type: "cost", displayName: "Labour", parentId: null },
+        { id: "contractor", type: "contact", displayName: "Contractor", parentId: null },
+        {
+          id: "general_contractor",
+          type: "contact",
+          displayName: "General Contractor",
+          parentId: null,
+        },
+      ])
+
       testUser = await db
         .insert(users)
         .values({
+          id: crypto.randomUUID(),
           email: "cost-user@example.com",
+          name: "Cost Creator",
           firstName: "Cost",
           lastName: "Creator",
         })
@@ -250,7 +290,7 @@ describe("Database Operations", () => {
           projectId: testProject.id,
           amount: 75000,
           description: "Contract work",
-          categoryId: "labor",
+          categoryId: "labour",
           date: new Date(),
           contactId: contact.id,
           createdById: testUser.id,
@@ -267,7 +307,9 @@ describe("Database Operations", () => {
       const user = await db
         .insert(users)
         .values({
+          id: crypto.randomUUID(),
           email: "soft-delete@example.com",
+          name: "Delete Test",
           firstName: "Delete",
           lastName: "Test",
         })
@@ -286,6 +328,16 @@ describe("Database Operations", () => {
   })
 
   describe("Address and Category Validation", () => {
+    beforeEach(async () => {
+      // Create required categories for validation tests
+      await db.insert(categories).values([
+        { id: "electrician", type: "contact", displayName: "Electrician", parentId: null },
+        { id: "materials-validation", type: "cost", displayName: "Materials", parentId: null },
+        { id: "photos", type: "document", displayName: "Photos", parentId: null },
+        { id: "inspection", type: "event", displayName: "Inspection", parentId: null },
+      ])
+    })
+
     it("should format Australian addresses correctly", () => {
       const address: Address = {
         streetNumber: "123",
@@ -370,9 +422,15 @@ describe("Database Operations", () => {
       const { drizzle } = await import("drizzle-orm/better-sqlite3")
       const { execSync } = await import("child_process")
       const path = await import("path")
+      const fs = await import("fs")
+
+      // Ensure data directory exists
+      if (!fs.existsSync("./data")) {
+        fs.mkdirSync("./data", { recursive: true })
+      }
 
       // Create a fresh database for this test
-      const testDb = new Database("./seed-test.db")
+      const testDb = new Database("./data/seed-test.db")
       const testDbInstance = drizzle(testDb)
 
       // Run migration on test database
@@ -384,11 +442,11 @@ describe("Database Operations", () => {
 
       // Run seed script
       execSync("npx tsx src/server/db/seed.ts", {
-        env: { ...process.env, DATABASE_URL: "file:./seed-test.db" },
+        env: { ...process.env, DATABASE_URL: "file:./data/seed-test.db" },
       })
 
       // Reconnect and check counts
-      const checkDb = new Database("./seed-test.db")
+      const checkDb = new Database("./data/seed-test.db")
       const checkDbInstance = drizzle(checkDb, {
         schema: await import("../db/schema"),
       })
@@ -411,9 +469,8 @@ describe("Database Operations", () => {
       checkDb.close()
 
       // Clean up
-      const fs = await import("fs")
-      if (fs.existsSync("./seed-test.db")) {
-        fs.unlinkSync("./seed-test.db")
+      if (fs.existsSync("./data/seed-test.db")) {
+        fs.unlinkSync("./data/seed-test.db")
       }
 
       expect(userCount).toBe(3)
