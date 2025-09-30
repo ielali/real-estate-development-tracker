@@ -1,7 +1,12 @@
 "use client"
 
 import { AuthProvider } from "./AuthProvider"
+import { TRPCProvider } from "@/lib/trpc/Provider"
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  return <AuthProvider>{children}</AuthProvider>
+  return (
+    <TRPCProvider>
+      <AuthProvider>{children}</AuthProvider>
+    </TRPCProvider>
+  )
 }
