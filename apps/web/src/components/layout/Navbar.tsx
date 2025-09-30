@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { UserDropdown } from "@/components/ui/UserDropdown"
+import { useAuth } from "@/components/providers/AuthProvider"
 import { cn } from "@/lib/utils"
 
 /**
@@ -12,10 +13,11 @@ import { cn } from "@/lib/utils"
  */
 export function Navbar() {
   const pathname = usePathname()
+  const { user } = useAuth()
 
   const navItems = [
     { href: "/", label: "Home" },
-    { href: "/projects", label: "Projects" },
+    ...(user ? [{ href: "/projects", label: "Projects" }] : []),
   ]
 
   return (
