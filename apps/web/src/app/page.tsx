@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/components/providers/AuthProvider"
 import { Button } from "@/components/ui/button"
-import { UserDropdown } from "@/components/ui/UserDropdown"
+import { Navbar } from "@/components/layout/Navbar"
 
 export default function HomePage() {
   const router = useRouter()
@@ -11,15 +11,7 @@ export default function HomePage() {
 
   return (
     <main className="min-h-screen bg-background">
-      {/* Header with user info and logout */}
-      <div className="border-b bg-card">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex justify-between items-center">
-            <h2 className="text-lg font-semibold">Real Estate Portfolio</h2>
-            <UserDropdown />
-          </div>
-        </div>
-      </div>
+      <Navbar />
 
       {/* Main content */}
       <div className="container mx-auto py-12">
