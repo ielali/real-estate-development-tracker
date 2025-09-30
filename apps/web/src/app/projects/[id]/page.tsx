@@ -3,6 +3,7 @@
 import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import { api } from "@/lib/trpc/client"
+import { Navbar } from "@/components/layout/Navbar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -78,23 +79,29 @@ export default function ProjectDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="container max-w-4xl py-10">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/3"></div>
-          <div className="h-64 bg-gray-200 rounded"></div>
+      <>
+        <Navbar />
+        <div className="container max-w-4xl py-10">
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 bg-gray-200 rounded w-1/3"></div>
+            <div className="h-64 bg-gray-200 rounded"></div>
+          </div>
         </div>
-      </div>
+      </>
     )
   }
 
   if (error || !project) {
     return (
-      <div className="container max-w-4xl py-10">
-        <div className="text-center py-12">
-          <p className="text-red-600 mb-4">Failed to load project</p>
-          <Button onClick={() => router.push("/projects" as never)}>Back to Projects</Button>
+      <>
+        <Navbar />
+        <div className="container max-w-4xl py-10">
+          <div className="text-center py-12">
+            <p className="text-red-600 mb-4">Failed to load project</p>
+            <Button onClick={() => router.push("/projects" as never)}>Back to Projects</Button>
+          </div>
         </div>
-      </div>
+      </>
     )
   }
 
@@ -114,122 +121,129 @@ export default function ProjectDetailPage() {
   }
 
   return (
-    <div className="container max-w-4xl py-10">
-      {/* Breadcrumb */}
-      <div className="mb-6">
-        <Link href="/projects" as={"/projects" as never} className="text-blue-600 hover:underline">
-          ← Back to Projects
-        </Link>
-      </div>
-
-      {/* Header */}
-      <div className="mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <h1 className="text-3xl font-bold">{project.name}</h1>
-          <Badge className={statusColors[project.status] || "bg-gray-100 text-gray-800"}>
-            {project.status.replace("_", " ")}
-          </Badge>
-        </div>
-        <div className="flex gap-2">
-          <Link href={`/projects/${project.id}/edit` as never}>
-            <Button variant="outline">Edit</Button>
+    <>
+      <Navbar />
+      <div className="container max-w-4xl py-10">
+        {/* Breadcrumb */}
+        <div className="mb-6">
+          <Link
+            href="/projects"
+            as={"/projects" as never}
+            className="text-blue-600 hover:underline"
+          >
+            ← Back to Projects
           </Link>
-          <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="destructive">Delete</Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Delete Project</DialogTitle>
-                <DialogDescription>
-                  Are you sure you want to delete this project? This action cannot be undone.
-                </DialogDescription>
-              </DialogHeader>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
-                  Cancel
-                </Button>
-                <Button
-                  variant="destructive"
-                  onClick={handleDelete}
-                  disabled={deleteMutation.isPending}
-                >
-                  {deleteMutation.isPending ? "Deleting..." : "Delete"}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
         </div>
-      </div>
 
-      {/* Project Details */}
-      <div className="grid gap-6">
-        {/* Basic Information */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Project Information</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {project.description && (
-              <div>
-                <h3 className="font-semibold text-sm text-gray-600 mb-1">Description</h3>
-                <p>{project.description}</p>
-              </div>
-            )}
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <h3 className="font-semibold text-sm text-gray-600 mb-1">Project Type</h3>
-                <p>{typeLabels[project.projectType] || project.projectType}</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-sm text-gray-600 mb-1">Status</h3>
-                <p className="capitalize">{project.status.replace("_", " ")}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Header */}
+        <div className="mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <h1 className="text-3xl font-bold">{project.name}</h1>
+            <Badge className={statusColors[project.status] || "bg-gray-100 text-gray-800"}>
+              {project.status.replace("_", " ")}
+            </Badge>
+          </div>
+          <div className="flex gap-2">
+            <Link href={`/projects/${project.id}/edit` as never}>
+              <Button variant="outline">Edit</Button>
+            </Link>
+            <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="destructive">Delete</Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Delete Project</DialogTitle>
+                  <DialogDescription>
+                    Are you sure you want to delete this project? This action cannot be undone.
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    onClick={handleDelete}
+                    disabled={deleteMutation.isPending}
+                  >
+                    {deleteMutation.isPending ? "Deleting..." : "Delete"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </div>
 
-        {/* Address */}
-        {project.address && (
+        {/* Project Details */}
+        <div className="grid gap-6">
+          {/* Basic Information */}
           <Card>
             <CardHeader>
-              <CardTitle>Address</CardTitle>
+              <CardTitle>Project Information</CardTitle>
             </CardHeader>
-            <CardContent>
-              <p>{project.address.formattedAddress || "No address provided"}</p>
+            <CardContent className="space-y-4">
+              {project.description && (
+                <div>
+                  <h3 className="font-semibold text-sm text-gray-600 mb-1">Description</h3>
+                  <p>{project.description}</p>
+                </div>
+              )}
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <h3 className="font-semibold text-sm text-gray-600 mb-1">Project Type</h3>
+                  <p>{typeLabels[project.projectType] || project.projectType}</p>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-sm text-gray-600 mb-1">Status</h3>
+                  <p className="capitalize">{project.status.replace("_", " ")}</p>
+                </div>
+              </div>
             </CardContent>
           </Card>
-        )}
 
-        {/* Dates & Budget */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Timeline & Budget</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-2">
-              {project.startDate && (
-                <div>
-                  <h3 className="font-semibold text-sm text-gray-600 mb-1">Start Date</h3>
-                  <p>{new Date(project.startDate).toLocaleDateString()}</p>
-                </div>
-              )}
-              {project.endDate && (
-                <div>
-                  <h3 className="font-semibold text-sm text-gray-600 mb-1">End Date</h3>
-                  <p>{new Date(project.endDate).toLocaleDateString()}</p>
-                </div>
-              )}
-            </div>
-            {project.totalBudget !== null && (
-              <div>
-                <h3 className="font-semibold text-sm text-gray-600 mb-1">Total Budget</h3>
-                <p>${project.totalBudget.toLocaleString()}</p>
+          {/* Address */}
+          {project.address && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Address</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p>{project.address.formattedAddress || "No address provided"}</p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Dates & Budget */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Timeline & Budget</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                {project.startDate && (
+                  <div>
+                    <h3 className="font-semibold text-sm text-gray-600 mb-1">Start Date</h3>
+                    <p>{new Date(project.startDate).toLocaleDateString()}</p>
+                  </div>
+                )}
+                {project.endDate && (
+                  <div>
+                    <h3 className="font-semibold text-sm text-gray-600 mb-1">End Date</h3>
+                    <p>{new Date(project.endDate).toLocaleDateString()}</p>
+                  </div>
+                )}
               </div>
-            )}
-          </CardContent>
-        </Card>
+              {project.totalBudget !== null && (
+                <div>
+                  <h3 className="font-semibold text-sm text-gray-600 mb-1">Total Budget</h3>
+                  <p>${project.totalBudget.toLocaleString()}</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
-    </div>
+    </>
   )
 }
