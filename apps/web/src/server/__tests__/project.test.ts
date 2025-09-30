@@ -20,6 +20,17 @@ describe("Project Router", () => {
   let testUser: User
   let anotherUser: User
 
+  const createMockSession = (userId: string) => ({
+    id: `session-${userId}`,
+    userId,
+    expiresAt: new Date(Date.now() + 86400000),
+    token: `token-${userId}`,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ipAddress: "127.0.0.1",
+    userAgent: "test",
+  })
+
   beforeEach(async () => {
     // Create fresh test database
     testDbInstance = createTestDb()
@@ -59,16 +70,11 @@ describe("Project Router", () => {
   describe("create", () => {
     it("creates a project with valid input", async () => {
       const ctx = {
+        headers: new Headers(),
         db: testDbInstance.db,
         session: {
           user: testUser,
-          session: {
-            id: "session-1",
-            userId: testUser.id,
-            expiresAt: new Date(Date.now() + 86400000),
-            ipAddress: "127.0.0.1",
-            userAgent: "test",
-          },
+          session: createMockSession(testUser.id),
         },
         user: testUser,
       }
@@ -106,16 +112,11 @@ describe("Project Router", () => {
 
     it("requires name field", async () => {
       const ctx = {
+        headers: new Headers(),
         db: testDbInstance.db,
         session: {
           user: testUser,
-          session: {
-            id: "session-1",
-            userId: testUser.id,
-            expiresAt: new Date(Date.now() + 86400000),
-            ipAddress: "127.0.0.1",
-            userAgent: "test",
-          },
+          session: createMockSession(testUser.id),
         },
         user: testUser,
       }
@@ -142,16 +143,11 @@ describe("Project Router", () => {
 
     it("validates postcode format", async () => {
       const ctx = {
+        headers: new Headers(),
         db: testDbInstance.db,
         session: {
           user: testUser,
-          session: {
-            id: "session-1",
-            userId: testUser.id,
-            expiresAt: new Date(Date.now() + 86400000),
-            ipAddress: "127.0.0.1",
-            userAgent: "test",
-          },
+          session: createMockSession(testUser.id),
         },
         user: testUser,
       }
@@ -180,16 +176,11 @@ describe("Project Router", () => {
   describe("list", () => {
     it("returns only user's projects", async () => {
       const ctx = {
+        headers: new Headers(),
         db: testDbInstance.db,
         session: {
           user: testUser,
-          session: {
-            id: "session-1",
-            userId: testUser.id,
-            expiresAt: new Date(Date.now() + 86400000),
-            ipAddress: "127.0.0.1",
-            userAgent: "test",
-          },
+          session: createMockSession(testUser.id),
         },
         user: testUser,
       }
@@ -217,13 +208,7 @@ describe("Project Router", () => {
         ...ctx,
         session: {
           user: anotherUser,
-          session: {
-            id: "session-2",
-            userId: anotherUser.id,
-            expiresAt: new Date(Date.now() + 86400000),
-            ipAddress: "127.0.0.1",
-            userAgent: "test",
-          },
+          session: createMockSession(anotherUser.id),
         },
         user: anotherUser,
       }
@@ -252,16 +237,11 @@ describe("Project Router", () => {
 
     it("excludes soft-deleted projects", async () => {
       const ctx = {
+        headers: new Headers(),
         db: testDbInstance.db,
         session: {
           user: testUser,
-          session: {
-            id: "session-1",
-            userId: testUser.id,
-            expiresAt: new Date(Date.now() + 86400000),
-            ipAddress: "127.0.0.1",
-            userAgent: "test",
-          },
+          session: createMockSession(testUser.id),
         },
         user: testUser,
       }
@@ -312,16 +292,11 @@ describe("Project Router", () => {
   describe("getById", () => {
     it("returns project by ID for owner", async () => {
       const ctx = {
+        headers: new Headers(),
         db: testDbInstance.db,
         session: {
           user: testUser,
-          session: {
-            id: "session-1",
-            userId: testUser.id,
-            expiresAt: new Date(Date.now() + 86400000),
-            ipAddress: "127.0.0.1",
-            userAgent: "test",
-          },
+          session: createMockSession(testUser.id),
         },
         user: testUser,
       }
@@ -352,16 +327,11 @@ describe("Project Router", () => {
 
     it("throws error when accessing another user's project", async () => {
       const ctx1 = {
+        headers: new Headers(),
         db: testDbInstance.db,
         session: {
           user: testUser,
-          session: {
-            id: "session-1",
-            userId: testUser.id,
-            expiresAt: new Date(Date.now() + 86400000),
-            ipAddress: "127.0.0.1",
-            userAgent: "test",
-          },
+          session: createMockSession(testUser.id),
         },
         user: testUser,
       }
@@ -388,13 +358,7 @@ describe("Project Router", () => {
         ...ctx1,
         session: {
           user: anotherUser,
-          session: {
-            id: "session-2",
-            userId: anotherUser.id,
-            expiresAt: new Date(Date.now() + 86400000),
-            ipAddress: "127.0.0.1",
-            userAgent: "test",
-          },
+          session: createMockSession(anotherUser.id),
         },
         user: anotherUser,
       }
@@ -407,16 +371,11 @@ describe("Project Router", () => {
   describe("update", () => {
     it("updates project successfully", async () => {
       const ctx = {
+        headers: new Headers(),
         db: testDbInstance.db,
         session: {
           user: testUser,
-          session: {
-            id: "session-1",
-            userId: testUser.id,
-            expiresAt: new Date(Date.now() + 86400000),
-            ipAddress: "127.0.0.1",
-            userAgent: "test",
-          },
+          session: createMockSession(testUser.id),
         },
         user: testUser,
       }
@@ -450,16 +409,11 @@ describe("Project Router", () => {
 
     it("prevents updating another user's project", async () => {
       const ctx1 = {
+        headers: new Headers(),
         db: testDbInstance.db,
         session: {
           user: testUser,
-          session: {
-            id: "session-1",
-            userId: testUser.id,
-            expiresAt: new Date(Date.now() + 86400000),
-            ipAddress: "127.0.0.1",
-            userAgent: "test",
-          },
+          session: createMockSession(testUser.id),
         },
         user: testUser,
       }
@@ -486,13 +440,7 @@ describe("Project Router", () => {
         ...ctx1,
         session: {
           user: anotherUser,
-          session: {
-            id: "session-2",
-            userId: anotherUser.id,
-            expiresAt: new Date(Date.now() + 86400000),
-            ipAddress: "127.0.0.1",
-            userAgent: "test",
-          },
+          session: createMockSession(anotherUser.id),
         },
         user: anotherUser,
       }
@@ -510,16 +458,11 @@ describe("Project Router", () => {
   describe("softDelete", () => {
     it("soft deletes project successfully", async () => {
       const ctx = {
+        headers: new Headers(),
         db: testDbInstance.db,
         session: {
           user: testUser,
-          session: {
-            id: "session-1",
-            userId: testUser.id,
-            expiresAt: new Date(Date.now() + 86400000),
-            ipAddress: "127.0.0.1",
-            userAgent: "test",
-          },
+          session: createMockSession(testUser.id),
         },
         user: testUser,
       }
@@ -553,16 +496,11 @@ describe("Project Router", () => {
 
     it("prevents deleting another user's project", async () => {
       const ctx1 = {
+        headers: new Headers(),
         db: testDbInstance.db,
         session: {
           user: testUser,
-          session: {
-            id: "session-1",
-            userId: testUser.id,
-            expiresAt: new Date(Date.now() + 86400000),
-            ipAddress: "127.0.0.1",
-            userAgent: "test",
-          },
+          session: createMockSession(testUser.id),
         },
         user: testUser,
       }
@@ -589,13 +527,7 @@ describe("Project Router", () => {
         ...ctx1,
         session: {
           user: anotherUser,
-          session: {
-            id: "session-2",
-            userId: anotherUser.id,
-            expiresAt: new Date(Date.now() + 86400000),
-            ipAddress: "127.0.0.1",
-            userAgent: "test",
-          },
+          session: createMockSession(anotherUser.id),
         },
         user: anotherUser,
       }

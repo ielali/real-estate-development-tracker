@@ -1,4 +1,3 @@
-import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import Script from "next/script"
 import { Providers } from "@/components/providers/Providers"
@@ -7,7 +6,7 @@ import "../styles/globals.css"
 
 const inter = Inter({ subsets: ["latin"] })
 
-export const metadata: Metadata = {
+export const metadata = {
   title: "Real Estate Development Tracker",
   description: "Manage real estate development projects with ease",
 }

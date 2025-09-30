@@ -3,7 +3,6 @@
 import * as React from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { z } from "zod"
 import { useRouter } from "next/navigation"
 import { api } from "@/lib/trpc/client"
 import { useToast } from "@/hooks/use-toast"
@@ -26,57 +25,14 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { AddressAutocomplete } from "./AddressAutocomplete"
+import {
+  PROJECT_TYPES,
+  PROJECT_STATUSES,
+  projectEditFormSchema,
+  type ProjectEditFormValues,
+} from "@/lib/validations/project"
 
-/**
- * Project types
- */
-const PROJECT_TYPES = [
-  { value: "renovation", label: "Renovation" },
-  { value: "new_build", label: "New Build" },
-  { value: "development", label: "Development" },
-  { value: "maintenance", label: "Maintenance" },
-] as const
-
-/**
- * Project statuses
- */
-const PROJECT_STATUSES = [
-  { value: "planning", label: "Planning" },
-  { value: "active", label: "Active" },
-  { value: "on_hold", label: "On Hold" },
-  { value: "completed", label: "Completed" },
-  { value: "archived", label: "Archived" },
-] as const
-
-/**
- * Zod schema for form validation
- */
-const formSchema = z.object({
-  name: z.string().min(1, "Project name is required"),
-  description: z.string().optional(),
-  streetNumber: z.string().min(1, "Street number is required"),
-  streetName: z.string().min(1, "Street name is required"),
-  streetType: z.string().optional(),
-  suburb: z.string().min(1, "Suburb is required"),
-  state: z.enum(["NSW", "VIC", "QLD", "WA", "SA", "TAS", "ACT", "NT"], {
-    errorMap: () => ({ message: "Please select a state" }),
-  }),
-  postcode: z
-    .string()
-    .regex(/^\d{4}$/, "Postcode must be 4 digits")
-    .min(1, "Postcode is required"),
-  projectType: z.enum(["renovation", "new_build", "development", "maintenance"], {
-    errorMap: () => ({ message: "Please select a project type" }),
-  }),
-  status: z.enum(["planning", "active", "on_hold", "completed", "archived"], {
-    errorMap: () => ({ message: "Please select a status" }),
-  }),
-  startDate: z.string().min(1, "Start date is required"),
-  endDate: z.string().optional(),
-  totalBudget: z.string().optional(),
-})
-
-type FormValues = z.infer<typeof formSchema>
+type FormValues = ProjectEditFormValues
 
 interface Address {
   streetNumber: string | null
@@ -126,7 +82,7 @@ export function ProjectEditForm({ project, onSuccess }: ProjectEditFormProps) {
   const utils = api.useUtils()
 
   const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(projectEditFormSchema),
     defaultValues: {
       name: project.name,
       description: project.description ?? "",

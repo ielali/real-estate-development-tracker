@@ -4,23 +4,26 @@ This section establishes the foundation with technical summary, platform infrast
 
 ## Technical Summary
 
-The Real Estate Development Tracker employs a **modern monolithic fullstack architecture** deployed as a Progressive Web App (PWA). Built on Next.js 14+ with App Router, the system leverages **Server Components for optimal performance** and **API routes with tRPC for type-safe client-server communication**. The frontend utilizes **Shadcn/ui components with Tailwind CSS** for professional mobile-first design, while the backend centers around **SQLite with Drizzle ORM** for portable, efficient data management. **Vercel provides seamless deployment** with edge runtime support, and **Better-auth handles secure session management**. This architecture achieves the PRD goals of sub-30-second mobile cost entry, instant partner transparency via real-time dashboards, and comprehensive relationship tracking between projects, costs, contacts, and documents.
+The Real Estate Development Tracker employs a **modern monolithic fullstack architecture** deployed as a Progressive Web App (PWA). Built on Next.js 15.5+ with App Router, the system leverages **Server Components for optimal performance** and **API routes with tRPC for type-safe client-server communication**. The frontend utilizes **Shadcn/ui components with Tailwind CSS** for professional mobile-first design, while the backend centers around **SQLite with Drizzle ORM 0.44+** for portable, efficient data management. **Vercel provides seamless deployment** with edge runtime support, and **Better-auth handles secure session management**. This architecture achieves the PRD goals of sub-30-second mobile cost entry, instant partner transparency via real-time dashboards, and comprehensive relationship tracking between projects, costs, contacts, and documents.
 
 ## Platform and Infrastructure Choice
 
 Based on PRD requirements for rapid development, mobile optimization, and partner transparency, I recommend:
 
 **Option 1: Vercel + SQLite (Recommended)**
+
 - **Pros:** Optimized Next.js hosting, edge runtime, automatic scaling, seamless CI/CD, excellent mobile performance
 - **Cons:** Vendor lock-in, SQLite scaling limitations for very large datasets
 - **Best for:** Rapid MVP deployment with excellent developer experience
 
-**Option 2: AWS Full Stack**  
+**Option 2: AWS Full Stack**
+
 - **Pros:** Enterprise scalability, full control, comprehensive services, database migration flexibility
 - **Cons:** Complex setup, higher operational overhead, slower initial deployment
 - **Best for:** Enterprise requirements with dedicated DevOps resources
 
 **Option 3: Self-hosted + Digital Ocean/Hetzner**
+
 - **Pros:** Cost control, full ownership, simple PostgreSQL scaling path
 - **Cons:** Manual infrastructure management, deployment complexity, monitoring setup required
 - **Best for:** Cost-sensitive deployments with technical operations capability
@@ -32,11 +35,13 @@ Based on PRD requirements for rapid development, mobile optimization, and partne
 **Deployment Host and Regions:** Vercel Global Edge Network (primary: Sydney for Australian users)
 
 **Scaling Strategy:**
+
 - **Triggers:** >50GB database size, >100 concurrent partner sessions, >20 active projects
-- **Migration Path:** SQLite → Turso (hosted SQLite) → PostgreSQL on Railway/Supabase  
+- **Migration Path:** SQLite → Turso (hosted SQLite) → PostgreSQL on Railway/Supabase
 - **Data Portability:** Drizzle migrations ensure zero-downtime database transitions
 
 **Backup Architecture:**
+
 - **Strategy:** GitHub Actions daily SQLite dumps to encrypted S3 bucket
 - **Retention:** 30 daily, 12 monthly, 5 yearly backups
 - **Recovery:** One-click restoration via Vercel environment variables
@@ -59,13 +64,13 @@ graph TB
         GUEST[Guest Access - Read Only]
     end
 
-    subgraph "Application Layer - Next.js 14+"
+    subgraph "Application Layer - Next.js 15.5+"
         subgraph "Frontend"
             PWA[Progressive Web App]
             COMP[Shadcn/ui Components]
             STATE[React Query State]
         end
-        
+
         subgraph "Backend API"
             TRPC[tRPC API Routes]
             AUTH[Better-auth]
@@ -90,22 +95,22 @@ graph TB
     end
 
     DEV --> PWA
-    PARTNER --> PWA  
+    PARTNER --> PWA
     GUEST --> PWA
-    
+
     PWA --> TRPC
     COMP --> STATE
     STATE --> TRPC
-    
+
     TRPC --> AUTH
     TRPC --> SQLITE
     TRPC --> VERCEL_BLOB
     AUTH --> SQLITE
-    
+
     SQLITE --> BACKUP
-    
+
     TRPC --> EMAIL
-    
+
     EDGE --> PWA
     DEPLOY --> EDGE
     MONITOR --> PWA
@@ -130,6 +135,7 @@ graph TB
 ## Document Storage Architecture
 
 **Document Strategy:**
+
 - **All files:** Vercel Blob storage for scalable, reliable document handling
 - **Metadata:** SQLite stores file references, categories, upload dates, and relationships
 - **Thumbnails:** Generated and cached in Vercel Blob for quick preview loading
@@ -138,6 +144,7 @@ graph TB
 ## Runtime Distribution Strategy
 
 **Compute Distribution:**
+
 - **Edge Runtime:** Static pages, lightweight API routes, partner dashboards, authentication middleware
 - **Node.js Runtime:** File uploads to Vercel Blob, complex database operations, document processing, email sending
 - **Client-Side:** Optimistic UI updates, real-time dashboard updates
@@ -146,6 +153,7 @@ graph TB
 
 **Current MVP Approach:** Online-first web application with responsive design and mobile optimization
 **Future PWA Enhancements:**
+
 - **Service Worker:** Cache static assets and critical data for offline browsing
 - **Offline Cost Entry:** Local storage queue with background sync when connectivity restored
 - **Progressive Enhancement:** Core functionality works offline, advanced features require connection
@@ -154,6 +162,7 @@ graph TB
 ## Authentication Implementation Details
 
 **Better-auth Configuration:**
+
 - **Session Storage:** JWT tokens in httpOnly cookies with 30-day expiration
 - **Partner Invitations:** Secure UUID tokens with 7-day expiry, email verification required before access
 - **Role-Based Access:** tRPC middleware validates permissions at procedure level, not just UI component hiding

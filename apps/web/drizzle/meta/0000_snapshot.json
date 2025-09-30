@@ -1,8 +1,6 @@
 {
-  "version": "5",
+  "version": "6",
   "dialect": "sqlite",
-  "id": "bf0e51d8-df9b-4bf9-842a-623fc7a9e6e5",
-  "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "users": {
       "name": "users",
@@ -92,7 +90,8 @@
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "accounts": {
       "name": "accounts",
@@ -192,7 +191,8 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "sessions": {
       "name": "sessions",
@@ -257,7 +257,8 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "verifications": {
       "name": "verifications",
@@ -308,7 +309,8 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "addresses": {
       "name": "addresses",
@@ -404,7 +406,8 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "projects": {
       "name": "projects",
@@ -509,24 +512,25 @@
         "projects_address_id_addresses_id_fk": {
           "name": "projects_address_id_addresses_id_fk",
           "tableFrom": "projects",
-          "tableTo": "addresses",
           "columnsFrom": ["address_id"],
+          "tableTo": "addresses",
           "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "projects_owner_id_users_id_fk": {
           "name": "projects_owner_id_users_id_fk",
           "tableFrom": "projects",
-          "tableTo": "users",
           "columnsFrom": ["owner_id"],
+          "tableTo": "users",
           "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "costs": {
       "name": "costs",
@@ -623,42 +627,43 @@
         "costs_project_id_projects_id_fk": {
           "name": "costs_project_id_projects_id_fk",
           "tableFrom": "costs",
-          "tableTo": "projects",
           "columnsFrom": ["project_id"],
+          "tableTo": "projects",
           "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "costs_category_id_categories_id_fk": {
           "name": "costs_category_id_categories_id_fk",
           "tableFrom": "costs",
-          "tableTo": "categories",
           "columnsFrom": ["category_id"],
+          "tableTo": "categories",
           "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "costs_contact_id_contacts_id_fk": {
           "name": "costs_contact_id_contacts_id_fk",
           "tableFrom": "costs",
-          "tableTo": "contacts",
           "columnsFrom": ["contact_id"],
+          "tableTo": "contacts",
           "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "costs_created_by_id_users_id_fk": {
           "name": "costs_created_by_id_users_id_fk",
           "tableFrom": "costs",
-          "tableTo": "users",
           "columnsFrom": ["created_by_id"],
+          "tableTo": "users",
           "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "contacts": {
       "name": "contacts",
@@ -762,24 +767,25 @@
         "contacts_address_id_addresses_id_fk": {
           "name": "contacts_address_id_addresses_id_fk",
           "tableFrom": "contacts",
-          "tableTo": "addresses",
           "columnsFrom": ["address_id"],
+          "tableTo": "addresses",
           "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "contacts_category_id_categories_id_fk": {
           "name": "contacts_category_id_categories_id_fk",
           "tableFrom": "contacts",
-          "tableTo": "categories",
           "columnsFrom": ["category_id"],
+          "tableTo": "categories",
           "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "documents": {
       "name": "documents",
@@ -862,24 +868,25 @@
         "documents_project_id_projects_id_fk": {
           "name": "documents_project_id_projects_id_fk",
           "tableFrom": "documents",
-          "tableTo": "projects",
           "columnsFrom": ["project_id"],
+          "tableTo": "projects",
           "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "documents_category_id_categories_id_fk": {
           "name": "documents_category_id_categories_id_fk",
           "tableFrom": "documents",
-          "tableTo": "categories",
           "columnsFrom": ["category_id"],
+          "tableTo": "categories",
           "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "events": {
       "name": "events",
@@ -976,24 +983,25 @@
         "events_project_id_projects_id_fk": {
           "name": "events_project_id_projects_id_fk",
           "tableFrom": "events",
-          "tableTo": "projects",
           "columnsFrom": ["project_id"],
+          "tableTo": "projects",
           "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "events_category_id_categories_id_fk": {
           "name": "events_category_id_categories_id_fk",
           "tableFrom": "events",
-          "tableTo": "categories",
           "columnsFrom": ["category_id"],
+          "tableTo": "categories",
           "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "project_access": {
       "name": "project_access",
@@ -1077,33 +1085,34 @@
         "project_access_project_id_projects_id_fk": {
           "name": "project_access_project_id_projects_id_fk",
           "tableFrom": "project_access",
-          "tableTo": "projects",
           "columnsFrom": ["project_id"],
+          "tableTo": "projects",
           "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "project_access_user_id_users_id_fk": {
           "name": "project_access_user_id_users_id_fk",
           "tableFrom": "project_access",
-          "tableTo": "users",
           "columnsFrom": ["user_id"],
+          "tableTo": "users",
           "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "project_access_invited_by_users_id_fk": {
           "name": "project_access_invited_by_users_id_fk",
           "tableFrom": "project_access",
-          "tableTo": "users",
           "columnsFrom": ["invited_by"],
+          "tableTo": "users",
           "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "project_contact": {
       "name": "project_contact",
@@ -1158,24 +1167,25 @@
         "project_contact_project_id_projects_id_fk": {
           "name": "project_contact_project_id_projects_id_fk",
           "tableFrom": "project_contact",
-          "tableTo": "projects",
           "columnsFrom": ["project_id"],
+          "tableTo": "projects",
           "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "project_contact_contact_id_contacts_id_fk": {
           "name": "project_contact_contact_id_contacts_id_fk",
           "tableFrom": "project_contact",
-          "tableTo": "contacts",
           "columnsFrom": ["contact_id"],
+          "tableTo": "contacts",
           "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "audit_log": {
       "name": "audit_log",
@@ -1255,7 +1265,8 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "categories": {
       "name": "categories",
@@ -1298,13 +1309,16 @@
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     }
   },
   "enums": {},
   "_meta": {
-    "schemas": {},
     "tables": {},
     "columns": {}
-  }
+  },
+  "id": "bf0e51d8-df9b-4bf9-842a-623fc7a9e6e5",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "views": {}
 }
