@@ -2,6 +2,7 @@
   "name": "realestate-portfolio",
   "version": "1.0.0",
   "private": true,
+  "packageManager": "bun@1.2.23",
   "description": "A comprehensive web application for managing real estate development projects, tracking costs, managing contacts, and providing transparent partner dashboards.",
   "workspaces": [
     "apps/*",
