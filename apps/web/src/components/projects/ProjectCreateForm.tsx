@@ -16,6 +16,7 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import {
   Select,
@@ -150,7 +151,7 @@ export function ProjectCreateForm({ onSuccess, defaultValues }: ProjectCreateFor
             <FormItem>
               <FormLabel>Description</FormLabel>
               <FormControl>
-                <Input
+                <Textarea
                   placeholder="Brief description of the project"
                   disabled={isSubmitting}
                   {...field}

@@ -1,0 +1,135 @@
+# <!-- Powered by BMAD™ Core -->
+# Quality Gate Decision for Story 1.5: Basic Cost Tracking
+
+schema: 1
+story: "1.5"
+story_title: "Basic Cost Tracking"
+gate: PASS
+status_reason: "All acceptance criteria fully implemented with comprehensive test coverage. Minor test refactoring performed to fix category IDs. No blocking issues identified."
+reviewer: "Quinn (Test Architect)"
+updated: "2025-10-01T19:51:00Z"
+
+# Always present but only active when WAIVED
+waiver: { active: false }
+
+# Issues identified (low priority only)
+top_issues:
+  - id: "TECH-001"
+    severity: low
+    finding: "Test context objects have type mismatches with tRPC's expected context shape"
+    suggested_action: "Update test helper to match tRPC context interface or add type assertions"
+    suggested_owner: dev
+  - id: "TECH-002"
+    severity: low
+    finding: "Category IDs use prefixed format which may not be immediately obvious to developers"
+    suggested_action: "Add JSDoc examples showing correct category ID format or create type-safe constants"
+    suggested_owner: dev
+
+# Risk summary
+risk_summary:
+  totals: { critical: 0, high: 0, medium: 0, low: 2 }
+  recommendations:
+    must_fix: []
+    monitor:
+      - "TypeScript type warnings in test files (non-blocking)"
+      - "Category ID naming conventions"
+
+# Quality scoring
+quality_score: 95
+expires: "2025-10-15T00:00:00Z"
+
+# Evidence collected
+evidence:
+  tests_reviewed: 36
+  risks_identified: 2
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6]
+    ac_gaps: []
+
+# NFR validation results
+nfr_validation:
+  security:
+    status: PASS
+    notes: "All operations protected by authentication. Project ownership verified. Multi-tenant isolation enforced. Input validation on client and server."
+  performance:
+    status: PASS
+    notes: "Efficient database queries with proper indexing. Lazy loading implemented. Optimistic updates for better UX."
+  reliability:
+    status: PASS
+    notes: "Comprehensive error handling. Soft delete preserves audit trail. Currency stored as integers. Validation prevents invalid data."
+  maintainability:
+    status: PASS
+    notes: "Excellent documentation. Clear separation of concerns. Reusable utilities. Type-safe implementation throughout."
+
+# Recommendations
+recommendations:
+  immediate: []
+  future:
+    - action: "Update test context type signatures to match tRPC interface"
+      refs: ["apps/web/src/server/__tests__/cost.test.ts"]
+      effort: "1-2 hours"
+    - action: "Add JSDoc examples or type-safe constants for category IDs"
+      refs: ["apps/web/src/server/db/types.ts"]
+      effort: "30 minutes"
+
+# Test coverage details
+test_coverage:
+  backend:
+    total_tests: 22
+    passing: 22
+    failing: 0
+    coverage_areas:
+      - "CRUD operations (create, list, getById, update, softDelete, getTotal)"
+      - "Validation (negative amounts, future dates, invalid categories, empty descriptions)"
+      - "Access control (multi-user scenarios, project ownership)"
+      - "Data integrity (soft delete, filtering, running totals)"
+  utilities:
+    total_tests: 14
+    passing: 14
+    failing: 0
+    coverage_areas:
+      - "Currency formatting and parsing"
+      - "Dollar-to-cents conversion"
+      - "Cents-to-dollar conversion"
+      - "Round-trip conversions"
+
+# Refactoring performed
+refactoring:
+  - file: "apps/web/src/server/__tests__/cost.test.ts"
+    changes: "Fixed category IDs in 17 test cases from legacy format to current schema"
+    lines_modified: 17
+    impact: "All 22 tests now pass successfully"
+    reason: "Tests were using outdated category IDs causing failures"
+
+# Requirements traceability
+requirements_trace:
+  - ac: 1
+    requirement: "Cost entry form with amount, date, category, description"
+    implementation: "CostEntryForm.tsx, cost.ts validation"
+    tests: "cost.test.ts:138 - create tests"
+    status: PASS
+  - ac: 2
+    requirement: "Costs display in project detail with running total"
+    implementation: "page.tsx, CostsList.tsx"
+    tests: "cost.test.ts:313 - list tests, cost.test.ts:617 - total tests"
+    status: PASS
+  - ac: 3
+    requirement: "Category dropdown with predefined real estate categories"
+    implementation: "types.ts:24 - CATEGORIES, CostEntryForm.tsx:89"
+    tests: "cost.test.ts:212 - category validation"
+    status: PASS
+  - ac: 4
+    requirement: "Date picker defaults to today"
+    implementation: "CostEntryForm.tsx:107"
+    tests: "Manual verification"
+    status: PASS
+  - ac: 5
+    requirement: "Mobile-optimized form with large touch targets"
+    implementation: "CostEntryForm.tsx - responsive grid, Shadcn/ui components"
+    tests: "Manual verification"
+    status: PASS
+  - ac: 6
+    requirement: "Success feedback after cost addition"
+    implementation: "CostEntryForm.tsx:119 - toast notifications"
+    tests: "cost.test.ts:148 - successful creation"
+    status: PASS

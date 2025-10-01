@@ -2,11 +2,13 @@
 
 import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
+import { Suspense, lazy } from "react"
 import { api } from "@/lib/trpc/client"
 import { Navbar } from "@/components/layout/Navbar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   Dialog,
   DialogContent,
@@ -18,6 +20,12 @@ import {
 } from "@/components/ui/dialog"
 import { useToast } from "@/hooks/use-toast"
 import { useState } from "react"
+import { ProjectMap } from "@/components/maps/ProjectMap"
+
+// Lazy load the costs list component
+const CostsList = lazy(() =>
+  import("@/components/costs/CostsList").then((mod) => ({ default: mod.CostsList }))
+)
 
 /**
  * ProjectDetailPage - Display detailed information for a single project
@@ -145,11 +153,15 @@ export default function ProjectDetailPage() {
           </div>
           <div className="flex gap-2">
             <Link href={`/projects/${project.id}/edit` as never}>
-              <Button variant="outline">Edit</Button>
+              <Button variant="outline" disabled={deleteMutation.isPending}>
+                Edit
+              </Button>
             </Link>
             <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
               <DialogTrigger asChild>
-                <Button variant="destructive">Delete</Button>
+                <Button variant="destructive" disabled={deleteMutation.isPending}>
+                  Delete
+                </Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
@@ -175,74 +187,107 @@ export default function ProjectDetailPage() {
           </div>
         </div>
 
-        {/* Project Details */}
-        <div className="grid gap-6">
-          {/* Basic Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Project Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {project.description && (
-                <div>
-                  <h3 className="font-semibold text-sm text-gray-600 mb-1">Description</h3>
-                  <p>{project.description}</p>
-                </div>
-              )}
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <h3 className="font-semibold text-sm text-gray-600 mb-1">Project Type</h3>
-                  <p>{typeLabels[project.projectType] || project.projectType}</p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-sm text-gray-600 mb-1">Status</h3>
-                  <p className="capitalize">{project.status.replace("_", " ")}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        {/* Tabs for Project Details and Costs */}
+        <Tabs defaultValue="details" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="details">Project Details</TabsTrigger>
+            <TabsTrigger value="costs">Costs</TabsTrigger>
+          </TabsList>
 
-          {/* Address */}
-          {project.address && (
+          {/* Details Tab */}
+          <TabsContent value="details" className="mt-6">
+            <div className="grid gap-6">
+              {/* Basic Information */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Project Information</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {project.description && (
+                    <div>
+                      <h3 className="font-semibold text-sm text-gray-600 mb-1">Description</h3>
+                      <p>{project.description}</p>
+                    </div>
+                  )}
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <h3 className="font-semibold text-sm text-gray-600 mb-1">Project Type</h3>
+                      <p>{typeLabels[project.projectType] || project.projectType}</p>
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-sm text-gray-600 mb-1">Status</h3>
+                      <p className="capitalize">{project.status.replace("_", " ")}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Address */}
+              {project.address && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Address</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <p>{project.address.formattedAddress || "No address provided"}</p>
+                    <ProjectMap address={project.address} />
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Dates & Budget */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Timeline & Budget</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    {project.startDate && (
+                      <div>
+                        <h3 className="font-semibold text-sm text-gray-600 mb-1">Start Date</h3>
+                        <p>{new Date(project.startDate).toLocaleDateString()}</p>
+                      </div>
+                    )}
+                    {project.endDate && (
+                      <div>
+                        <h3 className="font-semibold text-sm text-gray-600 mb-1">End Date</h3>
+                        <p>{new Date(project.endDate).toLocaleDateString()}</p>
+                      </div>
+                    )}
+                  </div>
+                  {project.totalBudget !== null && (
+                    <div>
+                      <h3 className="font-semibold text-sm text-gray-600 mb-1">Total Budget</h3>
+                      <p>${project.totalBudget.toLocaleString()}</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Costs Tab */}
+          <TabsContent value="costs" className="mt-6">
             <Card>
               <CardHeader>
-                <CardTitle>Address</CardTitle>
+                <CardTitle>Costs</CardTitle>
               </CardHeader>
               <CardContent>
-                <p>{project.address.formattedAddress || "No address provided"}</p>
+                <Suspense
+                  fallback={
+                    <div className="animate-pulse space-y-2">
+                      <div className="h-12 bg-gray-200 rounded"></div>
+                      <div className="h-12 bg-gray-200 rounded"></div>
+                      <div className="h-12 bg-gray-200 rounded"></div>
+                    </div>
+                  }
+                >
+                  <CostsList projectId={project.id} />
+                </Suspense>
               </CardContent>
             </Card>
-          )}
-
-          {/* Dates & Budget */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Timeline & Budget</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 sm:grid-cols-2">
-                {project.startDate && (
-                  <div>
-                    <h3 className="font-semibold text-sm text-gray-600 mb-1">Start Date</h3>
-                    <p>{new Date(project.startDate).toLocaleDateString()}</p>
-                  </div>
-                )}
-                {project.endDate && (
-                  <div>
-                    <h3 className="font-semibold text-sm text-gray-600 mb-1">End Date</h3>
-                    <p>{new Date(project.endDate).toLocaleDateString()}</p>
-                  </div>
-                )}
-              </div>
-              {project.totalBudget !== null && (
-                <div>
-                  <h3 className="font-semibold text-sm text-gray-600 mb-1">Total Budget</h3>
-                  <p>${project.totalBudget.toLocaleString()}</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </>
   )
