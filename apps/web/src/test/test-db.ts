@@ -1,24 +1,31 @@
-import { drizzle } from "drizzle-orm/neon-serverless"
-import { Pool, neonConfig } from "@neondatabase/serverless"
+import { drizzle } from "drizzle-orm/postgres-js"
+import { migrate } from "drizzle-orm/postgres-js/migrator"
+import postgres from "postgres"
 import * as schema from "../server/db/schema"
-import { migrate } from "drizzle-orm/neon-serverless/migrator"
 import * as path from "path"
-import ws from "ws"
+import { PostgreSqlContainer, StartedPostgreSqlContainer } from "@testcontainers/postgresql"
 
-// Configure Neon for tests
-neonConfig.webSocketConstructor = ws
+let globalContainer: StartedPostgreSqlContainer | null = null
+let connectionCount = 0
+
+// Get or create global test container
+async function getTestContainer() {
+  if (!globalContainer) {
+    console.log("🐳 Starting PostgreSQL test container...")
+    globalContainer = await new PostgreSqlContainer("postgres:16-alpine").start()
+    console.log(`✅ PostgreSQL container started on port ${globalContainer.getPort()}`)
+  }
+  return globalContainer
+}
 
 // Create a dedicated test database connection
 export const createTestDb = async () => {
-  // Use test database URL or fallback to main database with test suffix
-  const dbUrl = process.env.NETLIFY_DATABASE_URL_TEST || process.env.NETLIFY_DATABASE_URL
+  const container = await getTestContainer()
+  connectionCount++
 
-  if (!dbUrl) {
-    throw new Error("NETLIFY_DATABASE_URL or NETLIFY_DATABASE_URL_TEST is required for tests")
-  }
-
-  const pool = new Pool({ connectionString: dbUrl })
-  const db = drizzle(pool, { schema })
+  const connectionString = container.getConnectionUri()
+  const sql = postgres(connectionString, { max: 1 })
+  const db = drizzle(sql, { schema })
 
   // Apply migrations
   await migrate(db, {
@@ -27,9 +34,27 @@ export const createTestDb = async () => {
 
   return {
     db,
-    pool,
+    sql,
     cleanup: async () => {
-      await pool.end()
+      await sql.end()
+      connectionCount--
+
+      // Stop container when all connections are closed
+      if (connectionCount === 0 && globalContainer) {
+        console.log("🛑 Stopping PostgreSQL test container...")
+        await globalContainer.stop()
+        globalContainer = null
+      }
     },
+  }
+}
+
+// Cleanup function for test teardown
+export const cleanupAllTestContainers = async () => {
+  if (globalContainer) {
+    console.log("🧹 Cleaning up test containers...")
+    await globalContainer.stop()
+    globalContainer = null
+    connectionCount = 0
   }
 }
