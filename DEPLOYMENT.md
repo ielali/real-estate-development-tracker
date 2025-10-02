@@ -154,6 +154,30 @@ git push origin test/ci-check
 
 ## External Services Setup
 
+### Neon Database (PostgreSQL for Netlify)
+
+1. **Automatic Integration via Netlify**
+   - Go to Netlify Dashboard → Your Site → Integrations
+   - Search for "Neon" and click "Enable"
+   - Netlify automatically provisions a Neon PostgreSQL database
+   - Environment variable `NETLIFY_DATABASE_URL` is automatically set
+
+2. **Manual Setup (if needed)**
+   - Create account at [neon.tech](https://neon.tech)
+   - Create a new PostgreSQL database
+   - Copy the connection string
+   - Add to Netlify: `NETLIFY_DATABASE_URL=<connection-string>`
+
+3. **Database Migrations**
+   - Migrations run automatically during build (see `netlify.toml`)
+   - Build command: `bun run db:migrate && bun run build`
+   - Migrations detect environment and use correct database
+
+4. **Local vs Production**
+   - **Local Development:** Uses SQLite (`DATABASE_URL=file:./data/dev.db`)
+   - **Netlify Deployments:** Uses Neon PostgreSQL (`NETLIFY_DATABASE_URL`)
+   - Drizzle ORM automatically switches between dialects
+
 ### Resend (Email Service)
 
 1. **Create Resend Account**
@@ -213,8 +237,9 @@ Set these in both Netlify Dashboard and `.env.local`:
 NODE_ENV=production
 NEXT_PUBLIC_APP_URL=https://your-site.netlify.app
 
-# Database (Future Story - Use SQLite for now)
-DATABASE_URL=file:./data/prod.db
+# Database (Neon PostgreSQL - automatically provided by Netlify)
+# NETLIFY_DATABASE_URL is automatically set by Netlify when you connect a Neon database
+# No manual configuration needed for DATABASE_URL in production
 
 # Authentication
 BETTER_AUTH_SECRET=<generate-with-openssl-rand-base64-32>
@@ -420,15 +445,23 @@ netlify deploy --prod
 
 **Problem:** Database errors in production
 
-**Note:** Production database (Vercel Postgres/Turso) is not configured yet.
-Current deployment uses SQLite, which may have limitations in serverless environment.
+**Solution:**
 
-**Temporary Solution:**
+The application now supports both SQLite (local) and PostgreSQL (Netlify with Neon):
 
-- SQLite works for demo/testing
-- For production use, wait for database migration story
+1. **Netlify Setup:**
+   - Go to Netlify Dashboard → Your Site → Integrations
+   - Search for "Neon" and connect your Neon database
+   - Netlify automatically sets `NETLIFY_DATABASE_URL`
+   - Run migrations: `bun run db:migrate` (with NETLIFY_DATABASE_URL set)
 
-**Future:** Configure Netlify Postgres, Turso, or PlanetScale
+2. **Local Development:**
+   - Uses SQLite by default
+   - Set `DATABASE_URL=file:./data/dev.db` in `.env.local`
+
+3. **Migration Generation:**
+   - Generate migrations for PostgreSQL: `NETLIFY_DATABASE_URL=<url> bun run db:generate`
+   - Or for SQLite: `bun run db:generate` (default)
 
 ### CI Workflow Fails
 

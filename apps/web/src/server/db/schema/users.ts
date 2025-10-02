@@ -1,23 +1,21 @@
 import { sql } from "drizzle-orm"
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core"
+import { pgTable, text, timestamp, boolean } from "drizzle-orm/pg-core"
 
-export const users = sqliteTable("users", {
+export const users = pgTable("users", {
   id: text("id").primaryKey(),
-  createdAt: integer("created_at", { mode: "timestamp" })
-    .default(sql`(current_timestamp)`)
+  createdAt: timestamp("created_at")
+    .default(sql`current_timestamp`)
     .notNull(),
-  updatedAt: integer("updated_at", { mode: "timestamp" })
-    .default(sql`(current_timestamp)`)
+  updatedAt: timestamp("updated_at")
+    .default(sql`current_timestamp`)
     .notNull(),
-  deletedAt: integer("deleted_at", { mode: "timestamp" }),
+  deletedAt: timestamp("deleted_at"),
   email: text("email").notNull().unique(),
   name: text("name").notNull().default(""), // For Better-auth compatibility
-  emailVerified: integer("email_verified", { mode: "boolean" }).default(false).notNull(),
+  emailVerified: boolean("email_verified").default(false).notNull(),
   firstName: text("first_name").notNull().default(""),
   lastName: text("last_name").notNull().default(""),
-  role: text("role", { enum: ["admin", "partner"] })
-    .notNull()
-    .default("partner"),
+  role: text("role").notNull().default("partner"),
 })
 
 export type User = typeof users.$inferSelect

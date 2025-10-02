@@ -1,39 +1,24 @@
-import { drizzle } from "drizzle-orm/better-sqlite3"
-import Database from "better-sqlite3"
+import { drizzle } from "drizzle-orm/neon-serverless"
+import { Pool, neonConfig } from "@neondatabase/serverless"
 import * as schema from "./schema"
-import * as fs from "fs"
-import * as path from "path"
+import ws from "ws"
 
-// Determine database URL based on environment
-const getDbUrl = (): string => {
-  if (process.env.NODE_ENV === "test") {
-    return process.env.DATABASE_URL || `file:${path.join(process.cwd(), "data", "test.db")}`
-  }
-  return process.env.DATABASE_URL || `file:${path.join(process.cwd(), "data", "dev.db")}`
-}
+// Configure Neon for WebSocket support (needed for serverless environments)
+neonConfig.webSocketConstructor = ws
 
-// Create database connection function for better test isolation
+// Create database connection
 const createDatabase = () => {
-  const dbUrl = getDbUrl()
-  const dbPath = dbUrl.replace("file:", "")
+  const dbUrl = process.env.NETLIFY_DATABASE_URL
 
-  const dbDir = path.dirname(dbPath)
-  if (!fs.existsSync(dbDir) && dbDir !== ".") {
-    fs.mkdirSync(dbDir, { recursive: true })
+  if (!dbUrl) {
+    throw new Error("NETLIFY_DATABASE_URL environment variable is not set")
   }
 
-  const sqlite = new Database(dbPath)
-
-  sqlite.pragma("journal_mode = WAL")
-  sqlite.pragma("foreign_keys = ON")
-
-  return drizzle(sqlite, { schema })
+  const pool = new Pool({ connectionString: dbUrl })
+  return drizzle(pool, { schema })
 }
 
 export const db = createDatabase()
-
-// Export database path for cleanup purposes (useful in tests)
-export const exportedDbPath = getDbUrl().replace("file:", "")
 
 export type Database = typeof db
 

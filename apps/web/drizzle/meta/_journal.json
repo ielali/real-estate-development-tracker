@@ -1,26 +1,12 @@
 {
-  "version": "5",
-  "dialect": "sqlite",
+  "version": "7",
+  "dialect": "postgresql",
   "entries": [
     {
       "idx": 0,
-      "version": "5",
-      "when": 1759137983890,
-      "tag": "0000_swift_valkyrie",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1759154769869,
-      "tag": "0001_clammy_shriek",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "5",
-      "when": 1759155100000,
-      "tag": "0002_add_sessions_foreign_key",
+      "version": "7",
+      "when": 1759444848642,
+      "tag": "0000_minor_wallop",
       "breakpoints": true
     }
   ]
