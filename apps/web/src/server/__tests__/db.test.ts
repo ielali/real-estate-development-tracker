@@ -376,8 +376,8 @@ describe("Database Operations", () => {
     })
 
     it("should validate cost categories", () => {
-      expect(isValidCategoryForType("materials", "cost")).toBe(true)
-      expect(isValidCategoryForType("labor", "cost")).toBe(true)
+      expect(isValidCategoryForType("cost_materials", "cost")).toBe(true)
+      expect(isValidCategoryForType("cost_labor", "cost")).toBe(true)
       expect(isValidCategoryForType("electrician", "cost")).toBe(false)
       expect(isValidCategoryForType("photos", "cost")).toBe(false)
     })
