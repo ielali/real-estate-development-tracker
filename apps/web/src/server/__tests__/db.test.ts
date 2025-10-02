@@ -23,16 +23,16 @@ import { sql } from "drizzle-orm"
 import { eq } from "drizzle-orm"
 
 describe("Database Operations", () => {
-  let testDbConnection: ReturnType<typeof createTestDb>
-  let db: ReturnType<typeof createTestDb>["db"]
+  let testDbConnection: Awaited<ReturnType<typeof createTestDb>>
+  let db: Awaited<ReturnType<typeof createTestDb>>["db"]
 
-  beforeAll(() => {
-    testDbConnection = createTestDb()
+  beforeAll(async () => {
+    testDbConnection = await createTestDb()
     db = testDbConnection.db
   })
 
-  afterAll(() => {
-    testDbConnection.cleanup()
+  afterAll(async () => {
+    await testDbConnection.cleanup()
   })
 
   beforeEach(async () => {
