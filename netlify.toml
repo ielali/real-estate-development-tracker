@@ -2,8 +2,8 @@
 # Documentation: https://docs.netlify.com/configure-builds/file-based-configuration/
 
 [build]
-  # Build command
-  command = "cd apps/web && bun run build"
+  # Build command with native module rebuild
+  command = "npm rebuild better-sqlite3 && cd apps/web && bun run build"
 
   # Publish directory (relative to repo root)
   publish = "apps/web/.next"
@@ -51,10 +51,10 @@
 
 # Context-specific settings
 [context.production]
-  command = "cd apps/web && bun run build"
+  command = "npm rebuild better-sqlite3 && cd apps/web && bun run build"
 
 [context.deploy-preview]
-  command = "cd apps/web && bun run build"
+  command = "npm rebuild better-sqlite3 && cd apps/web && bun run build"
 
 [context.branch-deploy]
-  command = "cd apps/web && bun run build"
+  command = "npm rebuild better-sqlite3 && cd apps/web && bun run build"
