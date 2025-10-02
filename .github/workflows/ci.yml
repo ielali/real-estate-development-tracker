@@ -35,6 +35,9 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      - name: Rebuild native modules
+        run: bun rebuild better-sqlite3
+
       - name: Type check
         run: bun run type-check
 
