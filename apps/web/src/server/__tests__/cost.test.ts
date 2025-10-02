@@ -22,7 +22,7 @@ import { CATEGORIES } from "../db/types"
  * - Validation (negative amounts, invalid category, future date)
  */
 describe("Cost Router", () => {
-  let testDbInstance: ReturnType<typeof createTestDb>
+  let testDbInstance: Awaited<ReturnType<typeof createTestDb>>
   let testUser: User
   let anotherUser: User
   let testProjectId: string
@@ -51,7 +51,7 @@ describe("Cost Router", () => {
 
   beforeEach(async () => {
     // Create fresh test database
-    testDbInstance = createTestDb()
+    testDbInstance = await createTestDb()
 
     // Seed categories
     await testDbInstance.db.insert(categories).values(CATEGORIES)
@@ -141,7 +141,7 @@ describe("Cost Router", () => {
   })
 
   afterEach(() => {
-    testDbInstance.cleanup()
+    await testDbInstance.cleanup()
   })
 
   describe("create", () => {

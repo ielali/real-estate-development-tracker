@@ -16,7 +16,7 @@ import { users } from "../db/schema/users"
  * - Access control (users can only access their own projects)
  */
 describe("Project Router", () => {
-  let testDbInstance: ReturnType<typeof createTestDb>
+  let testDbInstance: Awaited<ReturnType<typeof createTestDb>>
   let testUser: User
   let anotherUser: User
 
@@ -33,7 +33,7 @@ describe("Project Router", () => {
 
   beforeEach(async () => {
     // Create fresh test database
-    testDbInstance = createTestDb()
+    testDbInstance = await createTestDb()
 
     // Create test users
     const [user1] = await testDbInstance.db
@@ -64,7 +64,7 @@ describe("Project Router", () => {
 
   afterEach(() => {
     // Clean up test database
-    testDbInstance.cleanup()
+    await testDbInstance.cleanup()
   })
 
   describe("create", () => {

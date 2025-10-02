@@ -9,8 +9,13 @@ global.ResizeObserver = class ResizeObserver {
   disconnect() {}
 }
 
-// Force NODE_ENV to test to ensure database isolation
+// Set up test environment variables
 beforeAll(async () => {
-  // Note: NODE_ENV is set via vitest.config.ts environment variables
-  // This ensures proper database isolation for tests
+  // Use the same database URL for tests as the main app
+  // In a real environment, you'd want a separate test database
+  if (!process.env.NETLIFY_DATABASE_URL) {
+    process.env.NETLIFY_DATABASE_URL =
+      process.env.NETLIFY_DATABASE_URL_TEST ||
+      "postgresql://neondb_owner:npg_UcW7ZvSF1Gko@ep-shiny-meadow-aeijkztn-pooler.c-2.us-east-2.aws.neon.tech/neondb?channel_binding=require&sslmode=require"
+  }
 })
