@@ -62,7 +62,7 @@ describe("Project Router", () => {
     anotherUser = user2!
   })
 
-  afterEach(() => {
+  afterEach(async () => {
     // Clean up test database
     await testDbInstance.cleanup()
   })

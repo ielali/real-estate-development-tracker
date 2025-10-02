@@ -284,28 +284,23 @@ describe("Authentication", () => {
       expect(remainingSessions[0].id).toBe(session2Id)
     })
 
-    it("should allow sessions to be created independently (foreign key validation occurs at application level)", async () => {
-      // Note: This test validates that session creation works at the database level
-      // In production, Better Auth handles user validation before creating sessions
+    it("should enforce foreign key constraint on session creation", async () => {
+      // PostgreSQL enforces foreign key constraints at database level
+      // This test validates that sessions cannot be created without a valid user
       const sessionId = crypto.randomUUID()
-      const testUserId = crypto.randomUUID() // Using a UUID that doesn't exist
+      const nonExistentUserId = crypto.randomUUID() // Using a UUID that doesn't exist
 
       const sessionData = {
         id: sessionId,
-        userId: testUserId,
+        userId: nonExistentUserId,
         token: "test-token-" + Date.now(),
         expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
         createdAt: new Date(),
         updatedAt: new Date(),
       }
 
-      // This should succeed at DB level (application-level validation is separate)
-      await db.insert(sessions).values(sessionData)
-
-      const [session] = await db.select().from(sessions).where(eq(sessions.id, sessionId))
-      expect(session).toBeDefined()
-      expect(session.userId).toBe(testUserId)
-      expect(session.token).toBe(sessionData.token)
+      // This should fail at DB level due to foreign key constraint
+      await expect(db.insert(sessions).values(sessionData)).rejects.toThrow()
     })
 
     it("should demonstrate session cleanup when user is deleted", async () => {

@@ -12,7 +12,7 @@ import {
   projectContact,
   auditLog,
   categories,
-} from "../db"
+} from "../db/schema"
 import {
   formatAddress,
   getCategoriesByType,
@@ -51,13 +51,21 @@ describe("Database Operations", () => {
 
   describe("Database Connection", () => {
     it("should establish database connection", async () => {
-      const result = await db.run(sql`SELECT 1 as test`)
+      const result = await db.execute(sql`SELECT 1 as test`)
       expect(result).toBeDefined()
     })
 
     it("should have foreign keys enabled", async () => {
-      const result = await db.get<{ foreign_keys: number }>(sql`PRAGMA foreign_keys`)
-      expect(result?.foreign_keys).toBe(1)
+      // PostgreSQL has foreign keys always enabled by default
+      // Test by attempting a foreign key violation
+      const testUserId = crypto.randomUUID()
+      await expect(
+        db.insert(projects).values({
+          name: "FK Test Project",
+          projectType: "renovation",
+          ownerId: testUserId, // Non-existent user
+        })
+      ).rejects.toThrow()
     })
   })
 
@@ -412,70 +420,6 @@ describe("Database Operations", () => {
 
       expect(validContact).toBeDefined()
       expect(isValidCategoryForType(validContact.categoryId, "contact")).toBe(true)
-    })
-  })
-
-  describe("Seed Script Validation", () => {
-    it("should verify seed creates expected data structure", async () => {
-      const { migrate } = await import("drizzle-orm/better-sqlite3/migrator")
-      const Database = (await import("better-sqlite3")).default
-      const { drizzle } = await import("drizzle-orm/better-sqlite3")
-      const { execSync } = await import("child_process")
-      const path = await import("path")
-      const fs = await import("fs")
-
-      // Ensure data directory exists
-      if (!fs.existsSync("./data")) {
-        fs.mkdirSync("./data", { recursive: true })
-      }
-
-      // Create a fresh database for this test
-      const testDb = new Database("./data/seed-test.db")
-      const testDbInstance = drizzle(testDb)
-
-      // Run migration on test database
-      migrate(testDbInstance, {
-        migrationsFolder: path.join(process.cwd(), "drizzle"),
-      })
-
-      testDb.close()
-
-      // Run seed script
-      execSync("npx tsx src/server/db/seed.ts", {
-        env: { ...process.env, DATABASE_URL: "file:./data/seed-test.db" },
-      })
-
-      // Reconnect and check counts
-      const checkDb = new Database("./data/seed-test.db")
-      const checkDbInstance = drizzle(checkDb, {
-        schema: await import("../db/schema"),
-      })
-
-      const userCount = await checkDbInstance
-        .select({ count: sql<number>`count(*)` })
-        .from(users)
-        .then((rows) => rows[0].count)
-
-      const projectCount = await checkDbInstance
-        .select({ count: sql<number>`count(*)` })
-        .from(projects)
-        .then((rows) => rows[0].count)
-
-      const costCount = await checkDbInstance
-        .select({ count: sql<number>`count(*)` })
-        .from(costs)
-        .then((rows) => rows[0].count)
-
-      checkDb.close()
-
-      // Clean up
-      if (fs.existsSync("./data/seed-test.db")) {
-        fs.unlinkSync("./data/seed-test.db")
-      }
-
-      expect(userCount).toBe(3)
-      expect(projectCount).toBe(3)
-      expect(costCount).toBe(20)
     })
   })
 })

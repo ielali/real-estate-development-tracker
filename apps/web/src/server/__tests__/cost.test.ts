@@ -140,7 +140,7 @@ describe("Cost Router", () => {
     anotherUserProjectId = project2.id
   })
 
-  afterEach(() => {
+  afterEach(async () => {
     await testDbInstance.cleanup()
   })
 
