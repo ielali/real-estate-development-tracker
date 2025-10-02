@@ -53,7 +53,10 @@ export default function ProjectDetailPage() {
       const previousProjects = utils.projects.list.getData()
 
       // Optimistically update to remove the project
-      utils.projects.list.setData(undefined, (old) => old?.filter((p) => p.id !== projectId) ?? [])
+      utils.projects.list.setData(
+        undefined,
+        (old: any) => old?.filter((p: any) => p.id !== projectId) ?? []
+      )
 
       return { previousProjects }
     },

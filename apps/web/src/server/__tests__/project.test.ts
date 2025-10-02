@@ -488,7 +488,7 @@ describe("Project Router", () => {
 
       // Project should not appear in list
       const projects = await caller.projects.list()
-      expect(projects.find((p) => p.id === project.id)).toBeUndefined()
+      expect(projects.find((p: any) => p.id === project.id)).toBeUndefined()
 
       // Getting by ID should also fail
       await expect(caller.projects.getById({ id: project.id })).rejects.toThrow()
