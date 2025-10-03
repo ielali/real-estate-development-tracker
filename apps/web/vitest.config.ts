@@ -26,19 +26,8 @@ export default defineConfig({
     testTimeout: 15000, // 15s per test
     env: {
       NODE_ENV: "test",
-      // Use env vars from dotenv (local) or process.env (GitHub Actions)
-      // Only set if they exist to avoid overwriting with undefined
-      ...(process.env.NEON_TEST_DATABASE_URL && {
-        NEON_TEST_DATABASE_URL: process.env.NEON_TEST_DATABASE_URL,
-      }),
-      ...(process.env.NETLIFY_DATABASE_URL && {
-        NETLIFY_DATABASE_URL: process.env.NETLIFY_DATABASE_URL,
-      }),
-      // Fallback: use NEON_TEST_DATABASE_URL for NETLIFY_DATABASE_URL if not set
-      ...(!process.env.NETLIFY_DATABASE_URL &&
-        process.env.NEON_TEST_DATABASE_URL && {
-          NETLIFY_DATABASE_URL: process.env.NEON_TEST_DATABASE_URL,
-        }),
+      NEON_TEST_DATABASE_URL: process.env.NEON_TEST_DATABASE_URL,
+      NETLIFY_DATABASE_URL: process.env.NETLIFY_DATABASE_URL || process.env.NEON_TEST_DATABASE_URL,
     },
   },
   resolve: {
