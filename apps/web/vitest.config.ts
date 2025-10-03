@@ -1,10 +1,14 @@
 import { defineConfig } from "vitest/config"
 import path from "path"
 import dotenv from "dotenv"
+import { existsSync } from "fs"
 
 // Load environment variables from .env file (for local development)
 // GitHub Actions will use secrets instead
-dotenv.config()
+const envPath = path.join(__dirname, ".env")
+if (existsSync(envPath)) {
+  dotenv.config({ path: envPath })
+}
 
 export default defineConfig({
   test: {
@@ -23,8 +27,18 @@ export default defineConfig({
     env: {
       NODE_ENV: "test",
       // Use env vars from dotenv (local) or process.env (GitHub Actions)
-      NEON_TEST_DATABASE_URL: process.env.NEON_TEST_DATABASE_URL,
-      NETLIFY_DATABASE_URL: process.env.NETLIFY_DATABASE_URL || process.env.NEON_TEST_DATABASE_URL,
+      // Only set if they exist to avoid overwriting with undefined
+      ...(process.env.NEON_TEST_DATABASE_URL && {
+        NEON_TEST_DATABASE_URL: process.env.NEON_TEST_DATABASE_URL,
+      }),
+      ...(process.env.NETLIFY_DATABASE_URL && {
+        NETLIFY_DATABASE_URL: process.env.NETLIFY_DATABASE_URL,
+      }),
+      // Fallback: use NEON_TEST_DATABASE_URL for NETLIFY_DATABASE_URL if not set
+      ...(!process.env.NETLIFY_DATABASE_URL &&
+        process.env.NEON_TEST_DATABASE_URL && {
+          NETLIFY_DATABASE_URL: process.env.NEON_TEST_DATABASE_URL,
+        }),
     },
   },
   resolve: {
