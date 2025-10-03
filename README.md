@@ -153,12 +153,12 @@ The application requires several environment variables to function. Copy `.env.e
 
 ### Required for Development
 
-| Variable              | Description                        | Example                                 |
-| --------------------- | ---------------------------------- | --------------------------------------- |
-| `DATABASE_URL`        | SQLite database file path          | `file:./data/dev.db`                    |
-| `BETTER_AUTH_SECRET`  | Session encryption key (32+ chars) | Generate with `openssl rand -base64 32` |
-| `BETTER_AUTH_URL`     | Base URL for auth callbacks        | `http://localhost:3000`                 |
-| `NEXT_PUBLIC_APP_URL` | Public application URL             | `http://localhost:3000`                 |
+| Variable             | Description                        | Example                                 |
+| -------------------- | ---------------------------------- | --------------------------------------- |
+| `DATABASE_URL`       | SQLite database file path          | `file:./data/dev.db`                    |
+| `BETTER_AUTH_SECRET` | Session encryption key (32+ chars) | Generate with `openssl rand -base64 32` |
+| `BETTER_AUTH_URL`    | Base URL for auth callbacks        | `http://localhost:3000`                 |
+| `DEPLOY_PRIME_URL`   | Public application URL             | `http://localhost:3000`                 |
 
 ### Optional for Development
 

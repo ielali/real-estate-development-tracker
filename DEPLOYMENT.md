@@ -6,7 +6,7 @@ Complete guide for deploying the Real Estate Development Tracker to production u
 
 - [Prerequisites](#prerequisites)
 - [Quick Start](#quick-start)
-- [Vercel Project Setup](#vercel-project-setup)
+- [Netlify Project Setup](#netlify-project-setup)
 - [GitHub Actions Configuration](#github-actions-configuration)
 - [External Services Setup](#external-services-setup)
 - [Environment Variables](#environment-variables)
@@ -219,10 +219,10 @@ git push origin test/ci-check
    - `NETLIFY_BLOBS_CONTEXT` is automatically injected
    - Or manually set `BLOB_READ_WRITE_TOKEN` for compatibility
 
-3. **Alternative: Use Cloudinary or Uploadthing**
-   - Netlify Blobs is in beta
-   - Consider using Cloudinary or Uploadthing for production file storage
-   - Update environment variables accordingly
+3. **Storage Configuration**
+   - Netlify Blobs provides CDN-backed object storage
+   - Automatically configured for serverless functions
+   - Supports large file uploads for construction documents and photos
 
 ## Environment Variables
 
@@ -235,7 +235,7 @@ Set these in both Netlify Dashboard and `.env.local`:
 ```bash
 # Application
 NODE_ENV=production
-NEXT_PUBLIC_APP_URL=https://your-site.netlify.app
+DEPLOY_PRIME_URL=https://your-site.netlify.app
 
 # Database (Neon PostgreSQL - automatically provided by Netlify)
 # NETLIFY_DATABASE_URL is automatically set by Netlify when you connect a Neon database
@@ -243,7 +243,6 @@ NEXT_PUBLIC_APP_URL=https://your-site.netlify.app
 
 # Authentication
 BETTER_AUTH_SECRET=<generate-with-openssl-rand-base64-32>
-BETTER_AUTH_URL=https://your-site.netlify.app
 
 # Email Service
 RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxx
@@ -261,14 +260,13 @@ NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=AIzaSyXXXXXXXXXXXXXXX
 ```bash
 # Application
 NODE_ENV=development
-NEXT_PUBLIC_APP_URL=http://localhost:3000
+DEPLOY_PRIME_URL=http://localhost:3000
 
 # Database
 DATABASE_URL=file:./data/dev.db
 
 # Authentication
 BETTER_AUTH_SECRET=dev-secret-minimum-32-chars-long
-BETTER_AUTH_URL=http://localhost:3000
 
 # Email Service (use test key or leave empty for console logging)
 RESEND_API_KEY=
@@ -385,7 +383,7 @@ netlify deploy --prod
 
 ```bash
 # Upload a file through the application
-# Verify file appears in Vercel Blob dashboard
+# Verify file appears in Netlify Blobs dashboard
 # Verify file is accessible via URL
 ```
 
@@ -447,7 +445,7 @@ netlify deploy --prod
 
 **Solution:**
 
-The application now supports both SQLite (local) and PostgreSQL (Netlify with Neon):
+The application uses Neon PostgreSQL for all environments:
 
 1. **Netlify Setup:**
    - Go to Netlify Dashboard → Your Site → Integrations
@@ -456,12 +454,13 @@ The application now supports both SQLite (local) and PostgreSQL (Netlify with Ne
    - Run migrations: `bun run db:migrate` (with NETLIFY_DATABASE_URL set)
 
 2. **Local Development:**
-   - Uses SQLite by default
-   - Set `DATABASE_URL=file:./data/dev.db` in `.env.local`
+   - Create your own Neon database instance at neon.tech
+   - Set `NETLIFY_DATABASE_URL` in `.env.local` with your dev database connection string
+   - Run migrations: `bun run db:migrate`
 
 3. **Migration Generation:**
-   - Generate migrations for PostgreSQL: `NETLIFY_DATABASE_URL=<url> bun run db:generate`
-   - Or for SQLite: `bun run db:generate` (default)
+   - Generate migrations: `bun run db:generate`
+   - Migrations are PostgreSQL-compatible and work across all environments
 
 ### CI Workflow Fails
 
