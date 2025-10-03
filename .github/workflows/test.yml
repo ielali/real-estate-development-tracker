@@ -25,6 +25,7 @@ jobs:
       - name: Run tests
         run: cd apps/web && bun run test:run
         env:
-          # Testcontainers will automatically start PostgreSQL
-          # No manual database setup needed!
           CI: true
+          # Use Neon test database from GitHub secrets
+          NEON_TEST_DATABASE_URL: ${{ secrets.NEON_TEST_DATABASE_URL }}
+          NETLIFY_DATABASE_URL: ${{ secrets.NEON_TEST_DATABASE_URL }}

@@ -1,6 +1,6 @@
 import "@testing-library/jest-dom"
 import { afterAll } from "vitest"
-import { cleanupAllTestContainers } from "./test-db"
+import { cleanupAllTestDatabases } from "./test-db"
 
 // Mock ResizeObserver for jsdom
 global.ResizeObserver = class ResizeObserver {
@@ -10,7 +10,7 @@ global.ResizeObserver = class ResizeObserver {
   disconnect() {}
 }
 
-// Cleanup all test containers after all tests complete
+// Cleanup all test databases after all tests complete
 afterAll(async () => {
-  await cleanupAllTestContainers()
+  await cleanupAllTestDatabases()
 })
