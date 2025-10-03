@@ -70,7 +70,7 @@ export default function ProjectsListPage() {
           />
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {projects?.map((project: any) => (
+            {projects?.map((project) => (
               <ProjectCard key={project.id} project={project} />
             ))}
           </div>

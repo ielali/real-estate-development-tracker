@@ -38,7 +38,7 @@ export function CostsList({ projectId }: CostsListProps) {
   const { data: costsData, isLoading: costsLoading } = api.costs.list.useQuery({ projectId })
 
   // Calculate total costs
-  const totalCosts = costsData?.reduce((sum: number, cost: any) => sum + cost.amount, 0) ?? 0
+  const totalCosts = costsData?.reduce((sum, cost) => sum + cost.amount, 0) ?? 0
 
   const deleteCostMutation = api.costs.softDelete.useMutation({
     onSuccess: () => {
@@ -93,7 +93,7 @@ export function CostsList({ projectId }: CostsListProps) {
 
       {/* Costs List */}
       <div className="space-y-3">
-        {costsData.map((cost: any) => (
+        {costsData.map((cost) => (
           <div
             key={cost.id}
             className="flex items-center justify-between py-3 border-b last:border-b-0"

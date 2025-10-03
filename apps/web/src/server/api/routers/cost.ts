@@ -164,7 +164,7 @@ export const costRouter = createTRPCRouter({
       .where(and(...conditions))
       .orderBy(costs.date)
 
-    return projectCosts.map(({ cost, category }: { cost: any; category: any }) => ({
+    return projectCosts.map(({ cost, category }) => ({
       ...cost,
       category: category ?? null,
     }))
@@ -323,7 +323,7 @@ export const costRouter = createTRPCRouter({
       .where(and(...conditions))
 
     // Calculate total
-    const total = projectCosts.reduce((sum: number, cost: any) => sum + cost.amount, 0)
+    const total = projectCosts.reduce((sum, cost) => sum + cost.amount, 0)
 
     return { total }
   }),

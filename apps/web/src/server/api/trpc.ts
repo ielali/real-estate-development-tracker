@@ -8,7 +8,7 @@ import { db } from "@/server/db"
 export const createTRPCContext = async (opts: {
   headers: Headers
   req?: NextRequest
-  db?: any
+  db?: typeof db
 }) => {
   let session = null
 

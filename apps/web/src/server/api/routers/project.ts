@@ -141,7 +141,7 @@ export const projectRouter = createTRPCRouter({
       .where(and(eq(projects.ownerId, userId), isNull(projects.deletedAt)))
       .orderBy(projects.createdAt)
 
-    return userProjects.map(({ project, address }: { project: any; address: any }) => ({
+    return userProjects.map(({ project, address }) => ({
       ...project,
       address: address ?? null,
     }))
