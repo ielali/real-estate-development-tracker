@@ -1,25 +1,10 @@
 import { defineConfig } from "vitest/config"
 import path from "path"
-import { readFileSync } from "fs"
+import dotenv from "dotenv"
 
-// Load environment variables from .env file
-const envFile = readFileSync(path.join(__dirname, ".env"), "utf-8")
-const env: Record<string, string> = {}
-envFile.split("\n").forEach((line) => {
-  const match = line.match(/^([^#=]+)=(.+)$/)
-  if (match) {
-    const key = match[1].trim()
-    let value = match[2].trim()
-    // Remove quotes if present
-    if (
-      (value.startsWith('"') && value.endsWith('"')) ||
-      (value.startsWith("'") && value.endsWith("'"))
-    ) {
-      value = value.slice(1, -1)
-    }
-    env[key] = value
-  }
-})
+// Load environment variables from .env file (for local development)
+// GitHub Actions will use secrets instead
+dotenv.config()
 
 export default defineConfig({
   test: {
@@ -37,8 +22,9 @@ export default defineConfig({
     testTimeout: 15000, // 15s per test
     env: {
       NODE_ENV: "test",
-      NEON_TEST_DATABASE_URL: env.NEON_TEST_DATABASE_URL || process.env.NEON_TEST_DATABASE_URL,
-      NETLIFY_DATABASE_URL: env.NETLIFY_DATABASE_URL || process.env.NETLIFY_DATABASE_URL,
+      // Use env vars from dotenv (local) or process.env (GitHub Actions)
+      NEON_TEST_DATABASE_URL: process.env.NEON_TEST_DATABASE_URL,
+      NETLIFY_DATABASE_URL: process.env.NETLIFY_DATABASE_URL || process.env.NEON_TEST_DATABASE_URL,
     },
   },
   resolve: {
