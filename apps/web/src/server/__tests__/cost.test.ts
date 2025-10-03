@@ -53,8 +53,11 @@ describe("Cost Router", () => {
     // Create fresh test database
     testDbInstance = await createTestDb()
 
-    // Seed categories
-    await testDbInstance.db.insert(categories).values(CATEGORIES)
+    // Seed categories (ignore if already exist)
+    await testDbInstance.db
+      .insert(categories)
+      .values(CATEGORIES)
+      .onConflictDoNothing({ target: [categories.id, categories.type] })
 
     // Create test users
     const [user1] = await testDbInstance.db

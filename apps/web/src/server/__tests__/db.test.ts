@@ -225,18 +225,21 @@ describe("Database Operations", () => {
     let testProject: typeof projects.$inferSelect
 
     beforeEach(async () => {
-      // Create required categories first
-      await db.insert(categories).values([
-        { id: "materials", type: "cost", displayName: "Materials", parentId: null },
-        { id: "labour", type: "cost", displayName: "Labour", parentId: null },
-        { id: "contractor", type: "contact", displayName: "Contractor", parentId: null },
-        {
-          id: "general_contractor",
-          type: "contact",
-          displayName: "General Contractor",
-          parentId: null,
-        },
-      ])
+      // Create required categories first (ignore if already exist)
+      await db
+        .insert(categories)
+        .values([
+          { id: "materials", type: "cost", displayName: "Materials", parentId: null },
+          { id: "labour", type: "cost", displayName: "Labour", parentId: null },
+          { id: "contractor", type: "contact", displayName: "Contractor", parentId: null },
+          {
+            id: "general_contractor",
+            type: "contact",
+            displayName: "General Contractor",
+            parentId: null,
+          },
+        ])
+        .onConflictDoNothing({ target: [categories.id, categories.type] })
 
       testUser = await db
         .insert(users)
@@ -337,13 +340,16 @@ describe("Database Operations", () => {
 
   describe("Address and Category Validation", () => {
     beforeEach(async () => {
-      // Create required categories for validation tests
-      await db.insert(categories).values([
-        { id: "electrician", type: "contact", displayName: "Electrician", parentId: null },
-        { id: "materials-validation", type: "cost", displayName: "Materials", parentId: null },
-        { id: "photos", type: "document", displayName: "Photos", parentId: null },
-        { id: "inspection", type: "event", displayName: "Inspection", parentId: null },
-      ])
+      // Create required categories for validation tests (ignore if already exist)
+      await db
+        .insert(categories)
+        .values([
+          { id: "electrician", type: "contact", displayName: "Electrician", parentId: null },
+          { id: "materials-validation", type: "cost", displayName: "Materials", parentId: null },
+          { id: "photos", type: "document", displayName: "Photos", parentId: null },
+          { id: "inspection", type: "event", displayName: "Inspection", parentId: null },
+        ])
+        .onConflictDoNothing({ target: [categories.id, categories.type] })
     })
 
     it("should format Australian addresses correctly", () => {
