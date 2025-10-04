@@ -1,26 +1,34 @@
+import { exec } from "child_process"
+import { promisify } from "util"
 import * as fs from "fs"
 import * as path from "path"
-import { db } from "./index"
-import { sql } from "drizzle-orm"
+
+const execAsync = promisify(exec)
 
 async function backup() {
   console.log("💾 Starting database backup...")
 
   try {
-    const dbPath = (process.env.DATABASE_URL || "file:./data/dev.db").replace("file:", "")
+    const dbUrl = process.env.NETLIFY_DATABASE_URL
+
+    if (!dbUrl) {
+      throw new Error("NETLIFY_DATABASE_URL environment variable is not set")
+    }
+
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, -1)
     const backupDir = path.join(process.cwd(), "backups")
-    const backupPath = path.join(backupDir, `backup-${timestamp}.db`)
+    const backupPath = path.join(backupDir, `backup-${timestamp}.sql`)
 
     if (!fs.existsSync(backupDir)) {
       fs.mkdirSync(backupDir, { recursive: true })
     }
 
-    console.log("Creating checkpoint...")
-    await db.run(sql`PRAGMA wal_checkpoint(FULL)`)
-
     console.log(`Creating backup at: ${backupPath}`)
-    fs.copyFileSync(dbPath, backupPath)
+
+    // Use pg_dump to create PostgreSQL backup
+    const { stdout } = await execAsync(`pg_dump "${dbUrl}" -f "${backupPath}"`)
+
+    if (stdout) console.log(stdout)
 
     const stats = fs.statSync(backupPath)
     const sizeInMB = (stats.size / (1024 * 1024)).toFixed(2)

@@ -17,6 +17,7 @@ const config: Config = {
     },
     extend: {
       colors: {
+        // Shadcn/ui color system (HSL-based CSS variables)
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -50,6 +51,12 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // Custom brand color palette
+        "primary-dark-blue": "#202240",
+        "accent-blue": "#36a2b8",
+        "growth-green": "#68b0ab",
+        "clean-white": "#f8f8f8",
+        "subtle-grey": "#c0c0c0",
       },
       borderRadius: {
         lg: "var(--radius)",

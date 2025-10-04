@@ -1,9 +1,9 @@
-import { sqliteTable, text } from "drizzle-orm/sqlite-core"
+import { pgTable, text } from "drizzle-orm/pg-core"
 import { baseEntityFields } from "./base"
 import { categories } from "./categories"
 import { addresses } from "./addresses"
 
-export const contacts = sqliteTable("contacts", {
+export const contacts = pgTable("contacts", {
   ...baseEntityFields,
   firstName: text("first_name").notNull(),
   lastName: text("last_name"),

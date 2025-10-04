@@ -1,12 +1,10 @@
-import { sqliteTable, text, unique } from "drizzle-orm/sqlite-core"
+import { pgTable, text, unique } from "drizzle-orm/pg-core"
 
-export const categories = sqliteTable(
+export const categories = pgTable(
   "categories",
   {
     id: text("id").primaryKey(),
-    type: text("type", {
-      enum: ["contact", "cost", "document", "event"],
-    }).notNull(),
+    type: text("type").notNull(),
     displayName: text("display_name").notNull(),
     parentId: text("parent_id"),
   },

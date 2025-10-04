@@ -25,8 +25,14 @@ export function Navbar() {
       <div className="container mx-auto px-4 py-4">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-8">
-            <Link href="/" className="text-lg font-semibold hover:text-gray-600">
-              Real Estate Portfolio
+            <Link href="/" className="hover:opacity-80 transition-opacity">
+              <img
+                src="/logo.png"
+                alt="Real Estate Portfolio"
+                width={100}
+                height={300}
+                className="object-contain h-16"
+              />
             </Link>
             <nav className="hidden sm:flex gap-6">
               {navItems.map((item) => {

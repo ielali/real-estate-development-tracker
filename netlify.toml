@@ -1,0 +1,60 @@
+# Netlify Configuration for Real Estate Development Tracker
+# Documentation: https://docs.netlify.com/configure-builds/file-based-configuration/
+
+[build]
+  # Build command with database migration
+  command = "cd apps/web && bun run db:migrate && bun run build"
+
+  # Publish directory (relative to repo root)
+  publish = "apps/web/.next"
+
+  # Base directory for the build
+  base = "/"
+
+[build.environment]
+  # Node.js version
+  NODE_VERSION = "22"
+
+  # Use Bun as package manager
+  NPM_FLAGS = "--version"
+
+# Install command override
+[build.processing]
+  skip_processing = false
+
+# Redirect rules
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Headers for security
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+# Functions configuration (for Next.js API routes)
+[functions]
+  directory = "apps/web/.netlify/functions"
+  node_bundler = "esbuild"
+
+# Dev server configuration
+[dev]
+  command = "cd apps/web && bun run dev"
+  port = 3000
+  targetPort = 3000
+  framework = "#custom"
+
+# Context-specific settings
+[context.production]
+  command = "cd apps/web && bun run db:migrate && bun run build"
+
+[context.deploy-preview]
+  command = "cd apps/web && bun run db:migrate && bun run build"
+
+[context.branch-deploy]
+  command = "cd apps/web && bun run db:migrate && bun run build"

@@ -1,7 +1,7 @@
-import { sqliteTable, text } from "drizzle-orm/sqlite-core"
+import { pgTable, text } from "drizzle-orm/pg-core"
 import { baseEntityFields } from "./base"
 
-export const addresses = sqliteTable("addresses", {
+export const addresses = pgTable("addresses", {
   ...baseEntityFields,
   streetNumber: text("street_number"),
   streetName: text("street_name"),

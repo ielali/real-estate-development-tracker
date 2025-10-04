@@ -1,16 +1,16 @@
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core"
+import { pgTable, text, timestamp } from "drizzle-orm/pg-core"
 import { baseEntityFields } from "./base"
 import { projects } from "./projects"
 import { categories } from "./categories"
 
-export const events = sqliteTable("events", {
+export const events = pgTable("events", {
   ...baseEntityFields,
   projectId: text("project_id")
     .notNull()
     .references(() => projects.id),
   title: text("title").notNull(),
   description: text("description"),
-  date: integer("date", { mode: "timestamp" }).notNull(),
+  date: timestamp("date").notNull(),
   categoryId: text("category_id")
     .notNull()
     .references(() => categories.id),

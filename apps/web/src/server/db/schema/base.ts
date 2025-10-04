@@ -1,15 +1,15 @@
-import { text, integer } from "drizzle-orm/sqlite-core"
+import { text, timestamp } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
 export const baseEntityFields = {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
-  createdAt: integer("created_at", { mode: "timestamp" })
+  createdAt: timestamp("created_at")
     .notNull()
-    .default(sql`(unixepoch())`),
-  updatedAt: integer("updated_at", { mode: "timestamp" })
+    .default(sql`current_timestamp`),
+  updatedAt: timestamp("updated_at")
     .notNull()
-    .default(sql`(unixepoch())`),
-  deletedAt: integer("deleted_at", { mode: "timestamp" }),
+    .default(sql`current_timestamp`),
+  deletedAt: timestamp("deleted_at"),
 }

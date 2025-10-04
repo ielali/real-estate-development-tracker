@@ -1,13 +1,13 @@
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core"
+import { pgTable, text, timestamp } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
-export const auditLog = sqliteTable("audit_log", {
+export const auditLog = pgTable("audit_log", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
-  timestamp: integer("timestamp", { mode: "timestamp" })
+  timestamp: timestamp("timestamp")
     .notNull()
-    .default(sql`(unixepoch())`),
+    .default(sql`current_timestamp`),
   userId: text("user_id").notNull(),
   action: text("action").notNull(),
   entityType: text("entity_type").notNull(),

@@ -1,29 +1,32 @@
-import { migrate } from "drizzle-orm/better-sqlite3/migrator"
-import Database from "better-sqlite3"
-import { drizzle } from "drizzle-orm/better-sqlite3"
+import { migrate } from "drizzle-orm/neon-serverless/migrator"
+import { drizzle } from "drizzle-orm/neon-serverless"
+import { Pool, neonConfig } from "@neondatabase/serverless"
 import * as path from "path"
-import * as fs from "fs"
-
-const dbUrl = process.env.DATABASE_URL || "file:./data/dev.db"
-const dbPath = dbUrl.replace("file:", "")
-
-const dbDir = path.dirname(dbPath)
-if (!fs.existsSync(dbDir) && dbDir !== ".") {
-  fs.mkdirSync(dbDir, { recursive: true })
-}
-
-const sqlite = new Database(dbPath)
-const db = drizzle(sqlite)
+import ws from "ws"
 
 async function main() {
-  console.log("Running migrations...")
+  console.log("Running PostgreSQL migrations...")
 
-  migrate(db, {
+  // Configure Neon WebSocket for Node.js environment
+  if (typeof WebSocket === "undefined") {
+    neonConfig.webSocketConstructor = ws
+  }
+
+  const dbUrl = process.env.NETLIFY_DATABASE_URL
+
+  if (!dbUrl) {
+    throw new Error("NETLIFY_DATABASE_URL environment variable is not set")
+  }
+
+  const pool = new Pool({ connectionString: dbUrl })
+  const db = drizzle(pool)
+
+  await migrate(db, {
     migrationsFolder: path.join(process.cwd(), "drizzle"),
   })
 
-  console.log("Migrations completed successfully!")
-  sqlite.close()
+  await pool.end()
+  console.log("PostgreSQL migrations completed successfully!")
 }
 
 main().catch((err) => {
