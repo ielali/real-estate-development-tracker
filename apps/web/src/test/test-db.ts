@@ -67,6 +67,7 @@ export const createTestDb = async () => {
 function createCleanupFunction(db: ReturnType<typeof drizzle<typeof schema>>) {
   return async () => {
     // Delete in order from child to parent tables to respect foreign keys
+    // Critical: projects must be deleted BEFORE addresses and users (FK dependencies)
     await db.execute(sql`DELETE FROM audit_log`)
     await db.execute(sql`DELETE FROM project_contact`)
     await db.execute(sql`DELETE FROM project_access`)
@@ -74,12 +75,12 @@ function createCleanupFunction(db: ReturnType<typeof drizzle<typeof schema>>) {
     await db.execute(sql`DELETE FROM documents`)
     await db.execute(sql`DELETE FROM costs`)
     await db.execute(sql`DELETE FROM contacts`)
-    await db.execute(sql`DELETE FROM projects`)
-    await db.execute(sql`DELETE FROM addresses`)
+    await db.execute(sql`DELETE FROM projects`) // Must delete before addresses & users
     await db.execute(sql`DELETE FROM sessions`)
     await db.execute(sql`DELETE FROM accounts`)
     await db.execute(sql`DELETE FROM verifications`)
-    await db.execute(sql`DELETE FROM users`)
+    await db.execute(sql`DELETE FROM addresses`) // Now safe - no projects reference addresses
+    await db.execute(sql`DELETE FROM users`) // Now safe - no projects reference users
     // NOTE: Categories are static reference data - don't delete
     // If you need to test category operations, use onConflictDoNothing
   }
