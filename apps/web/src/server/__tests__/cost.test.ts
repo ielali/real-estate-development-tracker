@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest"
+import { describe, it, expect, beforeEach, beforeAll, afterAll } from "vitest"
 import { appRouter } from "../api/root"
-import { createTestDb } from "@/test/test-db"
+import { createTestDb, cleanupAllTestDatabases } from "@/test/test-db"
 import type { User } from "../db/schema/users"
 import { users } from "../db/schema/users"
 import { projects } from "../db/schema/projects"
@@ -11,7 +11,10 @@ import { CATEGORIES } from "../db/types"
 /**
  * Cost Router Tests
  *
- * Tests all CRUD operations for costs including:
+ * Tests all CRUD operations for costs against remote Neon PostgreSQL database.
+ * IMPORTANT: Database must be empty at start - each test creates its own data and cleans up.
+ *
+ * Coverage:
  * - Creating costs with valid data
  * - Listing project costs with filtering
  * - Getting cost by ID
@@ -49,11 +52,19 @@ describe("Cost Router", () => {
     user,
   })
 
-  beforeEach(async () => {
-    // Create fresh test database
+  beforeAll(async () => {
     testDbInstance = await createTestDb()
+  })
 
-    // Seed categories (ignore if already exist)
+  afterAll(async () => {
+    await cleanupAllTestDatabases()
+  })
+
+  beforeEach(async () => {
+    // Clean up before each test - ensure remote DB is empty for test isolation
+    await testDbInstance.cleanup()
+
+    // Seed categories (static reference data - use onConflictDoNothing for idempotency)
     await testDbInstance.db
       .insert(categories)
       .values(CATEGORIES)
@@ -141,10 +152,6 @@ describe("Cost Router", () => {
 
     testProjectId = project1.id
     anotherUserProjectId = project2.id
-  })
-
-  afterEach(async () => {
-    await testDbInstance.cleanup()
   })
 
   describe("create", () => {

@@ -1,13 +1,16 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest"
+import { describe, it, expect, beforeEach, beforeAll, afterAll } from "vitest"
 import { appRouter } from "../api/root"
-import { createTestDb } from "@/test/test-db"
+import { createTestDb, cleanupAllTestDatabases } from "@/test/test-db"
 import type { User } from "../db/schema/users"
 import { users } from "../db/schema/users"
 
 /**
  * Project Router Tests
  *
- * Tests all CRUD operations for projects including:
+ * Tests all CRUD operations for projects against remote Neon PostgreSQL database.
+ * IMPORTANT: Database must be empty at start - each test creates its own data and cleans up.
+ *
+ * Coverage:
  * - Creating projects with valid data
  * - Listing user's projects
  * - Getting project by ID
@@ -31,11 +34,19 @@ describe("Project Router", () => {
     userAgent: "test",
   })
 
-  beforeEach(async () => {
-    // Create fresh test database
+  beforeAll(async () => {
     testDbInstance = await createTestDb()
+  })
 
-    // Create test users
+  afterAll(async () => {
+    await cleanupAllTestDatabases()
+  })
+
+  beforeEach(async () => {
+    // Clean up before each test - ensure remote DB is empty for test isolation
+    await testDbInstance.cleanup()
+
+    // Create test users for each test
     const [user1] = await testDbInstance.db
       .insert(users)
       .values({
@@ -60,11 +71,6 @@ describe("Project Router", () => {
 
     testUser = user1!
     anotherUser = user2!
-  })
-
-  afterEach(async () => {
-    // Clean up test database
-    await testDbInstance.cleanup()
   })
 
   describe("create", () => {

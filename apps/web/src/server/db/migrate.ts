@@ -6,7 +6,11 @@ import ws from "ws"
 
 async function main() {
   console.log("Running PostgreSQL migrations...")
-  neonConfig.webSocketConstructor = ws
+
+  // Configure Neon WebSocket for Node.js environment
+  if (typeof WebSocket === "undefined") {
+    neonConfig.webSocketConstructor = ws
+  }
 
   const dbUrl = process.env.NETLIFY_DATABASE_URL
 

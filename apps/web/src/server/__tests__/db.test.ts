@@ -1,18 +1,6 @@
 import { describe, it, expect, beforeEach, beforeAll, afterAll } from "vitest"
-import { createTestDb } from "@/test/test-db"
-import {
-  users,
-  addresses,
-  projects,
-  costs,
-  contacts,
-  documents,
-  events,
-  projectAccess,
-  projectContact,
-  auditLog,
-  categories,
-} from "../db/schema"
+import { createTestDb, cleanupAllTestDatabases } from "@/test/test-db"
+import { users, addresses, projects, costs, contacts, categories } from "../db/schema"
 import {
   formatAddress,
   getCategoriesByType,
@@ -22,6 +10,20 @@ import {
 import { sql } from "drizzle-orm"
 import { eq } from "drizzle-orm"
 
+/**
+ * Database Operations Tests
+ *
+ * Tests core database operations against remote Neon PostgreSQL database.
+ * IMPORTANT: Database must be empty at start - each test creates its own data and cleans up.
+ *
+ * Coverage:
+ * - Database connection and configuration
+ * - CRUD operations for all entities
+ * - Foreign key constraints
+ * - Soft delete functionality
+ * - Address formatting
+ * - Category validation
+ */
 describe("Database Operations", () => {
   let testDbConnection: Awaited<ReturnType<typeof createTestDb>>
   let db: Awaited<ReturnType<typeof createTestDb>>["db"]
@@ -32,21 +34,12 @@ describe("Database Operations", () => {
   })
 
   afterAll(async () => {
-    await testDbConnection.cleanup()
+    await cleanupAllTestDatabases()
   })
 
   beforeEach(async () => {
-    await db.delete(auditLog)
-    await db.delete(projectContact)
-    await db.delete(projectAccess)
-    await db.delete(events)
-    await db.delete(documents)
-    await db.delete(costs)
-    await db.delete(contacts)
-    await db.delete(projects)
-    await db.delete(addresses)
-    await db.delete(categories)
-    await db.delete(users)
+    // Clean up before each test - ensure remote DB is empty for test isolation
+    await testDbConnection.cleanup()
   })
 
   describe("Database Connection", () => {

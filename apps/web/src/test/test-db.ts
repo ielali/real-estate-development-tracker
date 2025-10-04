@@ -1,12 +1,17 @@
 import { drizzle } from "drizzle-orm/neon-serverless"
 import { Pool, neonConfig } from "@neondatabase/serverless"
 import * as schema from "../server/db/schema"
+import { sql } from "drizzle-orm"
 import ws from "ws"
 
 // Configure Neon WebSocket for Node.js environment
-neonConfig.webSocketConstructor = ws
+// This is required for Neon PostgreSQL connections in Node.js
+if (typeof WebSocket === "undefined") {
+  neonConfig.webSocketConstructor = ws
+}
 
 let globalPool: Pool | null = null
+let globalDb: ReturnType<typeof drizzle<typeof schema>> | null = null
 
 // Get test database URL from environment
 function getTestDbUrl(): string {
@@ -21,41 +26,73 @@ function getTestDbUrl(): string {
   return testDbUrl
 }
 
-// Create a dedicated test database connection
+/**
+ * Create a test database connection to remote Neon PostgreSQL.
+ *
+ * IMPORTANT: This assumes:
+ * 1. Remote Neon database exists and is migrated
+ * 2. Database starts with NO data (empty tables)
+ * 3. Each test should clean up its own data in afterEach
+ *
+ * Usage:
+ * - Call once in beforeAll to establish connection
+ * - Use cleanup() in afterEach to delete test data
+ * - Connection is reused across all tests in suite
+ */
 export const createTestDb = async () => {
   const dbUrl = getTestDbUrl()
 
-  if (!globalPool) {
-    globalPool = new Pool({ connectionString: dbUrl })
+  // Reuse existing connection if available
+  if (globalPool && globalDb) {
+    return {
+      db: globalDb,
+      cleanup: createCleanupFunction(globalDb),
+    }
   }
 
-  const db = drizzle(globalPool, { schema })
-
-  // NOTE: Assumes test database is already migrated
-  // Run `cd apps/web && npx drizzle-kit generate && npx drizzle-kit migrate` on test DB before running tests
+  // Create new connection
+  globalPool = new Pool({ connectionString: dbUrl })
+  globalDb = drizzle(globalPool, { schema })
 
   return {
-    db,
-    cleanup: async () => {
-      // Cleanup tables for next test (delete in correct order to respect foreign keys)
-      const { sql } = await import("drizzle-orm")
-      // Delete in order from child to parent tables
-      await db.execute(sql`DELETE FROM costs`)
-      await db.execute(sql`DELETE FROM projects`)
-      await db.execute(sql`DELETE FROM addresses`)
-      await db.execute(sql`DELETE FROM sessions`)
-      await db.execute(sql`DELETE FROM accounts`)
-      await db.execute(sql`DELETE FROM verifications`)
-      await db.execute(sql`DELETE FROM users`)
-      // Don't delete categories as they're static seed data
-    },
+    db: globalDb,
+    cleanup: createCleanupFunction(globalDb),
   }
 }
 
-// Cleanup function for test teardown
+/**
+ * Creates cleanup function that deletes all test data.
+ * Order matters - delete children before parents to avoid FK violations.
+ */
+function createCleanupFunction(db: ReturnType<typeof drizzle<typeof schema>>) {
+  return async () => {
+    // Delete in order from child to parent tables to respect foreign keys
+    await db.execute(sql`DELETE FROM audit_log`)
+    await db.execute(sql`DELETE FROM project_contact`)
+    await db.execute(sql`DELETE FROM project_access`)
+    await db.execute(sql`DELETE FROM events`)
+    await db.execute(sql`DELETE FROM documents`)
+    await db.execute(sql`DELETE FROM costs`)
+    await db.execute(sql`DELETE FROM contacts`)
+    await db.execute(sql`DELETE FROM projects`)
+    await db.execute(sql`DELETE FROM addresses`)
+    await db.execute(sql`DELETE FROM sessions`)
+    await db.execute(sql`DELETE FROM accounts`)
+    await db.execute(sql`DELETE FROM verifications`)
+    await db.execute(sql`DELETE FROM users`)
+    // NOTE: Categories are static reference data - don't delete
+    // If you need to test category operations, use onConflictDoNothing
+  }
+}
+
+/**
+ * Close all database connections.
+ * Call this in global afterAll if needed.
+ */
 export const cleanupAllTestDatabases = async () => {
   if (globalPool) {
     await globalPool.end()
     globalPool = null
+    globalDb = null
   }
 }

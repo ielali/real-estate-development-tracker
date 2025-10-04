@@ -4,7 +4,10 @@ import * as schema from "./schema"
 import ws from "ws"
 
 // Configure Neon for WebSocket support (needed for serverless environments)
-neonConfig.webSocketConstructor = ws
+// This is required for Neon PostgreSQL connections in Node.js
+if (typeof WebSocket === "undefined") {
+  neonConfig.webSocketConstructor = ws
+}
 
 // Create database connection
 const createDatabase = () => {

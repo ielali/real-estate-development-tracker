@@ -1,9 +1,15 @@
-import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from "vitest"
+import { describe, it, expect, beforeEach, beforeAll, afterAll } from "vitest"
 import bcrypt from "bcryptjs"
-import { createTestDb } from "@/test/test-db"
+import { createTestDb, cleanupAllTestDatabases } from "@/test/test-db"
 import { users, accounts, sessions } from "@/server/db/schema"
 import { eq } from "drizzle-orm"
 
+/**
+ * Authentication Tests
+ *
+ * Tests authentication operations against remote Neon PostgreSQL database.
+ * IMPORTANT: Database must be empty at start - each test creates its own data and cleans up.
+ */
 describe("Authentication", () => {
   let testDbConnection: Awaited<ReturnType<typeof createTestDb>>
   let db: Awaited<ReturnType<typeof createTestDb>>["db"]
@@ -14,17 +20,12 @@ describe("Authentication", () => {
   })
 
   afterAll(async () => {
-    await testDbConnection.cleanup()
+    await cleanupAllTestDatabases()
   })
 
   beforeEach(async () => {
-    await db.delete(users)
-  })
-
-  afterEach(async () => {
-    await db.delete(sessions)
-    await db.delete(accounts)
-    await db.delete(users)
+    // Clean up before each test - ensure remote DB is empty for test isolation
+    await testDbConnection.cleanup()
   })
 
   describe("User Registration", () => {
@@ -109,7 +110,7 @@ describe("Authentication", () => {
 
       await db.insert(users).values(userData)
 
-      await expect(() =>
+      await expect(
         db.insert(users).values({
           ...userData,
           id: crypto.randomUUID(), // Different ID but same email
@@ -320,12 +321,12 @@ describe("Authentication", () => {
       const sessionsBefore = await db.select().from(sessions).where(eq(sessions.userId, testUserId))
       expect(sessionsBefore).toHaveLength(1)
 
-      // Note: In development database, foreign key CASCADE DELETE handles this automatically
-      // In test database, we simulate the expected behavior
+      // PostgreSQL CASCADE DELETE on foreign key handles this automatically
+      // But in tests we need to clean up manually in correct order
       await db.delete(sessions).where(eq(sessions.userId, testUserId))
       await db.delete(users).where(eq(users.id, testUserId))
 
-      // Verify sessions are cleaned up (either by CASCADE or manual cleanup)
+      // Verify sessions are cleaned up
       const sessionsAfter = await db.select().from(sessions).where(eq(sessions.userId, testUserId))
       expect(sessionsAfter).toHaveLength(0)
 

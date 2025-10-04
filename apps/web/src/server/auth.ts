@@ -19,7 +19,7 @@ export const auth = betterAuth({
     autoSignIn: false,
     requireEmailVerification: false,
     sendResetPassword: async ({ user, url: _url, token }) => {
-      const baseUrl = process.env.DEPLOY_PRIME_URL || "http://localhost:3000"
+      const baseUrl = process.env.DEPLOY_PRIME_URL
       const resetUrl = `${baseUrl}/reset-password?token=${token}`
 
       await emailService.sendPasswordResetEmail({
@@ -37,7 +37,7 @@ export const auth = betterAuth({
     expiresIn: 60 * 60 * 24 * 30, // 30 days
     updateAge: 60 * 60 * 24, // Update session if older than 1 day
   },
-  trustedOrigins: [process.env.DEPLOY_PRIME_URL || "http://localhost:3000"],
+  trustedOrigins: [process.env.DEPLOY_PRIME_URL || ""],
   secret: process.env.BETTER_AUTH_SECRET,
   advanced: {
     database: {
