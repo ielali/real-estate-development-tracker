@@ -45,14 +45,20 @@ jobs:
         run: bun run test
         env:
           NODE_ENV: test
-          DATABASE_URL: file:./test.db
-          BETTER_AUTH_SECRET: test-secret-key-for-ci
+          # NOTE: GitHub Actions secrets are not available for private repos on free tier
+          # Using hardcoded Neon test database URL until repo is public or upgraded
+          # TODO: Move to GitHub secrets when available: ${{ secrets.NEON_TEST_DATABASE_URL }}
+          NEON_TEST_DATABASE_URL: "postgresql://neondb_owner:npg_UcW7ZvSF1Gko@ep-purple-heart-aet8dac5-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+          NETLIFY_DATABASE_URL: "postgresql://neondb_owner:npg_UcW7ZvSF1Gko@ep-purple-heart-aet8dac5-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+          BETTER_AUTH_SECRET: test-secret-key-for-ci-minimum-32-characters-long
           DEPLOY_PRIME_URL: http://localhost:3000
 
       - name: Build
         run: bun run build
         env:
           NODE_ENV: production
-          DATABASE_URL: file:./build.db
-          BETTER_AUTH_SECRET: build-secret-key
+          # NOTE: Using test database for build validation (no actual data operations)
+          # Production builds in Netlify use different database via environment variables
+          NETLIFY_DATABASE_URL: "postgresql://neondb_owner:npg_UcW7ZvSF1Gko@ep-shiny-meadow-aeijkztn-pooler.c-2.us-east-2.aws.neon.tech/neondb?channel_binding=require&sslmode=require"
+          BETTER_AUTH_SECRET: build-secret-key-minimum-32-characters-long
           DEPLOY_PRIME_URL: https://example.com
