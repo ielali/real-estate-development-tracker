@@ -44,6 +44,7 @@ jobs:
       - name: Run tests
         run: bun run test
         env:
+          CI: true
           NODE_ENV: test
           # NOTE: GitHub Actions secrets are not available for private repos on free tier
           # Using hardcoded Neon test database URL until repo is public or upgraded

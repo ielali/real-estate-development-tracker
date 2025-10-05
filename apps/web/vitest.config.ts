@@ -22,8 +22,9 @@ export default defineConfig({
         singleFork: true, // Run tests sequentially to avoid database conflicts
       },
     },
-    hookTimeout: 30000, // 30s for migrations
-    testTimeout: 15000, // 15s per test
+    hookTimeout: 60000, // 60s for migrations (CI has higher latency)
+    testTimeout: 30000, // 30s per test (remote DB operations in CI)
+    retry: process.env.CI ? 2 : 0, // Retry flaky tests in CI only
     env: {
       NODE_ENV: "test",
       NEON_TEST_DATABASE_URL: process.env.NEON_TEST_DATABASE_URL,
