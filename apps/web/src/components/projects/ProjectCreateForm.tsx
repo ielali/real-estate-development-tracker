@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useRouter } from "next/navigation"
 import { api } from "@/lib/trpc/client"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import {
   Form,
   FormControl,
@@ -57,7 +57,6 @@ export interface ProjectCreateFormProps {
  */
 export function ProjectCreateForm({ onSuccess, defaultValues }: ProjectCreateFormProps) {
   const router = useRouter()
-  const { toast } = useToast()
   const utils = api.useUtils()
 
   const form = useForm<FormValues>({
@@ -80,10 +79,7 @@ export function ProjectCreateForm({ onSuccess, defaultValues }: ProjectCreateFor
 
   const createProject = api.projects.create.useMutation({
     onSuccess: (data) => {
-      toast({
-        title: "Success",
-        description: "Project created successfully",
-      })
+      toast.success("Project created successfully")
       // Invalidate projects list to refetch
       void utils.projects.list.invalidate()
       // Call success callback or navigate
@@ -94,11 +90,7 @@ export function ProjectCreateForm({ onSuccess, defaultValues }: ProjectCreateFor
       }
     },
     onError: (error) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create project",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to create project")
     },
   })
 

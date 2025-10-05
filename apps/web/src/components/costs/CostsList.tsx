@@ -16,8 +16,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { Pencil, Trash2 } from "lucide-react"
+import { CostListSkeleton } from "@/components/skeletons/cost-list-skeleton"
 
 interface CostsListProps {
   projectId: string
@@ -30,7 +31,6 @@ interface CostsListProps {
  * Loads data independently from parent component
  */
 export function CostsList({ projectId }: CostsListProps) {
-  const { toast } = useToast()
   const [costToDelete, setCostToDelete] = useState<string | null>(null)
   const utils = api.useUtils()
 
@@ -41,19 +41,35 @@ export function CostsList({ projectId }: CostsListProps) {
   const totalCosts = costsData?.reduce((sum, cost) => sum + cost.amount, 0) ?? 0
 
   const deleteCostMutation = api.costs.softDelete.useMutation({
-    onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Cost deleted successfully",
-      })
-      void utils.costs.list.invalidate()
+    // Optimistic update: Remove cost from UI immediately
+    onMutate: async (variables) => {
+      // Cancel outgoing refetches
+      await utils.costs.list.cancel({ projectId })
+
+      // Snapshot the previous value
+      const previousCosts = utils.costs.list.getData({ projectId })
+
+      // Optimistically update to remove the cost
+      if (previousCosts) {
+        utils.costs.list.setData(
+          { projectId },
+          previousCosts.filter((cost) => cost.id !== variables.id)
+        )
+      }
+
+      // Return context with previous data for rollback
+      return { previousCosts }
     },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to delete cost",
-        variant: "destructive",
-      })
+    onSuccess: () => {
+      toast.success("Cost deleted successfully")
+      void utils.costs.list.invalidate({ projectId })
+    },
+    onError: (error, variables, context) => {
+      // Rollback to previous state on error
+      if (context?.previousCosts) {
+        utils.costs.list.setData({ projectId }, context.previousCosts)
+      }
+      toast.error(error.message || "Failed to delete cost")
     },
   })
 
@@ -65,13 +81,7 @@ export function CostsList({ projectId }: CostsListProps) {
   }
 
   if (costsLoading) {
-    return (
-      <div className="animate-pulse space-y-2">
-        <div className="h-12 bg-gray-200 rounded"></div>
-        <div className="h-12 bg-gray-200 rounded"></div>
-        <div className="h-12 bg-gray-200 rounded"></div>
-      </div>
-    )
+    return <CostListSkeleton count={3} />
   }
 
   return (

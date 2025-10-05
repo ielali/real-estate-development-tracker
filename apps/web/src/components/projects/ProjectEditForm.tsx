@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useRouter } from "next/navigation"
 import { api } from "@/lib/trpc/client"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import {
   Form,
   FormControl,
@@ -79,7 +79,6 @@ export interface ProjectEditFormProps {
  */
 export function ProjectEditForm({ project, onSuccess }: ProjectEditFormProps) {
   const router = useRouter()
-  const { toast } = useToast()
   const utils = api.useUtils()
 
   const form = useForm<FormValues>({
@@ -103,10 +102,7 @@ export function ProjectEditForm({ project, onSuccess }: ProjectEditFormProps) {
 
   const updateProject = api.projects.update.useMutation({
     onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Project updated successfully",
-      })
+      toast.success("Project updated successfully")
       // Invalidate queries to refetch
       void utils.projects.list.invalidate()
       void utils.projects.getById.invalidate({ id: project.id })
@@ -118,11 +114,7 @@ export function ProjectEditForm({ project, onSuccess }: ProjectEditFormProps) {
       }
     },
     onError: (error) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update project",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to update project")
     },
   })
 

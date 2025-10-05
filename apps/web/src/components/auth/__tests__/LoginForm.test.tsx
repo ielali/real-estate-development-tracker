@@ -1,6 +1,6 @@
 import React from "react"
-import { describe, it, expect, vi, beforeEach } from "vitest"
-import { render, screen, fireEvent, waitFor } from "@testing-library/react"
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
+import { render, screen, fireEvent, waitFor, cleanup } from "@testing-library/react"
 import { LoginForm } from "../LoginForm"
 import { authClient } from "@/lib/auth-client"
 
@@ -18,6 +18,10 @@ describe("LoginForm", () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    cleanup()
   })
 
   it("renders login form fields", () => {

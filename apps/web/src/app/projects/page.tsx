@@ -5,8 +5,9 @@ import { api } from "@/lib/trpc/client"
 import { Button } from "@/components/ui/button"
 import { Navbar } from "@/components/layout/Navbar"
 import { ProjectCard } from "@/components/projects/ProjectCard"
-import { ProjectListSkeleton } from "@/components/projects/ProjectListSkeleton"
-import { EmptyState } from "@/components/projects/EmptyState"
+import { ProjectListSkeleton } from "@/components/skeletons/project-list-skeleton"
+import { EmptyState } from "@/components/ui/empty-state"
+import { ErrorState } from "@/components/ui/error-state"
 
 /**
  * ProjectsListPage - Display all projects for the authenticated user
@@ -40,10 +41,11 @@ export default function ProjectsListPage() {
           <div className="mb-8">
             <h1 className="text-3xl font-bold">Projects</h1>
           </div>
-          <div className="text-center py-12">
-            <p className="text-red-600 mb-4">Failed to load projects</p>
-            <Button onClick={() => window.location.reload()}>Try Again</Button>
-          </div>
+          <ErrorState
+            title="Failed to load projects"
+            message="Unable to fetch project data. Please try again."
+            action={<Button onClick={() => window.location.reload()}>Try Again</Button>}
+          />
         </div>
       </>
     )
