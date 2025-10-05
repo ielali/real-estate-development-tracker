@@ -39,3 +39,6 @@ backups/
 
 # Scratchpad for debugging utilities and temporary scripts
 scratchpad/
+
+# Netlify build artifacts and local state
+.netlify
