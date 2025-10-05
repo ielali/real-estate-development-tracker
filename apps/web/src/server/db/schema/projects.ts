@@ -1,25 +1,19 @@
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core"
+import { pgTable, text, timestamp, bigint } from "drizzle-orm/pg-core"
 import { baseEntityFields } from "./base"
 import { users } from "./users"
 import { addresses } from "./addresses"
 
-export const projects = sqliteTable("projects", {
+export const projects = pgTable("projects", {
   ...baseEntityFields,
   name: text("name").notNull(),
   description: text("description"),
   addressId: text("address_id").references(() => addresses.id),
-  projectType: text("project_type", {
-    enum: ["new_build", "renovation", "development", "maintenance"],
-  }).notNull(),
-  status: text("status", {
-    enum: ["planning", "active", "on_hold", "completed", "archived"],
-  })
-    .notNull()
-    .default("planning"),
-  startDate: integer("start_date", { mode: "timestamp" }),
-  endDate: integer("end_date", { mode: "timestamp" }),
+  projectType: text("project_type").notNull(),
+  status: text("status").notNull().default("planning"),
+  startDate: timestamp("start_date"),
+  endDate: timestamp("end_date"),
   ownerId: text("owner_id")
     .notNull()
     .references(() => users.id),
-  totalBudget: integer("total_budget"),
+  totalBudget: bigint("total_budget", { mode: "number" }),
 })

@@ -5,7 +5,11 @@ import { ZodError } from "zod"
 import { auth } from "@/server/auth"
 import { db } from "@/server/db"
 
-export const createTRPCContext = async (opts: { headers: Headers; req?: NextRequest }) => {
+export const createTRPCContext = async (opts: {
+  headers: Headers
+  req?: NextRequest
+  db?: typeof db
+}) => {
   let session = null
 
   try {
@@ -17,7 +21,7 @@ export const createTRPCContext = async (opts: { headers: Headers; req?: NextRequ
   }
 
   return {
-    db,
+    db: opts.db ?? db,
     session,
     user: session?.user ?? null,
     ...opts,

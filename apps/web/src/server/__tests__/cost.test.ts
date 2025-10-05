@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest"
+import { describe, it, expect, beforeEach, beforeAll, afterAll } from "vitest"
 import { appRouter } from "../api/root"
-import { createTestDb } from "@/test/test-db"
+import { createTestDb, cleanupAllTestDatabases } from "@/test/test-db"
 import type { User } from "../db/schema/users"
 import { users } from "../db/schema/users"
 import { projects } from "../db/schema/projects"
@@ -11,7 +11,10 @@ import { CATEGORIES } from "../db/types"
 /**
  * Cost Router Tests
  *
- * Tests all CRUD operations for costs including:
+ * Tests all CRUD operations for costs against remote Neon PostgreSQL database.
+ * IMPORTANT: Database must be empty at start - each test creates its own data and cleans up.
+ *
+ * Coverage:
  * - Creating costs with valid data
  * - Listing project costs with filtering
  * - Getting cost by ID
@@ -22,7 +25,7 @@ import { CATEGORIES } from "../db/types"
  * - Validation (negative amounts, invalid category, future date)
  */
 describe("Cost Router", () => {
-  let testDbInstance: ReturnType<typeof createTestDb>
+  let testDbInstance: Awaited<ReturnType<typeof createTestDb>>
   let testUser: User
   let anotherUser: User
   let testProjectId: string
@@ -39,15 +42,36 @@ describe("Cost Router", () => {
     userAgent: "test",
   })
 
-  beforeEach(async () => {
-    // Create fresh test database
-    testDbInstance = createTestDb()
+  const createMockContext = (user: User) => ({
+    headers: new Headers(),
+    db: testDbInstance.db,
+    session: {
+      session: createMockSession(user.id),
+      user,
+    },
+    user,
+  })
 
-    // Seed categories
-    await testDbInstance.db.insert(categories).values(CATEGORIES)
+  beforeAll(async () => {
+    testDbInstance = await createTestDb()
+  })
+
+  afterAll(async () => {
+    await cleanupAllTestDatabases()
+  })
+
+  beforeEach(async () => {
+    // Clean up before each test - ensure remote DB is empty for test isolation
+    await testDbInstance.cleanup()
+
+    // Seed categories (static reference data - use onConflictDoNothing for idempotency)
+    await testDbInstance.db
+      .insert(categories)
+      .values(CATEGORIES)
+      .onConflictDoNothing({ target: [categories.id, categories.type] })
 
     // Create test users
-    const [user1] = await testDbInstance.db
+    const user1 = await testDbInstance.db
       .insert(users)
       .values({
         id: "test-user-1",
@@ -57,8 +81,9 @@ describe("Cost Router", () => {
         lastName: "User",
       })
       .returning()
+      .then((rows) => rows[0])
 
-    const [user2] = await testDbInstance.db
+    const user2 = await testDbInstance.db
       .insert(users)
       .values({
         id: "test-user-2",
@@ -68,12 +93,13 @@ describe("Cost Router", () => {
         lastName: "User",
       })
       .returning()
+      .then((rows) => rows[0])
 
     testUser = user1
     anotherUser = user2
 
     // Create test addresses
-    const [address1] = await testDbInstance.db
+    const address1 = await testDbInstance.db
       .insert(addresses)
       .values({
         streetNumber: "123",
@@ -86,8 +112,9 @@ describe("Cost Router", () => {
         formattedAddress: "123 Test Street, Sydney NSW 2000",
       })
       .returning()
+      .then((rows) => rows[0])
 
-    const [address2] = await testDbInstance.db
+    const address2 = await testDbInstance.db
       .insert(addresses)
       .values({
         streetNumber: "456",
@@ -100,9 +127,10 @@ describe("Cost Router", () => {
         formattedAddress: "456 Another Road, Melbourne VIC 3000",
       })
       .returning()
+      .then((rows) => rows[0])
 
     // Create test projects
-    const [project1] = await testDbInstance.db
+    const project1 = await testDbInstance.db
       .insert(projects)
       .values({
         name: "Test Project",
@@ -113,8 +141,9 @@ describe("Cost Router", () => {
         startDate: new Date("2024-01-01"),
       })
       .returning()
+      .then((rows) => rows[0])
 
-    const [project2] = await testDbInstance.db
+    const project2 = await testDbInstance.db
       .insert(projects)
       .values({
         name: "Another Project",
@@ -125,24 +154,15 @@ describe("Cost Router", () => {
         startDate: new Date("2024-01-01"),
       })
       .returning()
+      .then((rows) => rows[0])
 
     testProjectId = project1.id
     anotherUserProjectId = project2.id
   })
 
-  afterEach(() => {
-    testDbInstance.cleanup()
-  })
-
   describe("create", () => {
     it("creates cost with valid input", async () => {
-      const ctx = {
-        db: testDbInstance.db,
-        session: {
-          session: createMockSession(testUser.id),
-          user: testUser,
-        },
-      }
+      const ctx = createMockContext(testUser)
       const caller = appRouter.createCaller(ctx)
 
       const result = await caller.costs.create({
@@ -165,13 +185,7 @@ describe("Cost Router", () => {
     })
 
     it("rejects negative amount", async () => {
-      const ctx = {
-        db: testDbInstance.db,
-        session: {
-          session: createMockSession(testUser.id),
-          user: testUser,
-        },
-      }
+      const ctx = createMockContext(testUser)
       const caller = appRouter.createCaller(ctx)
 
       await expect(
@@ -186,13 +200,7 @@ describe("Cost Router", () => {
     })
 
     it("rejects future date", async () => {
-      const ctx = {
-        db: testDbInstance.db,
-        session: {
-          session: createMockSession(testUser.id),
-          user: testUser,
-        },
-      }
+      const ctx = createMockContext(testUser)
       const caller = appRouter.createCaller(ctx)
 
       const futureDate = new Date()
@@ -210,13 +218,7 @@ describe("Cost Router", () => {
     })
 
     it("rejects invalid category", async () => {
-      const ctx = {
-        db: testDbInstance.db,
-        session: {
-          session: createMockSession(testUser.id),
-          user: testUser,
-        },
-      }
+      const ctx = createMockContext(testUser)
       const caller = appRouter.createCaller(ctx)
 
       await expect(
@@ -231,13 +233,7 @@ describe("Cost Router", () => {
     })
 
     it("rejects cost creation for project user doesn't own", async () => {
-      const ctx = {
-        db: testDbInstance.db,
-        session: {
-          session: createMockSession(testUser.id),
-          user: testUser,
-        },
-      }
+      const ctx = createMockContext(testUser)
       const caller = appRouter.createCaller(ctx)
 
       await expect(
@@ -252,13 +248,7 @@ describe("Cost Router", () => {
     })
 
     it("requires description", async () => {
-      const ctx = {
-        db: testDbInstance.db,
-        session: {
-          session: createMockSession(testUser.id),
-          user: testUser,
-        },
-      }
+      const ctx = createMockContext(testUser)
       const caller = appRouter.createCaller(ctx)
 
       await expect(
@@ -275,13 +265,7 @@ describe("Cost Router", () => {
 
   describe("list", () => {
     beforeEach(async () => {
-      const ctx = {
-        db: testDbInstance.db,
-        session: {
-          session: createMockSession(testUser.id),
-          user: testUser,
-        },
-      }
+      const ctx = createMockContext(testUser)
       const caller = appRouter.createCaller(ctx)
 
       // Create multiple costs
@@ -311,13 +295,7 @@ describe("Cost Router", () => {
     })
 
     it("lists all costs for a project", async () => {
-      const ctx = {
-        db: testDbInstance.db,
-        session: {
-          session: createMockSession(testUser.id),
-          user: testUser,
-        },
-      }
+      const ctx = createMockContext(testUser)
       const caller = appRouter.createCaller(ctx)
 
       const costs = await caller.costs.list({ projectId: testProjectId })
@@ -328,13 +306,7 @@ describe("Cost Router", () => {
     })
 
     it("filters costs by category", async () => {
-      const ctx = {
-        db: testDbInstance.db,
-        session: {
-          session: createMockSession(testUser.id),
-          user: testUser,
-        },
-      }
+      const ctx = createMockContext(testUser)
       const caller = appRouter.createCaller(ctx)
 
       const costs = await caller.costs.list({
@@ -347,13 +319,7 @@ describe("Cost Router", () => {
     })
 
     it("filters costs by date range", async () => {
-      const ctx = {
-        db: testDbInstance.db,
-        session: {
-          session: createMockSession(testUser.id),
-          user: testUser,
-        },
-      }
+      const ctx = createMockContext(testUser)
       const caller = appRouter.createCaller(ctx)
 
       const costs = await caller.costs.list({
@@ -366,13 +332,7 @@ describe("Cost Router", () => {
     })
 
     it("rejects listing costs for project user doesn't own", async () => {
-      const ctx = {
-        db: testDbInstance.db,
-        session: {
-          session: createMockSession(testUser.id),
-          user: testUser,
-        },
-      }
+      const ctx = createMockContext(testUser)
       const caller = appRouter.createCaller(ctx)
 
       await expect(caller.costs.list({ projectId: anotherUserProjectId })).rejects.toThrow()
@@ -383,13 +343,7 @@ describe("Cost Router", () => {
     let costId: string
 
     beforeEach(async () => {
-      const ctx = {
-        db: testDbInstance.db,
-        session: {
-          session: createMockSession(testUser.id),
-          user: testUser,
-        },
-      }
+      const ctx = createMockContext(testUser)
       const caller = appRouter.createCaller(ctx)
 
       const cost = await caller.costs.create({
@@ -404,13 +358,7 @@ describe("Cost Router", () => {
     })
 
     it("gets cost by ID", async () => {
-      const ctx = {
-        db: testDbInstance.db,
-        session: {
-          session: createMockSession(testUser.id),
-          user: testUser,
-        },
-      }
+      const ctx = createMockContext(testUser)
       const caller = appRouter.createCaller(ctx)
 
       const cost = await caller.costs.getById({ id: costId })
@@ -422,13 +370,7 @@ describe("Cost Router", () => {
     })
 
     it("rejects getting cost from another user's project", async () => {
-      const ctx = {
-        db: testDbInstance.db,
-        session: {
-          session: createMockSession(anotherUser.id),
-          user: anotherUser,
-        },
-      }
+      const ctx = createMockContext(anotherUser)
       const caller = appRouter.createCaller(ctx)
 
       await expect(caller.costs.getById({ id: costId })).rejects.toThrow()
@@ -439,13 +381,7 @@ describe("Cost Router", () => {
     let costId: string
 
     beforeEach(async () => {
-      const ctx = {
-        db: testDbInstance.db,
-        session: {
-          session: createMockSession(testUser.id),
-          user: testUser,
-        },
-      }
+      const ctx = createMockContext(testUser)
       const caller = appRouter.createCaller(ctx)
 
       const cost = await caller.costs.create({
@@ -460,13 +396,7 @@ describe("Cost Router", () => {
     })
 
     it("updates cost with valid data", async () => {
-      const ctx = {
-        db: testDbInstance.db,
-        session: {
-          session: createMockSession(testUser.id),
-          user: testUser,
-        },
-      }
+      const ctx = createMockContext(testUser)
       const caller = appRouter.createCaller(ctx)
 
       const updated = await caller.costs.update({
@@ -481,13 +411,7 @@ describe("Cost Router", () => {
     })
 
     it("updates only specified fields", async () => {
-      const ctx = {
-        db: testDbInstance.db,
-        session: {
-          session: createMockSession(testUser.id),
-          user: testUser,
-        },
-      }
+      const ctx = createMockContext(testUser)
       const caller = appRouter.createCaller(ctx)
 
       const updated = await caller.costs.update({
@@ -500,13 +424,7 @@ describe("Cost Router", () => {
     })
 
     it("rejects updating cost from another user's project", async () => {
-      const ctx = {
-        db: testDbInstance.db,
-        session: {
-          session: createMockSession(anotherUser.id),
-          user: anotherUser,
-        },
-      }
+      const ctx = createMockContext(anotherUser)
       const caller = appRouter.createCaller(ctx)
 
       await expect(
@@ -522,13 +440,7 @@ describe("Cost Router", () => {
     let costId: string
 
     beforeEach(async () => {
-      const ctx = {
-        db: testDbInstance.db,
-        session: {
-          session: createMockSession(testUser.id),
-          user: testUser,
-        },
-      }
+      const ctx = createMockContext(testUser)
       const caller = appRouter.createCaller(ctx)
 
       const cost = await caller.costs.create({
@@ -543,13 +455,7 @@ describe("Cost Router", () => {
     })
 
     it("soft deletes cost", async () => {
-      const ctx = {
-        db: testDbInstance.db,
-        session: {
-          session: createMockSession(testUser.id),
-          user: testUser,
-        },
-      }
+      const ctx = createMockContext(testUser)
       const caller = appRouter.createCaller(ctx)
 
       const result = await caller.costs.softDelete({ id: costId })
@@ -562,13 +468,7 @@ describe("Cost Router", () => {
     })
 
     it("rejects deleting cost from another user's project", async () => {
-      const ctx = {
-        db: testDbInstance.db,
-        session: {
-          session: createMockSession(anotherUser.id),
-          user: anotherUser,
-        },
-      }
+      const ctx = createMockContext(anotherUser)
       const caller = appRouter.createCaller(ctx)
 
       await expect(caller.costs.softDelete({ id: costId })).rejects.toThrow()
@@ -577,13 +477,7 @@ describe("Cost Router", () => {
 
   describe("getTotal", () => {
     beforeEach(async () => {
-      const ctx = {
-        db: testDbInstance.db,
-        session: {
-          session: createMockSession(testUser.id),
-          user: testUser,
-        },
-      }
+      const ctx = createMockContext(testUser)
       const caller = appRouter.createCaller(ctx)
 
       // Create multiple costs
@@ -613,13 +507,7 @@ describe("Cost Router", () => {
     })
 
     it("calculates running total correctly", async () => {
-      const ctx = {
-        db: testDbInstance.db,
-        session: {
-          session: createMockSession(testUser.id),
-          user: testUser,
-        },
-      }
+      const ctx = createMockContext(testUser)
       const caller = appRouter.createCaller(ctx)
 
       const result = await caller.costs.getTotal({ projectId: testProjectId })
@@ -628,13 +516,7 @@ describe("Cost Router", () => {
     })
 
     it("calculates total with category filter", async () => {
-      const ctx = {
-        db: testDbInstance.db,
-        session: {
-          session: createMockSession(testUser.id),
-          user: testUser,
-        },
-      }
+      const ctx = createMockContext(testUser)
       const caller = appRouter.createCaller(ctx)
 
       const result = await caller.costs.getTotal({
@@ -646,13 +528,7 @@ describe("Cost Router", () => {
     })
 
     it("calculates total with date range filter", async () => {
-      const ctx = {
-        db: testDbInstance.db,
-        session: {
-          session: createMockSession(testUser.id),
-          user: testUser,
-        },
-      }
+      const ctx = createMockContext(testUser)
       const caller = appRouter.createCaller(ctx)
 
       const result = await caller.costs.getTotal({
@@ -665,13 +541,7 @@ describe("Cost Router", () => {
     })
 
     it("excludes soft-deleted costs from total", async () => {
-      const ctx = {
-        db: testDbInstance.db,
-        session: {
-          session: createMockSession(testUser.id),
-          user: testUser,
-        },
-      }
+      const ctx = createMockContext(testUser)
       const caller = appRouter.createCaller(ctx)
 
       // Get one cost and delete it
@@ -684,13 +554,7 @@ describe("Cost Router", () => {
     })
 
     it("rejects getting total for project user doesn't own", async () => {
-      const ctx = {
-        db: testDbInstance.db,
-        session: {
-          session: createMockSession(testUser.id),
-          user: testUser,
-        },
-      }
+      const ctx = createMockContext(testUser)
       const caller = appRouter.createCaller(ctx)
 
       await expect(caller.costs.getTotal({ projectId: anotherUserProjectId })).rejects.toThrow()

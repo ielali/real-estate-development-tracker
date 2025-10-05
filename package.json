@@ -2,6 +2,7 @@
   "name": "realestate-portfolio",
   "version": "1.0.0",
   "private": true,
+  "packageManager": "bun@1.2.23",
   "description": "A comprehensive web application for managing real estate development projects, tracking costs, managing contacts, and providing transparent partner dashboards.",
   "workspaces": [
     "apps/*",
@@ -36,6 +37,7 @@
   "homepage": "https://github.com/ielali/real-estate-development-tracker#readme",
   "devDependencies": {
     "@types/node": "^20.11.0",
+    "@types/ws": "^8.18.1",
     "eslint": "^8.57.0",
     "husky": "^9.0.0",
     "lint-staged": "^15.2.0",
@@ -53,6 +55,9 @@
     "unrs-resolver"
   ],
   "dependencies": {
-    "better-auth": "^1.3.13"
+    "@neondatabase/serverless": "^1.0.2",
+    "better-auth": "^1.3.13",
+    "drizzle-orm": "^0.44.6",
+    "ws": "^8.18.3"
   }
 }

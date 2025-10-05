@@ -19,6 +19,7 @@ The Real Estate Development Tracker is a full-stack web application designed to 
 ## Technology Stack
 
 ### Frontend
+
 - **Next.js 14+** with App Router
 - **TypeScript** for full type safety
 - **Shadcn/ui** component library
@@ -27,16 +28,20 @@ The Real Estate Development Tracker is a full-stack web application designed to 
 - **React Query** for server state management
 
 ### Backend
+
 - **Next.js API Routes** with tRPC for type-safe APIs
 - **Drizzle ORM** for database access
 - **Better-auth** for authentication
 - **Zod** for validation schemas
 
 ### Database & Infrastructure
-- **SQLite** with Drizzle migrations
-- **Vercel** for hosting
-- **Cloudflare R2/AWS S3** for document storage (when needed)
-- **GitHub Actions** for CI/CD
+
+- **SQLite** with Drizzle migrations (Development)
+- **Vercel** for hosting and deployment
+- **Vercel Blob** for file/document storage
+- **Resend** for transactional emails
+- **Better-auth** for session management
+- **GitHub Actions** for CI/CD pipeline
 
 ## Project Structure
 
@@ -57,36 +62,57 @@ realestate-portfolio/
 
 ### Prerequisites
 
-- Node.js 18+ and npm
+- Node.js 18+ and Bun (recommended) or npm
 - Git
-- SQLite
+- SQLite (for local development)
 
 ### Installation
 
 1. Clone the repository:
+
 ```bash
 git clone [repository-url]
 cd realestate-portfolio
 ```
 
 2. Install dependencies:
+
 ```bash
+# Using Bun (recommended)
+bun install
+
+# Or using npm
 npm install
 ```
 
 3. Set up environment variables:
+
 ```bash
 cp .env.example .env.local
+# Edit .env.local with your configuration
 ```
 
+See [Environment Variables](#environment-variables) section for required values.
+
 4. Initialize the database:
+
 ```bash
+# Using Bun
+bun run db:migrate
+bun run db:seed  # Optional: Add sample data
+
+# Or using npm
 npm run db:migrate
-npm run db:seed  # Optional: Add sample data
+npm run db:seed
 ```
 
 5. Start the development server:
+
 ```bash
+# Using Bun
+bun run dev
+
+# Or using npm
 npm run dev
 ```
 
@@ -121,8 +147,58 @@ Open [http://localhost:3000](http://localhost:3000) to view the application.
 4. Create a pull request with clear description
 5. Ensure CI checks pass before merging
 
+## Environment Variables
+
+The application requires several environment variables to function. Copy `.env.example` to `.env.local` and configure:
+
+### Required for Development
+
+| Variable             | Description                        | Example                                 |
+| -------------------- | ---------------------------------- | --------------------------------------- |
+| `DATABASE_URL`       | SQLite database file path          | `file:./data/dev.db`                    |
+| `BETTER_AUTH_SECRET` | Session encryption key (32+ chars) | Generate with `openssl rand -base64 32` |
+| `BETTER_AUTH_URL`    | Base URL for auth callbacks        | `http://localhost:3000`                 |
+| `DEPLOY_PRIME_URL`   | Public application URL             | `http://localhost:3000`                 |
+
+### Optional for Development
+
+| Variable                          | Description               | Required For                       |
+| --------------------------------- | ------------------------- | ---------------------------------- |
+| `RESEND_API_KEY`                  | Resend email API key      | Email sending (or logs to console) |
+| `RESEND_FROM_EMAIL`               | Verified sender email     | Email sending                      |
+| `BLOB_READ_WRITE_TOKEN`           | Vercel Blob storage token | File uploads                       |
+| `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | Google Maps API key       | Address autocomplete               |
+
+### Required for Production
+
+All of the above variables MUST be set in Vercel dashboard for production deployments. See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed setup instructions.
+
+## Deployment
+
+The application is configured for deployment on Vercel with GitHub Actions CI/CD.
+
+### Quick Deploy to Vercel
+
+1. Push your code to GitHub
+2. Import the repository in Vercel
+3. Configure environment variables in Vercel dashboard
+4. Deploy automatically on every push to `main`
+
+### Detailed Deployment Guide
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for complete deployment instructions including:
+
+- Vercel project setup
+- GitHub Actions configuration
+- External services setup (Resend, Vercel Blob)
+- Environment variable configuration
+- Post-deployment verification
+- Troubleshooting guide
+- Rollback procedures
+
 ## Documentation
 
+- **Deployment Guide**: See [DEPLOYMENT.md](DEPLOYMENT.md) for production deployment
 - **Product Requirements**: See `docs/prd/` for detailed requirements
 - **Architecture**: Technical architecture in `docs/architecture/`
 - **Development Stories**: User stories in `docs/stories/`
@@ -143,6 +219,7 @@ For issues, questions, or feedback, please create an issue in the GitHub reposit
 ## Roadmap
 
 ### Epic 1: Foundation & Core Project Management ✅
+
 - Project setup and infrastructure
 - Database setup and schema
 - Authentication system
@@ -150,18 +227,21 @@ For issues, questions, or feedback, please create an issue in the GitHub reposit
 - Basic cost tracking
 
 ### Epic 2: Financial Tracking & Contact Management 🚧
+
 - Contact management system
 - Cost-contact linkage
 - Advanced cost categorization
 - Cost filtering and search
 
 ### Epic 3: Document Management & Timeline 📋
+
 - Document upload system
 - Document storage and organization
 - Timeline and event management
 - Document-entity relationships
 
 ### Epic 4: Partner Transparency & Dashboards 📋
+
 - Partner invitation system
 - Role-based access control
 - Partner dashboard

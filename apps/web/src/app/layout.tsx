@@ -9,6 +9,16 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata = {
   title: "Real Estate Development Tracker",
   description: "Manage real estate development projects with ease",
+  icons: {
+    icon: "/favicon.png",
+    apple: "/apple-touch-icon.png",
+  },
+  openGraph: {
+    title: "Real Estate Development Tracker",
+    description: "Manage real estate development projects with ease",
+    type: "website",
+    images: ["/og-image.png"],
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -1,70 +1,102 @@
-import { drizzle } from "drizzle-orm/better-sqlite3"
-import Database from "better-sqlite3"
+import { drizzle } from "drizzle-orm/neon-serverless"
+import { Pool, neonConfig } from "@neondatabase/serverless"
 import * as schema from "../server/db/schema"
-import * as fs from "fs"
-import * as path from "path"
+import { sql } from "drizzle-orm"
+import ws from "ws"
 
-// Create a dedicated test database connection
-export const createTestDb = () => {
-  // Ensure data directory exists
-  if (!fs.existsSync("./data")) {
-    fs.mkdirSync("./data", { recursive: true })
+// Configure Neon WebSocket for Node.js environment
+// This is required for Neon PostgreSQL connections in Node.js
+if (typeof WebSocket === "undefined") {
+  neonConfig.webSocketConstructor = ws
+}
+
+let globalPool: Pool | null = null
+let globalDb: ReturnType<typeof drizzle<typeof schema>> | null = null
+
+// Get test database URL from environment
+function getTestDbUrl(): string {
+  const testDbUrl = process.env.NEON_TEST_DATABASE_URL || process.env.NETLIFY_DATABASE_URL
+
+  if (!testDbUrl) {
+    throw new Error(
+      "NEON_TEST_DATABASE_URL or NETLIFY_DATABASE_URL environment variable is required for tests"
+    )
   }
 
-  // Use a unique test database for this test run
-  const testDbPath = `./data/test-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.db`
+  return testDbUrl
+}
 
-  // Remove existing test database if it exists
-  if (fs.existsSync(testDbPath)) {
-    fs.unlinkSync(testDbPath)
-  }
+/**
+ * Create a test database connection to remote Neon PostgreSQL.
+ *
+ * IMPORTANT: This assumes:
+ * 1. Remote Neon database exists and is migrated
+ * 2. Database starts with NO data (empty tables)
+ * 3. Each test should clean up its own data in afterEach
+ *
+ * Usage:
+ * - Call once in beforeAll to establish connection
+ * - Use cleanup() in afterEach to delete test data
+ * - Connection is reused across all tests in suite
+ */
+export const createTestDb = async () => {
+  const dbUrl = getTestDbUrl()
 
-  // Create fresh test database
-  const testDb = new Database(testDbPath)
-  testDb.pragma("journal_mode = WAL")
-  testDb.pragma("foreign_keys = ON")
-
-  // Apply migration SQL directly to ensure tables are created
-  const migrationsPath = "./drizzle"
-  const migrationFile = path.join(migrationsPath, "0000_swift_valkyrie.sql")
-
-  if (fs.existsSync(migrationFile)) {
-    try {
-      const migrationSQL = fs.readFileSync(migrationFile, "utf-8")
-      // Remove statement-breakpoint comments and split by semicolon
-      const cleanSQL = migrationSQL.replace(/--> statement-breakpoint/g, "")
-      const statements = cleanSQL.split(";").filter((stmt) => stmt.trim())
-
-      for (const statement of statements) {
-        if (statement.trim()) {
-          testDb.exec(statement.trim() + ";")
-        }
-      }
-      console.log("Applied migration SQL directly to test database")
-    } catch (sqlError) {
-      console.error("Failed to apply migration SQL:", sqlError)
-      throw sqlError
+  // Reuse existing connection if available
+  if (globalPool && globalDb) {
+    return {
+      db: globalDb,
+      cleanup: createCleanupFunction(globalDb),
     }
-  } else {
-    console.error("Migration file not found:", migrationFile)
-    throw new Error("Migration file not found")
   }
 
-  const db = drizzle(testDb, { schema })
+  // Create new connection
+  globalPool = new Pool({ connectionString: dbUrl })
+  globalDb = drizzle(globalPool, { schema })
 
   return {
-    db,
-    testDb,
-    testDbPath,
-    cleanup: () => {
-      testDb.close()
-      if (fs.existsSync(testDbPath)) {
-        try {
-          fs.unlinkSync(testDbPath)
-        } catch (error) {
-          console.warn("Could not remove test database:", error)
-        }
-      }
-    },
+    db: globalDb,
+    cleanup: createCleanupFunction(globalDb),
+  }
+}
+
+/**
+ * Creates cleanup function that deletes all test data.
+ * Uses TRUNCATE CASCADE for reliable cleanup that handles FK constraints automatically.
+ */
+function createCleanupFunction(db: ReturnType<typeof drizzle<typeof schema>>) {
+  return async () => {
+    // TRUNCATE CASCADE automatically handles foreign key dependencies
+    // Much more reliable than manual DELETE ordering
+    await db.execute(sql`
+      TRUNCATE TABLE
+        audit_log,
+        project_contact,
+        project_access,
+        events,
+        documents,
+        costs,
+        contacts,
+        projects,
+        sessions,
+        accounts,
+        verifications,
+        addresses,
+        users
+      CASCADE
+    `)
+    // NOTE: Categories are static reference data - not truncated
+  }
+}
+
+/**
+ * Close all database connections.
+ * Call this in global afterAll if needed.
+ */
+export const cleanupAllTestDatabases = async () => {
+  if (globalPool) {
+    await globalPool.end()
+    globalPool = null
+    globalDb = null
   }
 }

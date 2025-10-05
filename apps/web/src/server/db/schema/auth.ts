@@ -1,25 +1,25 @@
 import { sql } from "drizzle-orm"
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core"
+import { pgTable, text, timestamp } from "drizzle-orm/pg-core"
 import { users } from "./users"
 
 // Sessions table for Better Auth
-export const sessions = sqliteTable("sessions", {
+export const sessions = pgTable("sessions", {
   id: text("id").primaryKey(),
   userId: text("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
-  expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
   token: text("token").notNull().unique(),
-  createdAt: integer("created_at", { mode: "timestamp" })
-    .default(sql`(unixepoch())`)
+  createdAt: timestamp("created_at")
+    .default(sql`current_timestamp`)
     .notNull(),
-  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
+  updatedAt: timestamp("updated_at").notNull(),
   ipAddress: text("ip_address"),
   userAgent: text("user_agent"),
 })
 
 // Accounts table for OAuth providers (required by Better Auth)
-export const accounts = sqliteTable("accounts", {
+export const accounts = pgTable("accounts", {
   id: text("id").primaryKey(),
   userId: text("user_id")
     .notNull()
@@ -29,26 +29,26 @@ export const accounts = sqliteTable("accounts", {
   accessToken: text("access_token"),
   refreshToken: text("refresh_token"),
   idToken: text("id_token"),
-  accessTokenExpiresAt: integer("access_token_expires_at", { mode: "timestamp" }),
-  refreshTokenExpiresAt: integer("refresh_token_expires_at", { mode: "timestamp" }),
+  accessTokenExpiresAt: timestamp("access_token_expires_at"),
+  refreshTokenExpiresAt: timestamp("refresh_token_expires_at"),
   scope: text("scope"),
   password: text("password"),
-  createdAt: integer("created_at", { mode: "timestamp" })
-    .default(sql`(unixepoch())`)
+  createdAt: timestamp("created_at")
+    .default(sql`current_timestamp`)
     .notNull(),
-  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
+  updatedAt: timestamp("updated_at").notNull(),
 })
 
 // Verifications table for email verification tokens
-export const verifications = sqliteTable("verifications", {
+export const verifications = pgTable("verifications", {
   id: text("id").primaryKey(),
   identifier: text("identifier").notNull(),
   value: text("value").notNull(),
-  expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
-  createdAt: integer("created_at", { mode: "timestamp" })
-    .default(sql`(unixepoch())`)
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at")
+    .default(sql`current_timestamp`)
     .notNull(),
-  updatedAt: integer("updated_at", { mode: "timestamp" })
-    .default(sql`(unixepoch())`)
+  updatedAt: timestamp("updated_at")
+    .default(sql`current_timestamp`)
     .notNull(),
 })
