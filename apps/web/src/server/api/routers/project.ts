@@ -63,11 +63,37 @@ const updateProjectSchema = z.object({
 })
 
 /**
- * Project router with CRUD operations
+ * Project router with CRUD operations for real estate development projects
+ *
+ * Provides type-safe API endpoints for creating, reading, updating, and
+ * deleting projects. All operations require authentication and enforce
+ * ownership-based access control.
  */
 export const projectRouter = createTRPCRouter({
   /**
-   * Create a new project
+   * Creates a new real estate development project
+   *
+   * Validates project data, creates database record with associated address,
+   * and returns the new project with proper access control for the
+   * authenticated user.
+   *
+   * @throws {TRPCError} UNAUTHORIZED - User not authenticated
+   * @throws {TRPCError} BAD_REQUEST - Invalid project data
+   * @returns {Project} The newly created project with address
+   *
+   * @example
+   * const project = await trpc.project.create.mutate({
+   *   name: "Sunset Boulevard Renovation",
+   *   address: {
+   *     streetNumber: "123",
+   *     streetName: "Sunset Blvd",
+   *     suburb: "Hollywood",
+   *     state: "NSW",
+   *     postcode: "2000"
+   *   },
+   *   startDate: new Date("2025-01-01"),
+   *   projectType: "renovation"
+   * });
    */
   create: protectedProcedure.input(createProjectSchema).mutation(async ({ ctx, input }) => {
     const userId = ctx.session.user.id
@@ -126,7 +152,17 @@ export const projectRouter = createTRPCRouter({
   }),
 
   /**
-   * List all projects for the authenticated user
+   * Lists all projects owned by the authenticated user
+   *
+   * Returns projects with associated address data, excluding soft-deleted
+   * projects. Results are ordered by creation date (oldest first).
+   *
+   * @throws {TRPCError} UNAUTHORIZED - User not authenticated
+   * @returns {Array<Project & { address: Address | null }>} User's projects with addresses
+   *
+   * @example
+   * const projects = await trpc.project.list.useQuery();
+   * // Returns: [{ id, name, address, ... }, ...]
    */
   list: protectedProcedure.query(async ({ ctx }) => {
     const userId = ctx.session.user.id
@@ -148,7 +184,18 @@ export const projectRouter = createTRPCRouter({
   }),
 
   /**
-   * Get a project by ID with access control
+   * Retrieves a single project by ID with ownership verification
+   *
+   * Returns project with associated address. Enforces access control by
+   * verifying the authenticated user owns the project. Excludes soft-deleted
+   * projects.
+   *
+   * @throws {TRPCError} UNAUTHORIZED - User not authenticated
+   * @throws {TRPCError} FORBIDDEN - User does not own this project
+   * @returns {Project & { address: Address | null }} Project with address data
+   *
+   * @example
+   * const project = await trpc.project.getById.useQuery({ id: "uuid-here" });
    */
   getById: protectedProcedure
     .input(z.object({ id: z.string().uuid() }))
@@ -183,7 +230,22 @@ export const projectRouter = createTRPCRouter({
     }),
 
   /**
-   * Update a project
+   * Updates an existing project with ownership verification
+   *
+   * Allows updating project fields including name, description, address,
+   * type, status, dates, and budget. Verifies user owns the project before
+   * allowing updates. Address updates modify the associated address record.
+   *
+   * @throws {TRPCError} UNAUTHORIZED - User not authenticated
+   * @throws {TRPCError} FORBIDDEN - User does not own this project
+   * @returns {Project} The updated project
+   *
+   * @example
+   * const updated = await trpc.project.update.mutate({
+   *   id: "uuid-here",
+   *   name: "Updated Project Name",
+   *   status: "active"
+   * });
    */
   update: protectedProcedure.input(updateProjectSchema).mutation(async ({ ctx, input }) => {
     const userId = ctx.session.user.id
@@ -280,7 +342,18 @@ export const projectRouter = createTRPCRouter({
   }),
 
   /**
-   * Soft delete a project
+   * Soft deletes a project (sets deletedAt timestamp)
+   *
+   * Marks the project as deleted without removing data from database.
+   * Allows for data recovery and maintains referential integrity.
+   * Verifies user owns the project before deletion.
+   *
+   * @throws {TRPCError} UNAUTHORIZED - User not authenticated
+   * @throws {TRPCError} FORBIDDEN - User does not own this project
+   * @returns {Project} The soft-deleted project with deletedAt timestamp
+   *
+   * @example
+   * await trpc.project.softDelete.mutate({ id: "uuid-here" });
    */
   softDelete: protectedProcedure
     .input(z.object({ id: z.string().uuid() }))
