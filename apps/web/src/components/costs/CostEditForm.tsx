@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useRouter } from "next/navigation"
 import { z } from "zod"
 import { api } from "@/lib/trpc/client"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import {
   Form,
   FormControl,
@@ -71,7 +71,6 @@ export interface CostEditFormProps {
  */
 export function CostEditForm({ projectId, costId }: CostEditFormProps) {
   const router = useRouter()
-  const { toast } = useToast()
   const utils = api.useUtils()
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false)
 
@@ -122,38 +121,48 @@ export function CostEditForm({ projectId, costId }: CostEditFormProps) {
   }, [costData, form])
 
   const updateCost = api.costs.update.useMutation({
+    // Optimistic update: Update cost in UI immediately
+    onMutate: async (updatedCost) => {
+      // Cancel outgoing refetches
+      await utils.costs.list.cancel({ projectId })
+
+      // Snapshot the previous value
+      const previousCosts = utils.costs.list.getData({ projectId })
+
+      // Optimistically update the cost
+      if (previousCosts) {
+        utils.costs.list.setData(
+          { projectId },
+          previousCosts.map((cost) =>
+            cost.id === updatedCost.id ? { ...cost, ...updatedCost, updatedAt: new Date() } : cost
+          )
+        )
+      }
+
+      return { previousCosts }
+    },
     onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Cost updated successfully",
-      })
-      void utils.costs.list.invalidate()
+      toast.success("Cost updated successfully")
+      void utils.costs.list.invalidate({ projectId })
       router.push(`/projects/${projectId}?tab=costs` as never)
     },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update cost",
-        variant: "destructive",
-      })
+    onError: (error, variables, context) => {
+      // Rollback to previous state on error
+      if (context?.previousCosts) {
+        utils.costs.list.setData({ projectId }, context.previousCosts)
+      }
+      toast.error(error.message || "Failed to update cost")
     },
   })
 
   const deleteCost = api.costs.softDelete.useMutation({
     onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Cost deleted successfully",
-      })
+      toast.success("Cost deleted successfully")
       void utils.costs.list.invalidate()
       router.push(`/projects/${projectId}?tab=costs` as never)
     },
     onError: (error) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to delete cost",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to delete cost")
     },
   })
 
@@ -168,11 +177,7 @@ export function CostEditForm({ projectId, costId }: CostEditFormProps) {
     const now = new Date()
     now.setHours(23, 59, 59, 999)
     if (dateObj > now) {
-      toast({
-        title: "Error",
-        description: "Date cannot be in the future",
-        variant: "destructive",
-      })
+      toast.error("Date cannot be in the future")
       return
     }
 

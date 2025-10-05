@@ -1,7 +1,9 @@
 import { Inter } from "next/font/google"
 import Script from "next/script"
 import { Providers } from "@/components/providers/Providers"
-import { Toaster } from "@/components/ui/toaster"
+import { Toaster } from "@/components/ui/sonner"
+import { ErrorBoundary } from "@/components/error-boundary"
+import { OfflineBanner } from "@/components/ui/offline-banner"
 import "../styles/globals.css"
 
 const inter = Inter({ subsets: ["latin"] })
@@ -35,8 +37,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         )}
       </head>
       <body className={inter.className}>
-        <Providers>{children}</Providers>
-        <Toaster />
+        <ErrorBoundary>
+          <OfflineBanner />
+          <Providers>{children}</Providers>
+          <Toaster />
+        </ErrorBoundary>
       </body>
     </html>
   )

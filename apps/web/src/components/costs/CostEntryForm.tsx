@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useRouter } from "next/navigation"
 import { z } from "zod"
 import { api } from "@/lib/trpc/client"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import {
   Form,
   FormControl,
@@ -82,7 +82,6 @@ export interface CostEntryFormProps {
  */
 export function CostEntryForm({ projectId, onSuccess, defaultValues }: CostEntryFormProps) {
   const router = useRouter()
-  const { toast } = useToast()
   const utils = api.useUtils()
 
   // Get cost categories for the dropdown - only children with parents
@@ -117,12 +116,35 @@ export function CostEntryForm({ projectId, onSuccess, defaultValues }: CostEntry
   })
 
   const createCost = api.costs.create.useMutation({
+    // Optimistic update: Add cost to UI immediately
+    onMutate: async (newCost) => {
+      // Cancel outgoing refetches
+      await utils.costs.list.cancel({ projectId })
+
+      // Snapshot the previous value
+      const previousCosts = utils.costs.list.getData({ projectId })
+
+      // Optimistically update with temporary ID
+      if (previousCosts) {
+        const optimisticCost = {
+          id: `temp-${Date.now()}`,
+          ...newCost,
+          contactId: null,
+          documentIds: "",
+          createdById: "temp-user",
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          deletedAt: null,
+          category: getCategoryById(newCost.categoryId) ?? null,
+        }
+        utils.costs.list.setData({ projectId }, [...previousCosts, optimisticCost])
+      }
+
+      return { previousCosts }
+    },
     onSuccess: (data) => {
-      toast({
-        title: "Success",
-        description: "Cost added successfully",
-      })
-      // Invalidate costs list to refetch
+      toast.success("Cost added successfully")
+      // Invalidate costs list to refetch with real data
       void utils.costs.list.invalidate()
       // Call success callback or navigate
       if (onSuccess) {
@@ -131,12 +153,12 @@ export function CostEntryForm({ projectId, onSuccess, defaultValues }: CostEntry
         router.push(`/projects/${projectId}?tab=costs` as never)
       }
     },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to add cost",
-        variant: "destructive",
-      })
+    onError: (error, variables, context) => {
+      // Rollback to previous state on error
+      if (context?.previousCosts) {
+        utils.costs.list.setData({ projectId }, context.previousCosts)
+      }
+      toast.error(error.message || "Failed to add cost")
     },
   })
 
@@ -151,11 +173,7 @@ export function CostEntryForm({ projectId, onSuccess, defaultValues }: CostEntry
     const now = new Date()
     now.setHours(23, 59, 59, 999) // Set to end of today
     if (dateObj > now) {
-      toast({
-        title: "Error",
-        description: "Date cannot be in the future",
-        variant: "destructive",
-      })
+      toast.error("Date cannot be in the future")
       return
     }
 
