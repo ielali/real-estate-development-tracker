@@ -71,7 +71,7 @@ describe("Cost Router", () => {
       .onConflictDoNothing({ target: [categories.id, categories.type] })
 
     // Create test users
-    const [user1] = await testDbInstance.db
+    const user1 = await testDbInstance.db
       .insert(users)
       .values({
         id: "test-user-1",
@@ -81,8 +81,9 @@ describe("Cost Router", () => {
         lastName: "User",
       })
       .returning()
+      .then((rows) => rows[0])
 
-    const [user2] = await testDbInstance.db
+    const user2 = await testDbInstance.db
       .insert(users)
       .values({
         id: "test-user-2",
@@ -92,12 +93,13 @@ describe("Cost Router", () => {
         lastName: "User",
       })
       .returning()
+      .then((rows) => rows[0])
 
     testUser = user1
     anotherUser = user2
 
     // Create test addresses
-    const [address1] = await testDbInstance.db
+    const address1 = await testDbInstance.db
       .insert(addresses)
       .values({
         streetNumber: "123",
@@ -110,8 +112,9 @@ describe("Cost Router", () => {
         formattedAddress: "123 Test Street, Sydney NSW 2000",
       })
       .returning()
+      .then((rows) => rows[0])
 
-    const [address2] = await testDbInstance.db
+    const address2 = await testDbInstance.db
       .insert(addresses)
       .values({
         streetNumber: "456",
@@ -124,9 +127,10 @@ describe("Cost Router", () => {
         formattedAddress: "456 Another Road, Melbourne VIC 3000",
       })
       .returning()
+      .then((rows) => rows[0])
 
     // Create test projects
-    const [project1] = await testDbInstance.db
+    const project1 = await testDbInstance.db
       .insert(projects)
       .values({
         name: "Test Project",
@@ -137,8 +141,9 @@ describe("Cost Router", () => {
         startDate: new Date("2024-01-01"),
       })
       .returning()
+      .then((rows) => rows[0])
 
-    const [project2] = await testDbInstance.db
+    const project2 = await testDbInstance.db
       .insert(projects)
       .values({
         name: "Another Project",
@@ -149,6 +154,7 @@ describe("Cost Router", () => {
         startDate: new Date("2024-01-01"),
       })
       .returning()
+      .then((rows) => rows[0])
 
     testProjectId = project1.id
     anotherUserProjectId = project2.id
