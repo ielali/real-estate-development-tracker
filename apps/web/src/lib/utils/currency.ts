@@ -74,3 +74,19 @@ export function dollarsToCents(dollars: string | number): number {
 export function centsToDollars(cents: number): string {
   return (cents / 100).toFixed(2)
 }
+
+/**
+ * Formats cents as currency for display
+ *
+ * @param cents - Amount in cents
+ * @returns Formatted currency string with $ and thousand separators
+ *
+ * @example
+ * formatCurrency(123456) // "$1,234.56"
+ * formatCurrency(100) // "$1.00"
+ */
+export function formatCurrency(cents: number): string {
+  const dollars = centsToDollars(cents)
+  const formatted = formatCurrencyInput(dollars)
+  return `$${formatted}`
+}

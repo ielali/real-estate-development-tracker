@@ -11,6 +11,7 @@ export const contacts = pgTable("contacts", {
   email: text("email"),
   phone: text("phone"),
   mobile: text("mobile"),
+  website: text("website"),
   addressId: text("address_id").references(() => addresses.id),
   categoryId: text("category_id")
     .notNull()
