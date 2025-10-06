@@ -17,7 +17,12 @@ export function Navbar() {
 
   const navItems = [
     { href: "/", label: "Home" },
-    ...(user ? [{ href: "/projects", label: "Projects" }] : []),
+    ...(user
+      ? [
+          { href: "/projects", label: "Projects" },
+          { href: "/contacts", label: "Contacts" },
+        ]
+      : []),
   ]
 
   return (

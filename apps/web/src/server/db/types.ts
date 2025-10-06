@@ -22,7 +22,7 @@ export interface Category {
 
 // Predefined category hierarchies (stored as constants, not database records)
 export const CATEGORIES: Category[] = [
-  // Contact Categories
+  // Contact Categories - Construction Team
   { id: "construction_team", type: "contact", displayName: "Construction Team", parentId: null },
   {
     id: "general_contractor",
@@ -36,38 +36,307 @@ export const CATEGORIES: Category[] = [
     displayName: "Site Supervisor",
     parentId: "construction_team",
   },
+  {
+    id: "project_manager",
+    type: "contact",
+    displayName: "Project Manager",
+    parentId: "construction_team",
+  },
+  {
+    id: "subcontractors",
+    type: "contact",
+    displayName: "Subcontractors (Framing, Roofing, etc.)",
+    parentId: "construction_team",
+  },
+
+  // Contact Categories - Trades
   { id: "trades", type: "contact", displayName: "Trades", parentId: null },
   { id: "electrician", type: "contact", displayName: "Electrician", parentId: "trades" },
   { id: "plumber", type: "contact", displayName: "Plumber", parentId: "trades" },
-  { id: "carpenter", type: "contact", displayName: "Carpenter", parentId: "trades" },
   { id: "hvac", type: "contact", displayName: "HVAC Specialist", parentId: "trades" },
+  { id: "carpenter", type: "contact", displayName: "Carpenter", parentId: "trades" },
+  { id: "tiler", type: "contact", displayName: "Tiler", parentId: "trades" },
   { id: "painter", type: "contact", displayName: "Painter", parentId: "trades" },
+  { id: "landscaper", type: "contact", displayName: "Landscaper", parentId: "trades" },
+  { id: "concreter", type: "contact", displayName: "Concreter", parentId: "trades" },
+  { id: "bricklayer", type: "contact", displayName: "Bricklayer", parentId: "trades" },
+  { id: "glazier", type: "contact", displayName: "Glazier", parentId: "trades" },
+  { id: "roofer", type: "contact", displayName: "Roofer", parentId: "trades" },
   { id: "flooring", type: "contact", displayName: "Flooring Specialist", parentId: "trades" },
-  { id: "roofing", type: "contact", displayName: "Roofer", parentId: "trades" },
-  { id: "drywall", type: "contact", displayName: "Drywall Specialist", parentId: "trades" },
-  { id: "windows_doors", type: "contact", displayName: "Windows & Doors", parentId: "trades" },
-  { id: "landscaping", type: "contact", displayName: "Landscaper", parentId: "trades" },
+
+  // Contact Categories - Design & Planning
+  { id: "design_planning", type: "contact", displayName: "Design & Planning", parentId: null },
+  { id: "architect", type: "contact", displayName: "Architect", parentId: "design_planning" },
+  { id: "draftsperson", type: "contact", displayName: "Draftsperson", parentId: "design_planning" },
   {
-    id: "professional_services",
+    id: "interior_designer",
     type: "contact",
-    displayName: "Professional Services",
-    parentId: null,
+    displayName: "Interior Designer",
+    parentId: "design_planning",
   },
-  { id: "architect", type: "contact", displayName: "Architect", parentId: "professional_services" },
-  { id: "engineer", type: "contact", displayName: "Engineer", parentId: "professional_services" },
   {
-    id: "inspector",
+    id: "structural_engineer",
+    type: "contact",
+    displayName: "Structural Engineer",
+    parentId: "design_planning",
+  },
+  {
+    id: "civil_engineer",
+    type: "contact",
+    displayName: "Civil Engineer",
+    parentId: "design_planning",
+  },
+  { id: "surveyor", type: "contact", displayName: "Surveyor", parentId: "design_planning" },
+  { id: "town_planner", type: "contact", displayName: "Town Planner", parentId: "design_planning" },
+  {
+    id: "landscape_architect",
+    type: "contact",
+    displayName: "Landscape Architect",
+    parentId: "design_planning",
+  },
+
+  // Contact Categories - Consultants
+  { id: "consultants", type: "contact", displayName: "Consultants", parentId: null },
+  {
+    id: "building_inspector",
     type: "contact",
     displayName: "Building Inspector",
-    parentId: "professional_services",
+    parentId: "consultants",
   },
   {
-    id: "realtor",
+    id: "energy_assessor",
+    type: "contact",
+    displayName: "Energy Assessor",
+    parentId: "consultants",
+  },
+  {
+    id: "quantity_surveyor",
+    type: "contact",
+    displayName: "Quantity Surveyor",
+    parentId: "consultants",
+  },
+  {
+    id: "geotechnical_engineer",
+    type: "contact",
+    displayName: "Geotechnical Engineer",
+    parentId: "consultants",
+  },
+  {
+    id: "environmental_consultant",
+    type: "contact",
+    displayName: "Environmental Consultant",
+    parentId: "consultants",
+  },
+  {
+    id: "heritage_consultant",
+    type: "contact",
+    displayName: "Heritage Consultant",
+    parentId: "consultants",
+  },
+  {
+    id: "acoustic_consultant",
+    type: "contact",
+    displayName: "Acoustic Consultant",
+    parentId: "consultants",
+  },
+
+  // Contact Categories - Legal & Financial
+  { id: "legal_financial", type: "contact", displayName: "Legal & Financial", parentId: null },
+  { id: "lawyer", type: "contact", displayName: "Lawyer/Solicitor", parentId: "legal_financial" },
+  { id: "conveyancer", type: "contact", displayName: "Conveyancer", parentId: "legal_financial" },
+  { id: "accountant", type: "contact", displayName: "Accountant", parentId: "legal_financial" },
+  {
+    id: "mortgage_broker",
+    type: "contact",
+    displayName: "Mortgage Broker",
+    parentId: "legal_financial",
+  },
+  { id: "bank_lender", type: "contact", displayName: "Bank/Lender", parentId: "legal_financial" },
+  {
+    id: "insurance_broker",
+    type: "contact",
+    displayName: "Insurance Broker",
+    parentId: "legal_financial",
+  },
+  {
+    id: "financial_advisor",
+    type: "contact",
+    displayName: "Financial Advisor",
+    parentId: "legal_financial",
+  },
+
+  // Contact Categories - Government & Compliance
+  {
+    id: "government_compliance",
+    type: "contact",
+    displayName: "Government & Compliance",
+    parentId: null,
+  },
+  {
+    id: "council_officer",
+    type: "contact",
+    displayName: "Council Officer",
+    parentId: "government_compliance",
+  },
+  {
+    id: "building_certifier",
+    type: "contact",
+    displayName: "Building Certifier",
+    parentId: "government_compliance",
+  },
+  {
+    id: "fire_safety_inspector",
+    type: "contact",
+    displayName: "Fire Safety Inspector",
+    parentId: "government_compliance",
+  },
+  {
+    id: "development_assessment_officer",
+    type: "contact",
+    displayName: "Development Assessment Officer",
+    parentId: "government_compliance",
+  },
+
+  // Contact Categories - Suppliers & Vendors
+  { id: "suppliers_vendors", type: "contact", displayName: "Suppliers & Vendors", parentId: null },
+  {
+    id: "building_supplies",
+    type: "contact",
+    displayName: "Building Supplies",
+    parentId: "suppliers_vendors",
+  },
+  {
+    id: "hardware_store",
+    type: "contact",
+    displayName: "Hardware Store",
+    parentId: "suppliers_vendors",
+  },
+  {
+    id: "timber_supplier",
+    type: "contact",
+    displayName: "Timber Supplier",
+    parentId: "suppliers_vendors",
+  },
+  {
+    id: "steel_supplier",
+    type: "contact",
+    displayName: "Steel Supplier",
+    parentId: "suppliers_vendors",
+  },
+  {
+    id: "appliance_supplier",
+    type: "contact",
+    displayName: "Appliance Supplier",
+    parentId: "suppliers_vendors",
+  },
+  {
+    id: "fixture_supplier",
+    type: "contact",
+    displayName: "Fixture Supplier",
+    parentId: "suppliers_vendors",
+  },
+  {
+    id: "equipment_rental",
+    type: "contact",
+    displayName: "Equipment Rental",
+    parentId: "suppliers_vendors",
+  },
+
+  // Contact Categories - Real Estate
+  { id: "real_estate", type: "contact", displayName: "Real Estate", parentId: null },
+  {
+    id: "real_estate_agent",
     type: "contact",
     displayName: "Real Estate Agent",
-    parentId: "professional_services",
+    parentId: "real_estate",
   },
-  { id: "supplier", type: "contact", displayName: "Supplier", parentId: null },
+  {
+    id: "property_manager",
+    type: "contact",
+    displayName: "Property Manager",
+    parentId: "real_estate",
+  },
+  { id: "buyers_agent", type: "contact", displayName: "Buyer's Agent", parentId: "real_estate" },
+  { id: "valuer", type: "contact", displayName: "Valuer", parentId: "real_estate" },
+  { id: "auctioneer", type: "contact", displayName: "Auctioneer", parentId: "real_estate" },
+  {
+    id: "marketing_staging",
+    type: "contact",
+    displayName: "Marketing/Staging Consultant",
+    parentId: "real_estate",
+  },
+
+  // Contact Categories - Investment Partners
+  {
+    id: "investment_partners",
+    type: "contact",
+    displayName: "Investment Partners",
+    parentId: null,
+  },
+  {
+    id: "silent_partner",
+    type: "contact",
+    displayName: "Silent Partner",
+    parentId: "investment_partners",
+  },
+  {
+    id: "joint_venture_partner",
+    type: "contact",
+    displayName: "Joint Venture Partner",
+    parentId: "investment_partners",
+  },
+  {
+    id: "private_investor",
+    type: "contact",
+    displayName: "Private Investor",
+    parentId: "investment_partners",
+  },
+  {
+    id: "investment_group",
+    type: "contact",
+    displayName: "Investment Group",
+    parentId: "investment_partners",
+  },
+
+  // Contact Categories - Other Services
+  { id: "other_services", type: "contact", displayName: "Other Services", parentId: null },
+  {
+    id: "demolition_contractor",
+    type: "contact",
+    displayName: "Demolition Contractor",
+    parentId: "other_services",
+  },
+  {
+    id: "waste_removal",
+    type: "contact",
+    displayName: "Waste Removal",
+    parentId: "other_services",
+  },
+  {
+    id: "cleaning_service",
+    type: "contact",
+    displayName: "Cleaning Service",
+    parentId: "other_services",
+  },
+  {
+    id: "security_service",
+    type: "contact",
+    displayName: "Security Service",
+    parentId: "other_services",
+  },
+  {
+    id: "photography_videography",
+    type: "contact",
+    displayName: "Photography/Videography",
+    parentId: "other_services",
+  },
+  {
+    id: "marketing_agency",
+    type: "contact",
+    displayName: "Marketing Agency",
+    parentId: "other_services",
+  },
+  { id: "custom_other", type: "contact", displayName: "Custom/Other", parentId: "other_services" },
 
   // Cost Categories - Parent Groups
   { id: "cost_hard_costs", type: "cost", displayName: "Hard Costs", parentId: null },
