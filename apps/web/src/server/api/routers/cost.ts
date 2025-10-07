@@ -1,9 +1,10 @@
 import { TRPCError } from "@trpc/server"
-import { eq, and, isNull, gte, lte } from "drizzle-orm"
+import { eq, and, isNull, gte, lte, inArray } from "drizzle-orm"
 import { createTRPCRouter, protectedProcedure } from "../trpc"
 import { costs } from "@/server/db/schema/costs"
 import { projects } from "@/server/db/schema/projects"
 import { categories } from "@/server/db/schema/categories"
+import { contacts } from "@/server/db/schema/contacts"
 import {
   createCostSchema,
   updateCostSchema,
@@ -12,6 +13,7 @@ import {
   deleteCostSchema,
 } from "@/lib/validations/cost"
 import type { Database } from "@/server/db"
+import { z } from "zod"
 
 /**
  * Helper function to verify project ownership
@@ -327,4 +329,241 @@ export const costRouter = createTRPCRouter({
 
     return { total }
   }),
+
+  /**
+   * Get costs grouped by contact for a project
+   *
+   * Returns costs organized by contact with totals per contact
+   * Includes orphaned costs (no contact assigned)
+   */
+  getCostsByContact: protectedProcedure
+    .input(z.object({ projectId: z.string().uuid() }))
+    .query(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id
+
+      // Verify project ownership
+      await verifyProjectOwnership(ctx.db, input.projectId, userId)
+
+      // Fetch all costs with contact and category information
+      const projectCosts = await ctx.db
+        .select({
+          cost: costs,
+          contact: contacts,
+          category: categories,
+        })
+        .from(costs)
+        .leftJoin(contacts, eq(costs.contactId, contacts.id))
+        .leftJoin(categories, eq(costs.categoryId, categories.id))
+        .where(and(eq(costs.projectId, input.projectId), isNull(costs.deletedAt)))
+        .orderBy(costs.date)
+
+      // Group costs by contact
+      const grouped = projectCosts.reduce(
+        (acc, { cost, contact, category }) => {
+          const contactId = cost.contactId ?? "unassigned"
+          const contactName = contact
+            ? `${contact.firstName}${contact.lastName ? " " + contact.lastName : ""}`
+            : "Unassigned"
+
+          if (!acc[contactId]) {
+            acc[contactId] = {
+              contactId: cost.contactId,
+              contactName,
+              contactCategory: contact?.categoryId ?? null,
+              costs: [],
+              total: 0,
+            }
+          }
+
+          acc[contactId].costs.push({
+            ...cost,
+            category: category ?? null,
+          })
+          acc[contactId].total += cost.amount
+
+          return acc
+        },
+        {} as Record<
+          string,
+          {
+            contactId: string | null
+            contactName: string
+            contactCategory: string | null
+            costs: Array<
+              typeof costs.$inferSelect & { category: typeof categories.$inferSelect | null }
+            >
+            total: number
+          }
+        >
+      )
+
+      // Convert to array and sort by total (descending)
+      return Object.values(grouped).sort((a, b) => b.total - a.total)
+    }),
+
+  /**
+   * Get spending summary for a specific contact
+   *
+   * Returns total spending and breakdown by project and category
+   */
+  getContactSpending: protectedProcedure
+    .input(z.object({ contactId: z.string().uuid() }))
+    .query(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id
+
+      // Fetch all costs for this contact with project and category info
+      const contactCosts = await ctx.db
+        .select({
+          cost: costs,
+          project: projects,
+          category: categories,
+        })
+        .from(costs)
+        .innerJoin(projects, eq(costs.projectId, projects.id))
+        .leftJoin(categories, eq(costs.categoryId, categories.id))
+        .where(
+          and(
+            eq(costs.contactId, input.contactId),
+            eq(projects.ownerId, userId),
+            isNull(costs.deletedAt),
+            isNull(projects.deletedAt)
+          )
+        )
+
+      // Calculate totals
+      const totalSpending = contactCosts.reduce((sum, { cost }) => sum + cost.amount, 0)
+
+      // Group by project
+      const projectBreakdown = contactCosts.reduce(
+        (acc, { cost, project }) => {
+          if (!acc[project.id]) {
+            acc[project.id] = {
+              projectId: project.id,
+              projectName: project.name,
+              total: 0,
+            }
+          }
+          acc[project.id].total += cost.amount
+          return acc
+        },
+        {} as Record<string, { projectId: string; projectName: string; total: number }>
+      )
+
+      // Group by category
+      const categoryBreakdown = contactCosts.reduce(
+        (acc, { cost, category }) => {
+          if (!category) return acc
+
+          if (!acc[category.id]) {
+            acc[category.id] = {
+              categoryId: category.id,
+              categoryName: category.displayName,
+              total: 0,
+            }
+          }
+          acc[category.id].total += cost.amount
+          return acc
+        },
+        {} as Record<string, { categoryId: string; categoryName: string; total: number }>
+      )
+
+      return {
+        totalSpending,
+        projectBreakdown: Object.values(projectBreakdown),
+        categoryBreakdown: Object.values(categoryBreakdown),
+      }
+    }),
+
+  /**
+   * Get orphaned costs (no contact assigned) for a project
+   *
+   * Returns all costs without a contactId
+   */
+  getOrphanedCosts: protectedProcedure
+    .input(z.object({ projectId: z.string().uuid() }))
+    .query(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id
+
+      // Verify project ownership
+      await verifyProjectOwnership(ctx.db, input.projectId, userId)
+
+      // Fetch orphaned costs with category information
+      const orphanedCosts = await ctx.db
+        .select({
+          cost: costs,
+          category: categories,
+        })
+        .from(costs)
+        .leftJoin(categories, eq(costs.categoryId, categories.id))
+        .where(
+          and(
+            eq(costs.projectId, input.projectId),
+            isNull(costs.contactId),
+            isNull(costs.deletedAt)
+          )
+        )
+        .orderBy(costs.date)
+
+      return orphanedCosts.map(({ cost, category }) => ({
+        ...cost,
+        category: category ?? null,
+      }))
+    }),
+
+  /**
+   * Bulk assign contact to multiple costs
+   *
+   * Updates contactId for multiple costs in a single transaction
+   * Returns count of updated costs
+   */
+  bulkAssignContact: protectedProcedure
+    .input(
+      z.object({
+        costIds: z.array(z.string().uuid()).min(1, "At least one cost must be selected"),
+        contactId: z.string().uuid().nullable(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id
+
+      // Verify all costs exist and user has access via project ownership
+      const costsToUpdate = await ctx.db
+        .select({
+          cost: costs,
+          project: projects,
+        })
+        .from(costs)
+        .innerJoin(projects, eq(costs.projectId, projects.id))
+        .where(
+          and(inArray(costs.id, input.costIds), isNull(costs.deletedAt), isNull(projects.deletedAt))
+        )
+
+      // Verify all costs belong to user's projects
+      const unauthorizedCosts = costsToUpdate.filter((c) => c.project.ownerId !== userId)
+      if (unauthorizedCosts.length > 0) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You do not have permission to update these costs",
+        })
+      }
+
+      // Verify found all costs
+      if (costsToUpdate.length !== input.costIds.length) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Some costs were not found",
+        })
+      }
+
+      // Update all costs
+      await ctx.db
+        .update(costs)
+        .set({
+          contactId: input.contactId,
+          updatedAt: new Date(),
+        })
+        .where(inArray(costs.id, input.costIds))
+
+      return { count: costsToUpdate.length }
+    }),
 })

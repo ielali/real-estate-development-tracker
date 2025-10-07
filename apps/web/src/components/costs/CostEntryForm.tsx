@@ -29,6 +29,8 @@ import {
 } from "@/components/ui/select"
 import { getCategoriesByType, getCategoryById } from "@/server/db/types"
 import { formatCurrencyInput, dollarsToCents } from "@/lib/utils/currency"
+import { ContactSelector } from "./ContactSelector"
+import { QuickContactCreate } from "./QuickContactCreate"
 
 /**
  * Client-side form schema for cost entry
@@ -44,6 +46,7 @@ const costEntryFormSchema = z.object({
   description: z.string().min(1, "Description is required"),
   categoryId: z.string().min(1, "Category is required"),
   date: z.string().min(1, "Date is required"),
+  contactId: z.string().uuid().nullable().optional(),
 })
 
 type FormValues = z.infer<typeof costEntryFormSchema>
@@ -83,6 +86,7 @@ export interface CostEntryFormProps {
 export function CostEntryForm({ projectId, onSuccess, defaultValues }: CostEntryFormProps) {
   const router = useRouter()
   const utils = api.useUtils()
+  const [isQuickContactOpen, setIsQuickContactOpen] = React.useState(false)
 
   // Get cost categories for the dropdown - only children with parents
   const allCostCategories = getCategoriesByType("cost")
@@ -112,6 +116,7 @@ export function CostEntryForm({ projectId, onSuccess, defaultValues }: CostEntry
       description: defaultValues?.description ?? "",
       categoryId: defaultValues?.categoryId ?? undefined,
       date: defaultValues?.date ?? today,
+      contactId: defaultValues?.contactId ?? null,
     },
   })
 
@@ -183,6 +188,7 @@ export function CostEntryForm({ projectId, onSuccess, defaultValues }: CostEntry
       description: data.description,
       categoryId: data.categoryId,
       date: dateObj,
+      contactId: data.contactId,
     })
   }
 
@@ -306,6 +312,29 @@ export function CostEntryForm({ projectId, onSuccess, defaultValues }: CostEntry
               </FormItem>
             )}
           />
+
+          {/* Contact field */}
+          <FormField
+            control={form.control}
+            name="contactId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Contact (Optional)</FormLabel>
+                <FormControl>
+                  <ContactSelector
+                    projectId={projectId}
+                    value={field.value}
+                    onChange={field.onChange}
+                    onCreateNew={() => setIsQuickContactOpen(true)}
+                    disabled={isSubmitting}
+                    allowUnassigned
+                  />
+                </FormControl>
+                <FormDescription>Link this cost to a contractor or vendor</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
 
         {/* Description field - Full width */}
@@ -349,6 +378,18 @@ export function CostEntryForm({ projectId, onSuccess, defaultValues }: CostEntry
           </Button>
         </div>
       </form>
+
+      {/* Quick Contact Creation Modal */}
+      <QuickContactCreate
+        projectId={projectId}
+        isOpen={isQuickContactOpen}
+        onClose={() => setIsQuickContactOpen(false)}
+        onSuccess={(contact) => {
+          form.setValue("contactId", contact.id)
+          setIsQuickContactOpen(false)
+          toast.success("Contact created and linked to cost")
+        }}
+      />
     </Form>
   )
 }
