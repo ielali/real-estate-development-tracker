@@ -378,4 +378,135 @@ export const contactRouter = createTRPCRouter({
 
     return deleted
   }),
+
+  /**
+   * List contacts associated with a specific project
+   *
+   * Returns all contacts linked to the project through projectContact table
+   * Includes contact category and verifies user owns the project
+   */
+  listByProject: protectedProcedure
+    .input(z.object({ projectId: z.string().uuid() }))
+    .query(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id
+
+      // Verify user owns the project
+      const project = await ctx.db
+        .select()
+        .from(projects)
+        .where(
+          and(
+            eq(projects.id, input.projectId),
+            eq(projects.ownerId, userId),
+            isNull(projects.deletedAt)
+          )
+        )
+        .limit(1)
+
+      if (!project[0]) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Project not found or you do not have permission to access it",
+        })
+      }
+
+      // Get contacts for this project with category info
+      const projectContacts = await ctx.db
+        .select({
+          contact: contacts,
+          category: categories,
+        })
+        .from(projectContact)
+        .innerJoin(contacts, eq(projectContact.contactId, contacts.id))
+        .leftJoin(categories, eq(contacts.categoryId, categories.id))
+        .where(
+          and(
+            eq(projectContact.projectId, input.projectId),
+            isNull(contacts.deletedAt),
+            isNull(projectContact.deletedAt)
+          )
+        )
+
+      return projectContacts.map(({ contact, category }) => ({
+        ...contact,
+        category: category ?? null,
+      }))
+    }),
+
+  /**
+   * Link an existing contact to a project
+   *
+   * Creates a projectContact relationship if it doesn't already exist
+   * Verifies user owns the project and contact exists
+   */
+  linkToProject: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string().uuid(),
+        contactId: z.string().uuid(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id
+
+      // Verify user owns the project
+      const project = await ctx.db
+        .select()
+        .from(projects)
+        .where(
+          and(
+            eq(projects.id, input.projectId),
+            eq(projects.ownerId, userId),
+            isNull(projects.deletedAt)
+          )
+        )
+        .limit(1)
+
+      if (!project[0]) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Project not found or you do not have permission to access it",
+        })
+      }
+
+      // Verify contact exists and is not deleted
+      const contact = await ctx.db
+        .select()
+        .from(contacts)
+        .where(and(eq(contacts.id, input.contactId), isNull(contacts.deletedAt)))
+        .limit(1)
+
+      if (!contact[0]) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Contact not found",
+        })
+      }
+
+      // Check if relationship already exists
+      const existing = await ctx.db
+        .select()
+        .from(projectContact)
+        .where(
+          and(
+            eq(projectContact.projectId, input.projectId),
+            eq(projectContact.contactId, input.contactId),
+            isNull(projectContact.deletedAt)
+          )
+        )
+        .limit(1)
+
+      if (existing[0]) {
+        // Already linked, return success
+        return { success: true, alreadyLinked: true }
+      }
+
+      // Create the link
+      await ctx.db.insert(projectContact).values({
+        projectId: input.projectId,
+        contactId: input.contactId,
+      })
+
+      return { success: true, alreadyLinked: false }
+    }),
 })

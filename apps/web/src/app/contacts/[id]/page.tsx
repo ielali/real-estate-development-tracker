@@ -25,6 +25,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { ContactForm } from "@/components/contacts/ContactForm"
+import { ContactSpending } from "@/components/contacts/ContactSpending"
 import { EmptyState } from "@/components/ui/empty-state"
 import { ErrorState } from "@/components/ui/error-state"
 import { Spinner } from "@/components/ui/spinner"
@@ -238,8 +239,11 @@ export default function ContactDetailPage({ params }: ContactDetailPageProps): J
           </Card>
         </div>
 
-        {/* Right column - Projects and costs */}
+        {/* Right column - Spending, Projects and costs */}
         <div className="space-y-6 lg:col-span-2">
+          {/* Contact Spending Summary */}
+          <ContactSpending contactId={params.id} />
+
           {/* Related projects */}
           <Card>
             <CardHeader>

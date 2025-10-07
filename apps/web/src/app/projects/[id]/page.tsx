@@ -10,6 +10,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -22,9 +29,19 @@ import { useToast } from "@/hooks/use-toast"
 import { useState } from "react"
 import { ProjectMap } from "@/components/maps/ProjectMap"
 
-// Lazy load the costs list component
+// Lazy load the costs components
 const CostsList = lazy(() =>
   import("@/components/costs/CostsList").then((mod) => ({ default: mod.CostsList }))
+)
+const ContactGroupedCosts = lazy(() =>
+  import("@/components/costs/ContactGroupedCosts").then((mod) => ({
+    default: mod.ContactGroupedCosts,
+  }))
+)
+const CategoryGroupedCosts = lazy(() =>
+  import("@/components/costs/CategoryGroupedCosts").then((mod) => ({
+    default: mod.CategoryGroupedCosts,
+  }))
 )
 
 /**
@@ -38,6 +55,7 @@ export default function ProjectDetailPage() {
   const router = useRouter()
   const { toast } = useToast()
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [costsViewMode, setCostsViewMode] = useState<"list" | "contact" | "category">("list")
 
   const projectId = params.id as string
   const utils = api.useUtils()
@@ -270,7 +288,24 @@ export default function ProjectDetailPage() {
           <TabsContent value="costs" className="mt-6">
             <Card>
               <CardHeader>
-                <CardTitle>Costs</CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Costs</CardTitle>
+                  <Select
+                    value={costsViewMode}
+                    onValueChange={(value) =>
+                      setCostsViewMode(value as "list" | "contact" | "category")
+                    }
+                  >
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Group by" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="list">None</SelectItem>
+                      <SelectItem value="contact">Contact</SelectItem>
+                      <SelectItem value="category">Category</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </CardHeader>
               <CardContent>
                 <Suspense
@@ -282,7 +317,13 @@ export default function ProjectDetailPage() {
                     </div>
                   }
                 >
-                  <CostsList projectId={project.id} />
+                  {costsViewMode === "list" ? (
+                    <CostsList projectId={project.id} />
+                  ) : costsViewMode === "contact" ? (
+                    <ContactGroupedCosts projectId={project.id} />
+                  ) : (
+                    <CategoryGroupedCosts projectId={project.id} />
+                  )}
                 </Suspense>
               </CardContent>
             </Card>
