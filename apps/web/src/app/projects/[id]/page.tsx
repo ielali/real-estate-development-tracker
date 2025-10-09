@@ -46,6 +46,16 @@ const CategoryGroupedCosts = lazy(() =>
     default: mod.CategoryGroupedCosts,
   }))
 )
+const CategorySpendingBreakdown = lazy(() =>
+  import("@/components/costs/CategorySpendingBreakdown").then((mod) => ({
+    default: mod.CategorySpendingBreakdown,
+  }))
+)
+const CategoryExportButton = lazy(() =>
+  import("@/components/costs/CategoryExportButton").then((mod) => ({
+    default: mod.CategoryExportButton,
+  }))
+)
 
 /**
  * ProjectDetailPage - Display detailed information for a single project
@@ -362,6 +372,23 @@ export default function ProjectDetailPage() {
 
           {/* Costs Tab */}
           <TabsContent value="costs" className="mt-6">
+            {/* Category Spending Breakdown */}
+            <Suspense
+              fallback={<div className="h-64 animate-pulse bg-gray-200 rounded mb-6"></div>}
+            >
+              <CategorySpendingBreakdown projectId={project.id} showChart={true} />
+            </Suspense>
+
+            {/* Export Button */}
+            <div className="mb-6 flex justify-end">
+              <Suspense
+                fallback={<div className="h-10 w-48 animate-pulse bg-gray-200 rounded"></div>}
+              >
+                <CategoryExportButton projectId={project.id} projectName={project.name} />
+              </Suspense>
+            </div>
+
+            {/* Costs List */}
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">

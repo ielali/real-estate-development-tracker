@@ -35,9 +35,9 @@ import { toast } from "sonner"
 import { formatCurrency } from "@/lib/utils/currency"
 
 interface ContactDetailPageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 /**
@@ -54,8 +54,16 @@ export default function ContactDetailPage({ params }: ContactDetailPageProps): J
   const router = useRouter()
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [contactId, setContactId] = useState<string | null>(null)
 
-  const { data, isLoading, isError, refetch } = api.contacts.getById.useQuery(params.id)
+  // Unwrap params Promise
+  React.useEffect(() => {
+    params.then((p) => setContactId(p.id))
+  }, [params])
+
+  const { data, isLoading, isError, refetch } = api.contacts.getById.useQuery(contactId!, {
+    enabled: !!contactId,
+  })
 
   const deleteMutation = api.contacts.delete.useMutation({
     onSuccess: () => {
@@ -73,11 +81,13 @@ export default function ContactDetailPage({ params }: ContactDetailPageProps): J
   }
 
   const handleDelete = () => {
-    deleteMutation.mutate(params.id)
+    if (contactId) {
+      deleteMutation.mutate(contactId)
+    }
   }
 
-  // Loading state
-  if (isLoading) {
+  // Loading state (including params loading)
+  if (!contactId || isLoading) {
     return (
       <div className="container mx-auto py-6 px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-center py-12">
@@ -242,7 +252,7 @@ export default function ContactDetailPage({ params }: ContactDetailPageProps): J
         {/* Right column - Spending, Projects and costs */}
         <div className="space-y-6 lg:col-span-2">
           {/* Contact Spending Summary */}
-          <ContactSpending contactId={params.id} />
+          <ContactSpending contactId={contactId} />
 
           {/* Related projects */}
           <Card>
@@ -332,7 +342,7 @@ export default function ContactDetailPage({ params }: ContactDetailPageProps): J
             <DialogDescription>Update contact information</DialogDescription>
           </DialogHeader>
           <ContactForm
-            contactId={params.id}
+            contactId={contactId}
             defaultValues={{
               firstName: contact.firstName,
               lastName: contact.lastName,

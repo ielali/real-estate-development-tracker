@@ -13,15 +13,57 @@ export interface Address {
 
 export type CategoryType = "contact" | "cost" | "document" | "event"
 
+export type ATOTaxCategory =
+  | "capital_works" // Division 43 deductions
+  | "depreciation" // Division 40 deductions
+  | "immediate_deduction" // Section 8-1 immediate expense
+  | "financing_costs" // Section 25-25 borrowing expenses
+  | "gst_input_credit" // GST credits
+  | "land_acquisition" // Non-deductible capital cost
+  | "professional_fees" // Section 40-880 blackhole expenditure
+  | "holding_costs" // Deductible holding costs
+  | "not_applicable" // Not tax-related
+
 export interface Category {
   id: string // e.g., 'plumber', 'materials', 'photo'
   type: CategoryType // Which entity type this category belongs to
   displayName: string // e.g., 'Plumber', 'Building Materials'
   parentId: string | null // e.g., 'trades' for 'plumber'
+
+  // Tax metadata (Story 2.3)
+  taxDeductible: boolean | null // null = not specified (custom/non-cost)
+  taxCategory: ATOTaxCategory | null // ATO reporting category
+  notes: string | null // Accountant context
+  isCustom: boolean // User-created vs predefined
+  isArchived: boolean // Soft delete flag
+  createdById: string | null // Creator for custom categories
+  createdAt: Date | null // Audit trail
+}
+
+// Legacy category format (backward compatible)
+interface LegacyCategory {
+  id: string
+  type: CategoryType
+  displayName: string
+  parentId: string | null
+}
+
+// Helper to convert legacy category to full Category with tax metadata
+function toCategoryWithDefaults(legacy: LegacyCategory): Category {
+  return {
+    ...legacy,
+    taxDeductible: null,
+    taxCategory: null,
+    notes: null,
+    isCustom: false,
+    isArchived: false,
+    createdById: null,
+    createdAt: null,
+  }
 }
 
 // Predefined category hierarchies (stored as constants, not database records)
-export const CATEGORIES: Category[] = [
+const LEGACY_CATEGORIES: LegacyCategory[] = [
   // Contact Categories - Construction Team
   { id: "construction_team", type: "contact", displayName: "Construction Team", parentId: null },
   {
@@ -642,6 +684,9 @@ export const CATEGORIES: Category[] = [
   { id: "issue", type: "event", displayName: "Issue/Problem", parentId: null },
   { id: "completion", type: "event", displayName: "Completion", parentId: null },
 ]
+
+// Convert all legacy categories to full Category objects
+export const CATEGORIES: Category[] = LEGACY_CATEGORIES.map(toCategoryWithDefaults)
 
 // Helper function to get categories by type
 export function getCategoriesByType(type: CategoryType): Category[] {
