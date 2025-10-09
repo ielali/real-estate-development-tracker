@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { api } from "@/lib/trpc/client"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { EmptyState } from "@/components/ui/empty-state"
@@ -158,7 +158,7 @@ export function CategoryGroupedCosts({ projectId }: CategoryGroupedCostsProps) {
                     <Tag className="h-5 w-5 text-muted-foreground" />
                     <div>
                       <CardTitle className="text-base">{group.categoryName}</CardTitle>
-                      <CardDescription className="mt-1 flex items-center gap-2">
+                      <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
                         {parentCategory && (
                           <Badge variant="secondary" className="text-xs">
                             {parentCategory.displayName}
@@ -167,7 +167,7 @@ export function CategoryGroupedCosts({ projectId }: CategoryGroupedCostsProps) {
                         <span>
                           {group.costs.length} cost{group.costs.length !== 1 ? "s" : ""}
                         </span>
-                      </CardDescription>
+                      </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">

@@ -28,10 +28,17 @@ import {
 import { toast } from "sonner"
 import { Pencil, Trash2, UserPlus } from "lucide-react"
 import { CostListSkeleton } from "@/components/skeletons/cost-list-skeleton"
+import { EmptyState } from "@/components/ui/empty-state"
 import { ContactSelector } from "./ContactSelector"
+import type { CostFilters, SortOption, SortDirection } from "@/lib/utils/cost-filters"
 
 interface CostsListProps {
   projectId: string
+  filters?: CostFilters
+  searchText?: string
+  sortBy?: SortOption
+  sortDirection?: SortDirection
+  showSearch?: boolean
 }
 
 /**
@@ -40,16 +47,29 @@ interface CostsListProps {
  * Shows list of all costs with edit/delete actions and running total
  * Loads data independently from parent component
  * Supports bulk contact assignment via checkboxes
+ * Supports search, filters, and sorting (Story 2.4)
  */
-export function CostsList({ projectId }: CostsListProps) {
+export function CostsList({
+  projectId,
+  filters = {},
+  searchText = "",
+  sortBy = "date",
+  sortDirection = "desc",
+}: CostsListProps) {
   const [costToDelete, setCostToDelete] = useState<string | null>(null)
   const [selectedCostIds, setSelectedCostIds] = useState<Set<string>>(new Set())
   const [bulkAssignDialogOpen, setBulkAssignDialogOpen] = useState(false)
   const [selectedContactId, setSelectedContactId] = useState<string | null>(null)
   const utils = api.useUtils()
 
-  // Fetch costs for this project
-  const { data: costsData, isLoading: costsLoading } = api.costs.list.useQuery({ projectId })
+  // Fetch costs for this project with filters
+  const { data: costsData, isLoading: costsLoading } = api.costs.list.useQuery({
+    projectId,
+    ...filters,
+    searchText: searchText || undefined,
+    sortBy,
+    sortDirection,
+  })
 
   // Calculate total costs
   const totalCosts = costsData?.reduce((sum, cost) => sum + cost.amount, 0) ?? 0
@@ -184,10 +204,18 @@ export function CostsList({ projectId }: CostsListProps) {
 
       {/* Empty State */}
       {(!costsData || costsData.length === 0) && (
-        <div className="text-center py-8">
-          <p className="text-gray-600 mb-4">No costs recorded yet</p>
-          <p className="text-sm text-gray-500">Click "Add Cost" to get started</p>
-        </div>
+        <EmptyState
+          title={
+            searchText || Object.keys(filters).length > 0
+              ? "No costs found"
+              : "No costs recorded yet"
+          }
+          description={
+            searchText || Object.keys(filters).length > 0
+              ? "Try adjusting your search or filters"
+              : 'Click "Add Cost" to get started'
+          }
+        />
       )}
 
       {/* Costs List */}

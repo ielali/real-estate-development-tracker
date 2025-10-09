@@ -14,9 +14,11 @@
     "db:seed": "tsx src/server/db/seed.ts",
     "db:reset": "tsx src/server/db/reset.ts",
     "db:backup": "tsx src/server/db/backup.ts",
-    "test": "vitest",
-    "test:ui": "vitest --ui",
-    "test:run": "vitest run"
+    "test": "NODE_OPTIONS='--experimental-vm-modules' vitest",
+    "test:ui": "NODE_OPTIONS='--experimental-vm-modules' vitest --ui",
+    "test:run": "NODE_OPTIONS='--experimental-vm-modules' vitest run",
+    "test:component": "NODE_OPTIONS='--experimental-vm-modules' vitest run --config vitest.config.component.ts",
+    "test:api": "NODE_OPTIONS='--experimental-vm-modules' vitest run --testPathPattern='(server|api).*\\.test\\.(ts|tsx)$'"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",

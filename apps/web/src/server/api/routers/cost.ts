@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server"
-import { eq, and, isNull, gte, lte, inArray } from "drizzle-orm"
+import { eq, and, isNull, gte, lte, inArray, ilike, or, desc, asc } from "drizzle-orm"
 import { createTRPCRouter, protectedProcedure } from "../trpc"
 import { costs } from "@/server/db/schema/costs"
 import { projects } from "@/server/db/schema/projects"
@@ -129,10 +129,14 @@ export const costRouter = createTRPCRouter({
   /**
    * List all costs for a project with optional filters
    *
-   * Returns costs ordered by date (newest first) with category information
+   * Returns costs ordered by date (newest first) with category and contact information
    * Supports filtering by:
    * - Category
    * - Date range (startDate to endDate)
+   * - Text search on description (Story 2.4)
+   * - Amount range (min/max) (Story 2.4)
+   * - Contact ID or contact name search (Story 2.4)
+   * - Sorting by date, amount, contact, or category (Story 2.4)
    */
   list: protectedProcedure.input(listCostsSchema).query(async ({ ctx, input }) => {
     const userId = ctx.session.user.id
@@ -155,20 +159,69 @@ export const costRouter = createTRPCRouter({
       conditions.push(lte(costs.date, input.endDate))
     }
 
-    // Fetch costs with category information
+    // Story 2.4: Text search on description
+    if (input.searchText) {
+      conditions.push(ilike(costs.description, `%${input.searchText}%`))
+    }
+
+    // Story 2.4: Amount range filtering
+    if (input.minAmount !== undefined) {
+      conditions.push(gte(costs.amount, input.minAmount))
+    }
+    if (input.maxAmount !== undefined) {
+      conditions.push(lte(costs.amount, input.maxAmount))
+    }
+
+    // Story 2.4: Contact filter by ID
+    if (input.contactId) {
+      conditions.push(eq(costs.contactId, input.contactId))
+    }
+
+    // Story 2.4: Contact name search (requires join with contacts table)
+    // Note: This filter will only match costs that have a contact assigned
+    // It will not return costs with NULL contactId
+    if (input.contactNameSearch) {
+      const nameSearch = `%${input.contactNameSearch}%`
+      // Filter only applies to costs with contacts (not NULL)
+      conditions.push(
+        and(
+          isNull(contacts.deletedAt), // Ensure contact is not deleted
+          or(
+            ilike(contacts.firstName, nameSearch),
+            ilike(contacts.lastName, nameSearch),
+            ilike(contacts.company, nameSearch)
+          )
+        )
+      )
+    }
+
+    // Story 2.4: Dynamic sorting
+    const sortByColumn = {
+      date: costs.date,
+      amount: costs.amount,
+      contact: contacts.firstName,
+      category: categories.displayName,
+    }[input.sortBy]
+
+    const sortDirection = input.sortDirection === "asc" ? asc : desc
+
+    // Fetch costs with category and contact information
     const projectCosts = await ctx.db
       .select({
         cost: costs,
         category: categories,
+        contact: contacts,
       })
       .from(costs)
       .leftJoin(categories, eq(costs.categoryId, categories.id))
+      .leftJoin(contacts, eq(costs.contactId, contacts.id))
       .where(and(...conditions))
-      .orderBy(costs.date)
+      .orderBy(sortDirection(sortByColumn))
 
-    return projectCosts.map(({ cost, category }) => ({
+    return projectCosts.map(({ cost, category, contact }) => ({
       ...cost,
       category: category ?? null,
+      contact: contact ?? null,
     }))
   }),
 
