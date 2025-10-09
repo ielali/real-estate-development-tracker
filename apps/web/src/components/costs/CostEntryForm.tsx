@@ -135,6 +135,7 @@ export function CostEntryForm({ projectId, onSuccess, defaultValues }: CostEntry
           id: `temp-${Date.now()}`,
           ...newCost,
           contactId: null,
+          contact: null,
           documentIds: "",
           createdById: "temp-user",
           createdAt: new Date(),

@@ -183,16 +183,17 @@ export const costRouter = createTRPCRouter({
     if (input.contactNameSearch) {
       const nameSearch = `%${input.contactNameSearch}%`
       // Filter only applies to costs with contacts (not NULL)
-      conditions.push(
-        and(
-          isNull(contacts.deletedAt), // Ensure contact is not deleted
-          or(
-            ilike(contacts.firstName, nameSearch),
-            ilike(contacts.lastName, nameSearch),
-            ilike(contacts.company, nameSearch)
-          )
+      const contactSearchCondition = and(
+        isNull(contacts.deletedAt), // Ensure contact is not deleted
+        or(
+          ilike(contacts.firstName, nameSearch),
+          ilike(contacts.lastName, nameSearch),
+          ilike(contacts.company, nameSearch)
         )
       )
+      if (contactSearchCondition) {
+        conditions.push(contactSearchCondition)
+      }
     }
 
     // Story 2.4: Dynamic sorting
