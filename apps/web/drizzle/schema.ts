@@ -209,8 +209,23 @@ export const categories = pgTable(
     type: text().notNull(),
     displayName: text("display_name").notNull(),
     parentId: text("parent_id"),
+    // Tax metadata fields (Story 2.3)
+    taxDeductible: boolean("tax_deductible"), // null = not specified (custom/non-cost)
+    taxCategory: text("tax_category"), // ATO tax category for reporting
+    notes: text(), // Accountant context notes
+    isCustom: boolean("is_custom").default(false).notNull(), // User-created vs predefined
+    isArchived: boolean("is_archived").default(false).notNull(), // Soft delete for custom
+    createdById: text("created_by_id"), // Creator for custom categories
+    createdAt: timestamp("created_at", { mode: "string" }), // Audit trail for custom categories
   },
-  (table) => [unique("categories_id_type_unique").on(table.id, table.type)]
+  (table) => [
+    unique("categories_id_type_unique").on(table.id, table.type),
+    foreignKey({
+      columns: [table.createdById],
+      foreignColumns: [users.id],
+      name: "categories_created_by_id_users_id_fk",
+    }),
+  ]
 )
 
 export const documents = pgTable(

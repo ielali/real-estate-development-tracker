@@ -21,6 +21,7 @@ export function Navbar() {
       ? [
           { href: "/projects", label: "Projects" },
           { href: "/contacts", label: "Contacts" },
+          { href: "/categories", label: "Categories" },
         ]
       : []),
   ]
