@@ -4,6 +4,7 @@ import { projectRouter } from "./routers/project"
 import { costRouter } from "./routers/cost"
 import { contactRouter } from "./routers/contact"
 import { projectContactRouter } from "./routers/projectContact"
+import { categoryRouter } from "./routers/category"
 
 export const appRouter = createTRPCRouter({
   auth: authRouter,
@@ -11,6 +12,7 @@ export const appRouter = createTRPCRouter({
   costs: costRouter,
   contacts: contactRouter,
   projectContacts: projectContactRouter,
+  category: categoryRouter,
 })
 
 export type AppRouter = typeof appRouter
