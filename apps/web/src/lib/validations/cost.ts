@@ -33,12 +33,23 @@ export const updateCostSchema = z.object({
 
 /**
  * Zod schema for cost query filters
+ *
+ * Extended with search, filtering, and sorting capabilities for Story 2.4
  */
 export const listCostsSchema = z.object({
   projectId: z.string().uuid("Invalid project ID"),
   categoryId: z.string().optional(),
   startDate: z.date().optional(),
   endDate: z.date().optional(),
+  // Search and filter fields
+  searchText: z.string().max(200).optional(),
+  minAmount: z.number().int().nonnegative().optional(),
+  maxAmount: z.number().int().nonnegative().optional(),
+  contactId: z.string().uuid().optional(),
+  contactNameSearch: z.string().max(100).optional(),
+  // Sort fields
+  sortBy: z.enum(["date", "amount", "contact", "category"]).default("date"),
+  sortDirection: z.enum(["asc", "desc"]).default("desc"),
 })
 
 /**

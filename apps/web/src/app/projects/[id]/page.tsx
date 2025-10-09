@@ -28,6 +28,9 @@ import {
 import { useToast } from "@/hooks/use-toast"
 import { useState } from "react"
 import { ProjectMap } from "@/components/maps/ProjectMap"
+import { SearchAndFilter } from "@/components/costs/SearchAndFilter"
+import { useCostFilters } from "@/hooks/useCostFilters"
+import { useFilterPersistence, loadSavedFilters } from "@/hooks/useFilterPersistence"
 
 // Lazy load the costs components
 const CostsList = lazy(() =>
@@ -70,7 +73,80 @@ export default function ProjectDetailPage() {
   const projectId = params.id as string
   const utils = api.useUtils()
 
+  // Load saved filters from sessionStorage on mount
+  const savedFilters = loadSavedFilters(projectId)
+
+  // Initialize filter state with saved values or defaults
+  const {
+    filters,
+    searchText,
+    sortBy,
+    sortDirection,
+    setFilters,
+    setSearchText,
+    setSortBy,
+    setSortDirection,
+    clearFilters,
+  } = useCostFilters(
+    savedFilters?.filters ?? {},
+    savedFilters?.searchText ?? "",
+    savedFilters?.sortBy ?? "date",
+    savedFilters?.sortDirection ?? "desc"
+  )
+
+  // Persist filters to sessionStorage
+  useFilterPersistence(projectId, filters, searchText, sortBy, sortDirection)
+
   const { data: project, isLoading, error } = api.projects.getById.useQuery({ id: projectId })
+
+  // Fetch costs with filters for result count
+  const { data: costsData } = api.costs.list.useQuery({
+    projectId,
+    ...filters,
+    searchText: searchText || undefined,
+    sortBy,
+    sortDirection,
+  })
+
+  // Extract unique categories and contacts from costs data for filter dropdowns
+  const categories = costsData
+    ? Array.from(
+        new Map(
+          costsData
+            .filter((c) => c.category)
+            .map((c) => [
+              c.category!.id,
+              { id: c.category!.id, displayName: c.category!.displayName },
+            ])
+        ).values()
+      )
+    : []
+
+  const contacts = costsData
+    ? Array.from(
+        new Map(
+          costsData
+            .filter((c) => c.contact)
+            .map((c) => [
+              c.contact!.id,
+              {
+                id: c.contact!.id,
+                firstName: c.contact!.firstName,
+                lastName: c.contact!.lastName,
+              },
+            ])
+        ).values()
+      )
+    : []
+
+  const handleSortChange = (newSortBy: typeof sortBy, newSortDirection: typeof sortDirection) => {
+    setSortBy(newSortBy)
+    setSortDirection(newSortDirection)
+  }
+
+  const handleClearAll = () => {
+    clearFilters()
+  }
 
   const deleteMutation = api.projects.softDelete.useMutation({
     onMutate: async () => {
@@ -334,7 +410,25 @@ export default function ProjectDetailPage() {
                   </Select>
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-6">
+                {/* Search and Filter Component - Story 2.4 */}
+                {costsViewMode === "list" && (
+                  <SearchAndFilter
+                    projectId={project.id}
+                    filters={filters}
+                    searchText={searchText}
+                    sortBy={sortBy}
+                    sortDirection={sortDirection}
+                    resultCount={costsData?.length}
+                    onFilterChange={setFilters}
+                    onSearchChange={setSearchText}
+                    onSortChange={handleSortChange}
+                    onClearAll={handleClearAll}
+                    categories={categories ?? []}
+                    contacts={contacts ?? []}
+                  />
+                )}
+
                 <Suspense
                   fallback={
                     <div className="animate-pulse space-y-2">
@@ -345,7 +439,13 @@ export default function ProjectDetailPage() {
                   }
                 >
                   {costsViewMode === "list" ? (
-                    <CostsList projectId={project.id} />
+                    <CostsList
+                      projectId={project.id}
+                      filters={filters}
+                      searchText={searchText}
+                      sortBy={sortBy}
+                      sortDirection={sortDirection}
+                    />
                   ) : costsViewMode === "contact" ? (
                     <ContactGroupedCosts projectId={project.id} />
                   ) : (
