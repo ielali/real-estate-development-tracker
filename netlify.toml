@@ -48,23 +48,24 @@
   skip_processing = false
 
 # Netlify Lighthouse Plugin for automated performance testing
-[[plugins]]
-  package = "@netlify/plugin-lighthouse"
-
-  # Lighthouse audit configuration
-  [plugins.inputs]
-    # Performance thresholds (0-1 scale, fail build if below these scores)
-    [plugins.inputs.thresholds]
-      performance = 0.85
-      accessibility = 1.0
-      best-practices = 0.95
-      seo = 0.90
-
-    # Fail build if thresholds are not met
-    fail_deploy_on_score_thresholds = true
-
-    # Output path for Lighthouse reports
-    output_path = "apps/web/lighthouse-reports"
+# Note: Lighthouse plugin requires a paid Netlify plan
+# [[plugins]]
+#   package = "@netlify/plugin-lighthouse"
+#
+#   # Lighthouse audit configuration
+#   [plugins.inputs]
+#     # Performance thresholds (0-1 scale, fail build if below these scores)
+#     [plugins.inputs.thresholds]
+#       performance = 0.85
+#       accessibility = 1.0
+#       best-practices = 0.95
+#       seo = 0.90
+#
+#     # Fail build if thresholds are not met
+#     fail_deploy_on_score_thresholds = true
+#
+#     # Output path for Lighthouse reports
+#     output_path = "apps/web/lighthouse-reports"
 
 # Redirect rules
 [[redirects]]
