@@ -256,6 +256,9 @@ export default function ProjectDetailPage() {
             </Badge>
           </div>
           <div className="flex gap-2">
+            <Link href={`/projects/${project.id}/documents` as never}>
+              <Button variant="outline">Documents</Button>
+            </Link>
             <Link href={`/projects/${project.id}/edit` as never}>
               <Button variant="outline" disabled={deleteMutation.isPending}>
                 Edit

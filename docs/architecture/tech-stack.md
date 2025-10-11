@@ -55,6 +55,84 @@ This is the DEFINITIVE technology selection for the entire project. Working thro
 - Drizzle ORM uses Neon serverless driver with WebSocket support
 - WebSocket connection allows for serverless function compatibility
 
+## File Storage Architecture
+
+**Netlify Blobs Storage:**
+
+- Serverless blob storage for documents and photos
+- Integrated with Netlify platform (no additional configuration)
+- CDN delivery for fast global access
+- Maximum file size: 5GB per object (application limits to 10MB for UX)
+
+**Environment-Aware Storage Strategy:**
+
+Production Environment:
+
+- Uses **global store** with `strong` consistency
+- Data persists permanently across all deploys
+- Suitable for user-uploaded documents and photos
+
+Non-Production Environments (dev, preview, branch-deploy):
+
+- Uses **deploy-scoped store** with eventual consistency
+- Data is isolated per branch/deploy
+- Automatically cleaned up when deploy is deleted
+- Prevents test data from contaminating production
+
+**Implementation Details:**
+
+```typescript
+// Environment-aware store selection
+function getBlobStore(storeName: string) {
+  const isProduction = process.env.CONTEXT === "production"
+
+  if (isProduction) {
+    return getStore({ name: storeName, consistency: "strong" })
+  }
+
+  return getDeployStore(storeName) // Deploy-scoped for isolation
+}
+
+// Lazy initialization prevents module load errors
+class DocumentService {
+  private _store: ReturnType<typeof getStore> | null = null
+
+  private get store() {
+    if (!this._store) {
+      this._store = getBlobStore("documents")
+    }
+    return this._store
+  }
+}
+```
+
+**Storage Operations:**
+
+- `store.set(key, data, { metadata })` - Upload file with metadata
+- `store.get(key)` - Retrieve file content
+- `store.delete(key)` - Remove file
+- `store.list()` - List all files in store
+- `store.getMetadata(key)` - Get file metadata without downloading
+
+**Local Development:**
+
+- Requires `netlify dev` command for blob storage emulation
+- Local blobs stored in `.netlify/blobs/` (gitignored)
+- Sandboxed storage, ephemeral between sessions
+- Automatic environment variable configuration
+
+**Type Safety:**
+
+- Helper function `bufferToArrayBuffer()` converts Node.js Buffer to ArrayBuffer
+- Netlify Blobs accepts: `string | ArrayBuffer | Blob`
+- Proper TypeScript types for all blob operations
+
+**Documentation:**
+
+- Full configuration guide: `docs/netlify-blobs-configuration.md`
+- Local development guide: `docs/local-development-with-netlify.md`
+- Quick reference: `NETLIFY_BLOBS_README.md`
+
 ## Future Enterprise Enhancements
 
 **Data Protection (Phase 2):**
