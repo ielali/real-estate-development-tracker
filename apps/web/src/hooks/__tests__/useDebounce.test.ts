@@ -3,7 +3,7 @@
  */
 
 import { describe, test, expect, vi, beforeEach, afterEach } from "vitest"
-import { renderHook, waitFor } from "@testing-library/react"
+import { renderHook } from "@testing-library/react"
 import { useDebounce } from "../useDebounce"
 
 describe("useDebounce", () => {
@@ -33,13 +33,11 @@ describe("useDebounce", () => {
     // Should still have old value immediately
     expect(result.current).toBe("initial")
 
-    // Advance timers
-    vi.advanceTimersByTime(300)
+    // Advance timers and wait for state update
+    await vi.advanceTimersByTimeAsync(300)
 
     // Should have new value after delay
-    await waitFor(() => {
-      expect(result.current).toBe("updated")
-    })
+    expect(result.current).toBe("updated")
   })
 
   test("should cancel previous timeout on rapid changes", async () => {
@@ -48,17 +46,15 @@ describe("useDebounce", () => {
     })
 
     rerender({ value: "second" })
-    vi.advanceTimersByTime(100)
+    await vi.advanceTimersByTimeAsync(100)
 
     rerender({ value: "third" })
-    vi.advanceTimersByTime(100)
+    await vi.advanceTimersByTimeAsync(100)
 
     rerender({ value: "fourth" })
-    vi.advanceTimersByTime(300)
+    await vi.advanceTimersByTimeAsync(300)
 
-    await waitFor(() => {
-      expect(result.current).toBe("fourth")
-    })
+    expect(result.current).toBe("fourth")
   })
 
   test("should use custom delay", async () => {
@@ -68,13 +64,11 @@ describe("useDebounce", () => {
 
     rerender({ value: "updated" })
 
-    vi.advanceTimersByTime(300)
+    await vi.advanceTimersByTimeAsync(300)
     expect(result.current).toBe("initial")
 
-    vi.advanceTimersByTime(200)
-    await waitFor(() => {
-      expect(result.current).toBe("updated")
-    })
+    await vi.advanceTimersByTimeAsync(200)
+    expect(result.current).toBe("updated")
   })
 
   test("should work with different types", async () => {
@@ -86,11 +80,9 @@ describe("useDebounce", () => {
     )
 
     numberRerender({ value: 42 })
-    vi.advanceTimersByTime(300)
+    await vi.advanceTimersByTimeAsync(300)
 
-    await waitFor(() => {
-      expect(numberResult.current).toBe(42)
-    })
+    expect(numberResult.current).toBe(42)
 
     const { result: objectResult, rerender: objectRerender } = renderHook(
       ({ value }) => useDebounce(value, 300),
@@ -100,10 +92,8 @@ describe("useDebounce", () => {
     )
 
     objectRerender({ value: { foo: "baz" } })
-    vi.advanceTimersByTime(300)
+    await vi.advanceTimersByTimeAsync(300)
 
-    await waitFor(() => {
-      expect(objectResult.current).toEqual({ foo: "baz" })
-    })
+    expect(objectResult.current).toEqual({ foo: "baz" })
   })
 })
