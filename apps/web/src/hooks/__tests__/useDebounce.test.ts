@@ -45,6 +45,7 @@ describe("useDebounce", () => {
       initialProps: { value: "first" },
     })
 
+    // Make rapid changes without advancing timers enough to trigger
     rerender({ value: "second" })
     await vi.advanceTimersByTimeAsync(100)
 
@@ -52,8 +53,11 @@ describe("useDebounce", () => {
     await vi.advanceTimersByTimeAsync(100)
 
     rerender({ value: "fourth" })
+
+    // Now advance the full debounce delay from the last change
     await vi.advanceTimersByTimeAsync(300)
 
+    // Should only have the last value, all previous debounces should be cancelled
     expect(result.current).toBe("fourth")
   })
 
