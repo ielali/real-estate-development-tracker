@@ -4,22 +4,66 @@
  * Tests search, filtering, and sorting functionality added in Story 2.4
  */
 
-import { describe, test, expect, beforeEach } from "vitest"
+import { describe, test, expect, beforeAll, afterAll, beforeEach } from "vitest"
 import { appRouter } from "../../root"
-import { createTestContext, cleanupDatabase } from "@/test/test-db"
-import type { Context } from "../../trpc"
+import { createTestDb, cleanupAllTestDatabases } from "@/test/test-db"
+import type { User } from "@/server/db/schema/users"
+import { users } from "@/server/db/schema/users"
 
 describe("Cost Router - Search and Filter (Story 2.4)", () => {
-  let ctx: Context
+  let testDbInstance: Awaited<ReturnType<typeof createTestDb>>
+  let testUser: User
   let caller: ReturnType<typeof appRouter.createCaller>
   let projectId: string
   let categoryId: string
   let contactId: string
 
+  const createMockSession = (userId: string) => ({
+    id: `session-${userId}`,
+    userId,
+    expiresAt: new Date(Date.now() + 86400000),
+    token: `token-${userId}`,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ipAddress: "127.0.0.1",
+    userAgent: "test",
+  })
+
+  const createMockContext = (user: User) => ({
+    headers: new Headers(),
+    db: testDbInstance.db,
+    session: {
+      session: createMockSession(user.id),
+      user,
+    },
+    user,
+  })
+
+  beforeAll(async () => {
+    testDbInstance = await createTestDb()
+  })
+
+  afterAll(async () => {
+    await cleanupAllTestDatabases()
+  })
+
   beforeEach(async () => {
-    await cleanupDatabase()
-    ctx = await createTestContext()
-    caller = appRouter.createCaller(ctx)
+    await testDbInstance.cleanup()
+
+    // Create test user
+    testUser = await testDbInstance.db
+      .insert(users)
+      .values({
+        id: "test-user-1",
+        email: "testuser@example.com",
+        name: "Test User",
+        firstName: "Test",
+        lastName: "User",
+      })
+      .returning()
+      .then((rows) => rows[0]!)
+
+    caller = appRouter.createCaller(createMockContext(testUser))
 
     // Create a test project
     const project = await caller.projects.create({
