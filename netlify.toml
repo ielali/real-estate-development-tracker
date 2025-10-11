@@ -113,7 +113,6 @@
     bun run lint && \
     bun run type-check && \
     bun run test:run && \
-    bun run db:migrate && \
     bun run build && \
     echo '✅ Deploy preview build complete'
   """
@@ -125,7 +124,6 @@
     bun run lint && \
     bun run type-check && \
     bun run test:run && \
-    bun run db:migrate && \
     bun run build && \
     echo '✅ Branch deploy build complete'
   """
