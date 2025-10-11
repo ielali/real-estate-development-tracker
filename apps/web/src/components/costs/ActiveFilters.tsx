@@ -10,7 +10,7 @@ import { X } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import type { CostFilters } from "@/lib/utils/cost-filters"
-import { getFilterDescription } from "@/lib/utils/cost-filters"
+import { hasActiveFilters } from "@/lib/utils/cost-filters"
 
 export interface ActiveFiltersProps {
   filters: CostFilters
@@ -27,9 +27,7 @@ export function ActiveFilters({
   onClearSearch,
   onClearAll,
 }: ActiveFiltersProps) {
-  const descriptions = getFilterDescription(filters, searchText)
-
-  if (descriptions.length === 0) {
+  if (!hasActiveFilters(filters, searchText)) {
     return null
   }
 

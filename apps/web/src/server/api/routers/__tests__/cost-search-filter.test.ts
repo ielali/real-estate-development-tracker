@@ -4,34 +4,78 @@
  * Tests search, filtering, and sorting functionality added in Story 2.4
  */
 
-import { describe, test, expect, beforeEach } from "vitest"
+import { describe, test, expect, beforeAll, afterAll, beforeEach } from "vitest"
 import { appRouter } from "../../root"
-import { createTestContext, cleanupDatabase } from "@/test/test-db"
-import type { Context } from "../../trpc"
+import { createTestDb, cleanupAllTestDatabases } from "@/test/test-db"
+import type { User } from "@/server/db/schema/users"
+import { users } from "@/server/db/schema/users"
 
 describe("Cost Router - Search and Filter (Story 2.4)", () => {
-  let ctx: Context
+  let testDbInstance: Awaited<ReturnType<typeof createTestDb>>
+  let testUser: User
   let caller: ReturnType<typeof appRouter.createCaller>
   let projectId: string
   let categoryId: string
   let contactId: string
 
+  const createMockSession = (userId: string) => ({
+    id: `session-${userId}`,
+    userId,
+    expiresAt: new Date(Date.now() + 86400000),
+    token: `token-${userId}`,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ipAddress: "127.0.0.1",
+    userAgent: "test",
+  })
+
+  const createMockContext = (user: User) => ({
+    headers: new Headers(),
+    db: testDbInstance.db,
+    session: {
+      session: createMockSession(user.id),
+      user,
+    },
+    user,
+  })
+
+  beforeAll(async () => {
+    testDbInstance = await createTestDb()
+  })
+
+  afterAll(async () => {
+    await cleanupAllTestDatabases()
+  })
+
   beforeEach(async () => {
-    await cleanupDatabase()
-    ctx = await createTestContext()
-    caller = appRouter.createCaller(ctx)
+    await testDbInstance.cleanup()
+
+    // Create test user
+    testUser = await testDbInstance.db
+      .insert(users)
+      .values({
+        id: "test-user-1",
+        email: "testuser@example.com",
+        name: "Test User",
+        firstName: "Test",
+        lastName: "User",
+      })
+      .returning()
+      .then((rows) => rows[0]!)
+
+    caller = appRouter.createCaller(createMockContext(testUser))
 
     // Create a test project
     const project = await caller.projects.create({
       name: "Test Project",
       address: {
-        formattedAddress: "123 Test St",
         streetNumber: "123",
         streetName: "Test St",
         suburb: "Sydney",
         state: "NSW",
         postcode: "2000",
         country: "Australia",
+        formatted: "123 Test St, Sydney NSW 2000",
       },
       startDate: new Date("2024-01-01"),
       projectType: "renovation",
@@ -39,7 +83,7 @@ describe("Cost Router - Search and Filter (Story 2.4)", () => {
     projectId = project.id
 
     // Create a test category
-    const category = await caller.categories.create({
+    const category = await caller.category.create({
       displayName: "Plumbing",
       type: "cost",
       parentId: null,
@@ -51,7 +95,6 @@ describe("Cost Router - Search and Filter (Story 2.4)", () => {
       projectId,
       firstName: "John",
       lastName: "Plumber",
-      categoryId: null,
     })
     contactId = contact.id
 
@@ -78,9 +121,7 @@ describe("Cost Router - Search and Filter (Story 2.4)", () => {
       projectId,
       amount: 25000, // $250
       description: "Install new electrical outlet",
-      categoryId: null,
       date: new Date("2024-01-10"),
-      contactId: null,
     })
   })
 

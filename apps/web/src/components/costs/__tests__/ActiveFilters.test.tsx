@@ -172,7 +172,7 @@ describe("ActiveFilters", () => {
     expect(screen.getByText(/Search/i)).toBeInTheDocument()
     expect(screen.getByText(/Category/i)).toBeInTheDocument()
     expect(screen.getByText(/Contact/i)).toBeInTheDocument()
-    expect(screen.getByText(/Min:/i)).toBeInTheDocument()
+    expect(screen.getByText(/Min \$/i)).toBeInTheDocument()
   })
 
   test("should handle removing date range filter", () => {

@@ -2,8 +2,33 @@
 # Documentation: https://docs.netlify.com/configure-builds/file-based-configuration/
 
 [build]
-  # Build command with database migration
-  command = "cd apps/web && bun run db:migrate && bun run build"
+  # Build command with full CI pipeline: lint, type-check, test, migrate, build
+  command = """
+    cd apps/web && \
+    echo '🔍 Running Linting...' && \
+    bun run lint && \
+    echo '✅ Linting passed' && \
+    echo '' && \
+    echo '📝 Running Type Check...' && \
+    bun run type-check && \
+    echo '✅ Type check passed' && \
+    echo '' && \
+    echo '🧪 Running Tests...' && \
+    bun run test:run && \
+    echo '✅ Tests passed' && \
+    echo '' && \
+    echo '🗄️  Running Database Migration...' && \
+    bun run db:migrate && \
+    echo '✅ Migration completed' && \
+    echo '' && \
+    echo '🏗️  Building Application...' && \
+    bun run build && \
+    echo '✅ Build completed' && \
+    echo '' && \
+    echo '📊 Analyzing Bundle Size...' && \
+    du -sh .next && \
+    echo '✅ CI Pipeline Complete!'
+  """
 
   # Publish directory (relative to repo root)
   publish = "apps/web/.next"
@@ -21,6 +46,26 @@
 # Install command override
 [build.processing]
   skip_processing = false
+
+# Netlify Lighthouse Plugin for automated performance testing
+# Note: Lighthouse plugin requires a paid Netlify plan
+# [[plugins]]
+#   package = "@netlify/plugin-lighthouse"
+#
+#   # Lighthouse audit configuration
+#   [plugins.inputs]
+#     # Performance thresholds (0-1 scale, fail build if below these scores)
+#     [plugins.inputs.thresholds]
+#       performance = 0.85
+#       accessibility = 1.0
+#       best-practices = 0.95
+#       seo = 0.90
+#
+#     # Fail build if thresholds are not met
+#     fail_deploy_on_score_thresholds = true
+#
+#     # Output path for Lighthouse reports
+#     output_path = "apps/web/lighthouse-reports"
 
 # Redirect rules
 [[redirects]]
@@ -51,10 +96,35 @@
 
 # Context-specific settings
 [context.production]
-  command = "cd apps/web && bun run db:migrate && bun run build"
+  command = """
+    cd apps/web && \
+    echo '🚀 Production Build Pipeline' && \
+    bun run lint && \
+    bun run type-check && \
+    bun run test:run && \
+    bun run db:migrate && \
+    bun run build && \
+    echo '✅ Production build complete'
+  """
 
 [context.deploy-preview]
-  command = "cd apps/web && bun run db:migrate && bun run build"
+  command = """
+    cd apps/web && \
+    echo '👀 Deploy Preview Build Pipeline' && \
+    bun run lint && \
+    bun run type-check && \
+    bun run test:component && \
+    bun run build && \
+    echo '✅ Deploy preview build complete'
+  """
 
 [context.branch-deploy]
-  command = "cd apps/web && bun run db:migrate && bun run build"
+  command = """
+    cd apps/web && \
+    echo '🌿 Branch Deploy Build Pipeline' && \
+    bun run lint && \
+    bun run type-check && \
+    bun run test:component && \
+    bun run build && \
+    echo '✅ Branch deploy build complete'
+  """

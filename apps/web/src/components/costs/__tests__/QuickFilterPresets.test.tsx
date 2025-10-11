@@ -39,8 +39,10 @@ describe("QuickFilterPresets", () => {
     const activeButton = screen.getByText("Last 30 days").closest("button")
     const inactiveButton = screen.getByText("Over $1,000").closest("button")
 
-    expect(activeButton).toHaveClass("bg-primary") // or whatever active class
-    expect(inactiveButton).not.toHaveClass("bg-primary")
+    // Active button has default variant (bg-gray-900)
+    expect(activeButton).toHaveClass("bg-gray-900")
+    // Inactive button does not have default variant class
+    expect(inactiveButton).not.toHaveClass("bg-gray-900")
   })
 
   test("should show icons for presets", () => {
