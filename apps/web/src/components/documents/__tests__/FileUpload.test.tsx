@@ -5,6 +5,7 @@
  * file selection, validation, and error handling
  */
 
+import React from "react"
 import { describe, test, expect, vi } from "vitest"
 import { render, screen, fireEvent, waitFor } from "@testing-library/react"
 import { FileUpload } from "../FileUpload"
