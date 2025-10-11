@@ -82,10 +82,10 @@ function createCleanupFunction(db: ReturnType<typeof drizzle<typeof schema>>) {
         accounts,
         verifications,
         addresses,
-        users
+        users,
+        categories
       CASCADE
     `)
-    // NOTE: Categories are static reference data - not truncated
   }
 }
 

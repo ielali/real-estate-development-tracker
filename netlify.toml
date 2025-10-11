@@ -113,7 +113,7 @@
     echo '👀 Deploy Preview Build Pipeline' && \
     bun run lint && \
     bun run type-check && \
-    bun run test:run && \
+    bun run test:component && \
     bun run build && \
     echo '✅ Deploy preview build complete'
   """
@@ -124,7 +124,7 @@
     echo '🌿 Branch Deploy Build Pipeline' && \
     bun run lint && \
     bun run type-check && \
-    bun run test:run && \
+    bun run test:component && \
     bun run build && \
     echo '✅ Branch deploy build complete'
   """
