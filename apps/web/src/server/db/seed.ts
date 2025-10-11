@@ -567,6 +567,7 @@ async function seed() {
         mimeType: "application/pdf",
         blobUrl: "blob://demo/demolition-permit.pdf",
         categoryId: "permits",
+        uploadedById: adminUser!.id,
       },
       {
         projectId: activeRenovation.id,
@@ -575,6 +576,7 @@ async function seed() {
         mimeType: "image/jpeg",
         blobUrl: "blob://demo/before-photo-1.jpg",
         categoryId: "photos",
+        uploadedById: adminUser!.id,
       },
       {
         projectId: activeRenovation.id,
@@ -583,6 +585,7 @@ async function seed() {
         mimeType: "application/pdf",
         blobUrl: "blob://demo/electrical-invoice.pdf",
         categoryId: "invoices",
+        uploadedById: adminUser!.id,
       },
       {
         projectId: onHoldNewBuild.id,
@@ -591,6 +594,7 @@ async function seed() {
         mimeType: "application/pdf",
         blobUrl: "blob://demo/architectural-plans.pdf",
         categoryId: "plans",
+        uploadedById: adminUser!.id,
       },
       {
         projectId: onHoldNewBuild.id,
@@ -599,6 +603,7 @@ async function seed() {
         mimeType: "application/pdf",
         blobUrl: "blob://demo/building-permit-application.pdf",
         categoryId: "permits",
+        uploadedById: adminUser!.id,
       },
       {
         projectId: completedDevelopment.id,
@@ -607,6 +612,7 @@ async function seed() {
         mimeType: "application/pdf",
         blobUrl: "blob://demo/final-inspection-report.pdf",
         categoryId: "inspections",
+        uploadedById: adminUser!.id,
       },
       {
         projectId: completedDevelopment.id,
@@ -615,6 +621,7 @@ async function seed() {
         mimeType: "image/jpeg",
         blobUrl: "blob://demo/completion-photo-1.jpg",
         categoryId: "photos",
+        uploadedById: adminUser!.id,
       },
       {
         projectId: completedDevelopment.id,
@@ -623,6 +630,7 @@ async function seed() {
         mimeType: "application/pdf",
         blobUrl: "blob://demo/hvac-warranty.pdf",
         categoryId: "warranties",
+        uploadedById: adminUser!.id,
       },
     ]
 
