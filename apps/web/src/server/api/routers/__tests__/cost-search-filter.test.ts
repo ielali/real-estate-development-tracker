@@ -25,13 +25,13 @@ describe("Cost Router - Search and Filter (Story 2.4)", () => {
     const project = await caller.projects.create({
       name: "Test Project",
       address: {
-        formattedAddress: "123 Test St",
         streetNumber: "123",
         streetName: "Test St",
         suburb: "Sydney",
         state: "NSW",
         postcode: "2000",
         country: "Australia",
+        formatted: "123 Test St, Sydney NSW 2000",
       },
       startDate: new Date("2024-01-01"),
       projectType: "renovation",
@@ -39,7 +39,7 @@ describe("Cost Router - Search and Filter (Story 2.4)", () => {
     projectId = project.id
 
     // Create a test category
-    const category = await caller.categories.create({
+    const category = await caller.category.create({
       displayName: "Plumbing",
       type: "cost",
       parentId: null,
@@ -51,7 +51,6 @@ describe("Cost Router - Search and Filter (Story 2.4)", () => {
       projectId,
       firstName: "John",
       lastName: "Plumber",
-      categoryId: null,
     })
     contactId = contact.id
 
@@ -78,9 +77,7 @@ describe("Cost Router - Search and Filter (Story 2.4)", () => {
       projectId,
       amount: 25000, // $250
       description: "Install new electrical outlet",
-      categoryId: null,
       date: new Date("2024-01-10"),
-      contactId: null,
     })
   })
 
