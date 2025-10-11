@@ -53,21 +53,18 @@
 
   # Lighthouse audit configuration
   [plugins.inputs]
-    # Audit settings
-    audit_count = 3
+    # Performance thresholds (0-1 scale, fail build if below these scores)
+    [plugins.inputs.thresholds]
+      performance = 0.85
+      accessibility = 1.0
+      best-practices = 0.95
+      seo = 0.90
 
-    # Performance thresholds (fail build if below these scores)
-    performance_budget = 0.85
-    accessibility_budget = 1.0
-    best_practices_budget = 0.95
-    seo_budget = 0.90
+    # Fail build if thresholds are not met
+    fail_deploy_on_score_thresholds = true
 
-    # Pages to audit
-    [[plugins.inputs.audits]]
-      path = "/"
-
-    [[plugins.inputs.audits]]
-      path = "/projects"
+    # Output path for Lighthouse reports
+    output_path = "apps/web/lighthouse-reports"
 
 # Redirect rules
 [[redirects]]
