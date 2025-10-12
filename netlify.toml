@@ -89,10 +89,11 @@
 
 # Dev server configuration
 [dev]
-  command = "cd apps/web && bun run dev"
-  port = 3000
+  command = "bun run dev"
+  port = 8888
   targetPort = 3000
-  framework = "#custom"
+  framework = "next"
+  autoLaunch = false
 
 # Context-specific settings
 [context.production]

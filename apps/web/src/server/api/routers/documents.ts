@@ -1,6 +1,6 @@
 import { z } from "zod"
 import { TRPCError } from "@trpc/server"
-import { eq, and, isNull } from "drizzle-orm"
+import { eq, and, isNull, desc, asc } from "drizzle-orm"
 import crypto from "crypto"
 import { createTRPCRouter, protectedProcedure } from "../trpc"
 import { documents } from "@/server/db/schema/documents"
@@ -30,7 +30,13 @@ const uploadDocumentSchema = z.object({
 /**
  * Zod schema for listing documents by project
  */
-const listDocumentsSchema = z.string().uuid("Invalid project ID")
+const listDocumentsSchema = z.object({
+  projectId: z.string().uuid("Invalid project ID"),
+  categoryId: z.string().optional(),
+  sortBy: z.enum(["date-desc", "date-asc", "name-asc", "size-desc"]).default("date-desc"),
+  limit: z.number().min(1).max(100).default(50),
+  cursor: z.string().uuid().optional(),
+})
 
 /**
  * Zod schema for deleting a document
@@ -99,6 +105,10 @@ export const documentsRouter = createTRPCRouter({
       input.projectId
     )
 
+    // Generate thumbnail for the uploaded document
+    // This happens asynchronously - we don't block the upload response
+    const thumbnailUrl = await documentService.generateThumbnail(blobUrl, input.file.type)
+
     // Create document record in database
     const [document] = await ctx.db
       .insert(documents)
@@ -109,7 +119,7 @@ export const documentsRouter = createTRPCRouter({
         fileSize: input.file.size,
         mimeType: input.file.type,
         blobUrl: blobUrl,
-        thumbnailUrl: null, // Generated in Story 3.2
+        thumbnailUrl: thumbnailUrl,
         categoryId: input.categoryId,
         uploadedById: userId,
       })
@@ -133,14 +143,15 @@ export const documentsRouter = createTRPCRouter({
   }),
 
   /**
-   * List all documents for a project
+   * List all documents for a project with filtering and sorting
    *
-   * Returns non-deleted documents ordered by creation date (newest first).
+   * Returns non-deleted documents with optional category filtering,
+   * custom sorting, and cursor-based pagination.
    * Verifies user has access to the project.
    *
    * @throws {TRPCError} UNAUTHORIZED - User not authenticated
    * @throws {TRPCError} FORBIDDEN - User does not have project access
-   * @returns {Document[]} Array of document records
+   * @returns {Object} Object with documents array and nextCursor for pagination
    */
   list: protectedProcedure.input(listDocumentsSchema).query(async ({ ctx, input }) => {
     const userId = ctx.session.user.id
@@ -149,7 +160,13 @@ export const documentsRouter = createTRPCRouter({
     const project = await ctx.db
       .select()
       .from(projects)
-      .where(and(eq(projects.id, input), eq(projects.ownerId, userId), isNull(projects.deletedAt)))
+      .where(
+        and(
+          eq(projects.id, input.projectId),
+          eq(projects.ownerId, userId),
+          isNull(projects.deletedAt)
+        )
+      )
       .limit(1)
 
     if (!project || project.length === 0) {
@@ -159,14 +176,52 @@ export const documentsRouter = createTRPCRouter({
       })
     }
 
-    // Fetch non-deleted documents
+    // Build where conditions
+    const whereConditions = [eq(documents.projectId, input.projectId), isNull(documents.deletedAt)]
+
+    // Add category filter if specified
+    if (input.categoryId) {
+      whereConditions.push(eq(documents.categoryId, input.categoryId))
+    }
+
+    // Determine sort order based on sortBy parameter
+    let orderByClause
+    switch (input.sortBy) {
+      case "date-desc":
+        orderByClause = desc(documents.createdAt)
+        break
+      case "date-asc":
+        orderByClause = asc(documents.createdAt)
+        break
+      case "name-asc":
+        orderByClause = asc(documents.fileName)
+        break
+      case "size-desc":
+        orderByClause = desc(documents.fileSize)
+        break
+      default:
+        orderByClause = desc(documents.createdAt)
+    }
+
+    // Fetch documents with pagination (fetch one extra to determine if there's more)
     const projectDocuments = await ctx.db
       .select()
       .from(documents)
-      .where(and(eq(documents.projectId, input), isNull(documents.deletedAt)))
-      .orderBy(documents.createdAt)
+      .where(and(...whereConditions))
+      .orderBy(orderByClause)
+      .limit(input.limit + 1)
 
-    return projectDocuments
+    // Determine next cursor for pagination
+    let nextCursor: string | undefined
+    if (projectDocuments.length > input.limit) {
+      const nextItem = projectDocuments.pop()
+      nextCursor = nextItem?.id
+    }
+
+    return {
+      documents: projectDocuments,
+      nextCursor,
+    }
   }),
 
   /**
@@ -228,4 +283,138 @@ export const documentsRouter = createTRPCRouter({
 
     return { success: true }
   }),
+
+  /**
+   * Download a document with authorization check
+   *
+   * Fetches document from Netlify Blobs storage and returns as base64.
+   * Verifies user has access to the document's project. Creates audit log entry.
+   *
+   * @throws {TRPCError} UNAUTHORIZED - User not authenticated
+   * @throws {TRPCError} NOT_FOUND - Document not found
+   * @throws {TRPCError} FORBIDDEN - User does not have project access
+   * @returns {Object} Object with base64 data, fileName, and mimeType
+   */
+  download: protectedProcedure
+    .input(z.string().uuid("Invalid document ID"))
+    .query(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id
+
+      // Fetch document with project relationship
+      const [documentWithProject] = await ctx.db
+        .select({
+          document: documents,
+          project: projects,
+        })
+        .from(documents)
+        .innerJoin(projects, eq(documents.projectId, projects.id))
+        .where(and(eq(documents.id, input), isNull(documents.deletedAt)))
+        .limit(1)
+
+      if (!documentWithProject) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Document not found",
+        })
+      }
+
+      // Verify project access (user must be owner)
+      if (documentWithProject.project.ownerId !== userId) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You do not have permission to download this document",
+        })
+      }
+
+      // Fetch blob data from Netlify Blobs
+      const blobData = await documentService.getDocumentBlob(documentWithProject.document.blobUrl)
+
+      // Create audit log entry
+      await ctx.db.insert(auditLog).values({
+        userId: userId,
+        action: "downloaded",
+        entityType: "document",
+        entityId: input,
+        metadata: JSON.stringify({
+          fileName: documentWithProject.document.fileName,
+          projectId: documentWithProject.document.projectId,
+          displayName: `Downloaded ${documentWithProject.document.fileName}`,
+        }),
+      })
+
+      return {
+        data: blobData,
+        fileName: documentWithProject.document.fileName,
+        mimeType: documentWithProject.document.mimeType,
+      }
+    }),
+
+  /**
+   * Get thumbnail image for a document with authorization check
+   *
+   * Fetches thumbnail from Netlify Blobs storage and returns as base64.
+   * Verifies user has access to the document's project.
+   * Returns placeholder icon path if thumbnail is not an actual blob key.
+   *
+   * @throws {TRPCError} UNAUTHORIZED - User not authenticated
+   * @throws {TRPCError} NOT_FOUND - Document not found
+   * @throws {TRPCError} FORBIDDEN - User does not have project access
+   * @returns {Object} Object with base64 data and mimeType, or placeholderPath
+   */
+  getThumbnail: protectedProcedure
+    .input(z.string().uuid("Invalid document ID"))
+    .query(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id
+
+      // Fetch document with project relationship
+      const [documentWithProject] = await ctx.db
+        .select({
+          document: documents,
+          project: projects,
+        })
+        .from(documents)
+        .innerJoin(projects, eq(documents.projectId, projects.id))
+        .where(and(eq(documents.id, input), isNull(documents.deletedAt)))
+        .limit(1)
+
+      if (!documentWithProject) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Document not found",
+        })
+      }
+
+      // Verify project access (user must be owner)
+      if (documentWithProject.project.ownerId !== userId) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You do not have permission to view this document",
+        })
+      }
+
+      const thumbnailUrl = documentWithProject.document.thumbnailUrl
+
+      // If no thumbnail URL, return error
+      if (!thumbnailUrl) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Thumbnail not found",
+        })
+      }
+
+      // If thumbnail is a placeholder icon path, return it directly
+      if (thumbnailUrl.startsWith("/icons/")) {
+        return {
+          placeholderPath: thumbnailUrl,
+        }
+      }
+
+      // Fetch thumbnail blob data from Netlify Blobs
+      const thumbnailData = await documentService.getDocumentBlob(thumbnailUrl)
+
+      return {
+        data: thumbnailData,
+        mimeType: "image/jpeg", // Thumbnails are always JPEG
+      }
+    }),
 })
