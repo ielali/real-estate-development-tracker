@@ -6,10 +6,27 @@
  */
 
 import React from "react"
-import { describe, test, expect, vi } from "vitest"
-import { render, screen, fireEvent, waitFor } from "@testing-library/react"
+import { describe, test, expect, vi, afterEach, beforeEach } from "vitest"
+import { render, screen, fireEvent, waitFor, cleanup } from "@testing-library/react"
 import { FileUpload } from "../FileUpload"
 import { TRPCWrapper } from "@/test/test-utils"
+
+// Mock the tRPC client to prevent actual API calls
+vi.mock("@/lib/trpc/client", () => ({
+  api: {
+    documents: {
+      upload: {
+        useMutation: () => ({
+          mutate: vi.fn(),
+          mutateAsync: vi.fn(() => Promise.resolve({ id: "mock-doc-id" })),
+          isLoading: false,
+          isError: false,
+          isSuccess: false,
+        }),
+      },
+    },
+  },
+}))
 
 describe("FileUpload Component", () => {
   const mockProjectId = "test-project-123"
@@ -20,6 +37,17 @@ describe("FileUpload Component", () => {
   const renderWithProviders = (ui: React.ReactElement) => {
     return render(<TRPCWrapper>{ui}</TRPCWrapper>)
   }
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  // Cleanup after each test to prevent async operations from running after unmount
+  afterEach(async () => {
+    cleanup()
+    // Allow any pending async operations to complete
+    await new Promise((resolve) => setTimeout(resolve, 50))
+  })
 
   test("renders drag-and-drop zone", () => {
     renderWithProviders(<FileUpload projectId={mockProjectId} />)
