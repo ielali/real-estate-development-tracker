@@ -7,6 +7,7 @@ import { documents } from "@/server/db/schema/documents"
 import { projects } from "@/server/db/schema/projects"
 import { auditLog } from "@/server/db/schema/auditLog"
 import { documentService, bufferToArrayBuffer } from "@/server/services/document.service"
+import { validateDocumentCategory } from "@/server/db/validate-document-category"
 
 /**
  * Zod schema for file upload validation
@@ -65,6 +66,9 @@ export const documentsRouter = createTRPCRouter({
   upload: protectedProcedure.input(uploadDocumentSchema).mutation(async ({ ctx, input }) => {
     const userId = ctx.session.user.id
 
+    // Validate and normalize category ID (fixes common mistakes like "photo" → "photos")
+    const validatedCategoryId = await validateDocumentCategory(input.categoryId)
+
     // Verify project ownership
     const project = await ctx.db
       .select()
@@ -120,7 +124,7 @@ export const documentsRouter = createTRPCRouter({
         mimeType: input.file.type,
         blobUrl: blobUrl,
         thumbnailUrl: thumbnailUrl,
-        categoryId: input.categoryId,
+        categoryId: validatedCategoryId, // Use validated category ID
         uploadedById: userId,
       })
       .returning()

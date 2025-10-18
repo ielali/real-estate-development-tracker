@@ -26,7 +26,7 @@ async function testDocumentInsert() {
 
     console.log(`   ✓ Found ${docCategories.length} document categories`)
     docCategories.forEach((cat) => {
-      console.log(`     - ${cat.id}: ${cat.name}`)
+      console.log(`     - ${cat.id}: ${cat.displayName}`)
     })
 
     // Step 2: Get a test user
