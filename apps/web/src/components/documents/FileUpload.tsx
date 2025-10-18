@@ -82,26 +82,26 @@ function validateFile(file: File): { valid: boolean; error?: string } {
  * Auto-suggest category based on MIME type
  */
 function suggestCategory(mimeType: string): string {
-  // Images default to photo
+  // Images default to photos (plural to match predefined categories)
   if (mimeType.startsWith("image/")) {
-    return "photo"
+    return "photos"
   }
 
-  // PDFs suggest receipt (user can override)
+  // PDFs suggest receipts (user can override)
   if (mimeType === "application/pdf") {
-    return "receipt"
+    return "receipts"
   }
 
-  // Documents suggest contract
+  // Documents suggest contracts
   if (
     mimeType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
     mimeType === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
   ) {
-    return "contract"
+    return "contracts"
   }
 
   // Default fallback
-  return "photo"
+  return "photos"
 }
 
 /**
@@ -455,10 +455,14 @@ export function FileUpload({ projectId, onSuccess, onError, disabled = false }: 
                             <SelectValue placeholder="Select category" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="photo">Photo</SelectItem>
-                            <SelectItem value="receipt">Receipt</SelectItem>
-                            <SelectItem value="contract">Contract</SelectItem>
-                            <SelectItem value="permit">Permit</SelectItem>
+                            <SelectItem value="photos">Photos</SelectItem>
+                            <SelectItem value="receipts">Receipts</SelectItem>
+                            <SelectItem value="invoices">Invoices</SelectItem>
+                            <SelectItem value="contracts">Contracts</SelectItem>
+                            <SelectItem value="permits">Permits</SelectItem>
+                            <SelectItem value="plans">Plans & Drawings</SelectItem>
+                            <SelectItem value="inspections">Inspection Reports</SelectItem>
+                            <SelectItem value="warranties">Warranties</SelectItem>
                           </SelectContent>
                         </Select>
                       )}
