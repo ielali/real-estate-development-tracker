@@ -4,8 +4,16 @@ import React, { useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Upload, X, Camera, File, CheckCircle2, AlertCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { api } from "@/lib/trpc/client"
 
 /**
  * Supported MIME types for file uploads
@@ -39,6 +47,7 @@ interface FileUploadState {
   status: UploadStatus
   error?: string
   documentId?: string
+  categoryId: string
 }
 
 /**
@@ -70,6 +79,32 @@ function validateFile(file: File): { valid: boolean; error?: string } {
 }
 
 /**
+ * Auto-suggest category based on MIME type
+ */
+function suggestCategory(mimeType: string): string {
+  // Images default to photos (plural to match predefined categories)
+  if (mimeType.startsWith("image/")) {
+    return "photos"
+  }
+
+  // PDFs suggest receipts (user can override)
+  if (mimeType === "application/pdf") {
+    return "receipts"
+  }
+
+  // Documents suggest contracts
+  if (
+    mimeType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+    mimeType === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  ) {
+    return "contracts"
+  }
+
+  // Default fallback
+  return "photos"
+}
+
+/**
  * FileUpload Component
  *
  * Provides file upload functionality with drag-and-drop, click-to-browse,
@@ -88,18 +123,16 @@ function validateFile(file: File): { valid: boolean; error?: string } {
  *
  * @param props - Component props
  */
-export function FileUpload({
-  projectId: _projectId,
-  onSuccess,
-  onError,
-  disabled = false,
-}: FileUploadProps) {
+export function FileUpload({ projectId, onSuccess, onError, disabled = false }: FileUploadProps) {
   const [dragActive, setDragActive] = useState(false)
   const [uploads, setUploads] = useState<FileUploadState[]>([])
   const [isMobile, setIsMobile] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const cameraInputRef = useRef<HTMLInputElement>(null)
   const abortControllersRef = useRef<Map<string, AbortController>>(new Map())
+
+  // tRPC mutation for uploading documents
+  const uploadMutation = api.documents.upload.useMutation()
 
   // Detect mobile device
   React.useEffect(() => {
@@ -128,6 +161,7 @@ export function FileUpload({
           file,
           progress: 0,
           status: "pending",
+          categoryId: suggestCategory(file.type), // Auto-suggest category
         })
       } else {
         invalidFiles.push({ file, error: validation.error! })
@@ -176,7 +210,7 @@ export function FileUpload({
         reader.readAsDataURL(fileState.file)
       })
 
-      const _base64Data = await base64Promise
+      const base64Data = await base64Promise
 
       // Simulate progress updates
       // In a real implementation, this would be tied to the actual upload progress
@@ -191,17 +225,17 @@ export function FileUpload({
         )
       }, 200)
 
-      // TODO: Call tRPC mutation to upload file
-      // const result = await api.documents.upload.mutate({
-      //   projectId,
-      //   categoryId: "photo", // This should be selected by user
-      //   file: {
-      //     name: fileState.file.name,
-      //     size: fileState.file.size,
-      //     type: fileState.file.type,
-      //     data: base64Data,
-      //   },
-      // })
+      // Upload file via tRPC
+      const result = await uploadMutation.mutateAsync({
+        projectId,
+        categoryId: fileState.categoryId,
+        file: {
+          name: fileState.file.name,
+          size: fileState.file.size,
+          type: fileState.file.type,
+          data: base64Data,
+        },
+      })
 
       clearInterval(progressInterval)
 
@@ -209,13 +243,18 @@ export function FileUpload({
       setUploads((prev) =>
         prev.map((upload) =>
           upload.file === fileState.file
-            ? { ...upload, progress: 100, status: "success" as UploadStatus }
+            ? {
+                ...upload,
+                progress: 100,
+                status: "success" as UploadStatus,
+                documentId: result.id,
+              }
             : upload
         )
       )
 
       // Call success callback
-      onSuccess?.("mock-document-id")
+      onSuccess?.(result.id)
     } catch (error) {
       // Update to error
       const errorMessage = error instanceof Error ? error.message : "Upload failed"
@@ -230,6 +269,15 @@ export function FileUpload({
     } finally {
       abortControllersRef.current.delete(fileId)
     }
+  }
+
+  /**
+   * Update category for a pending upload
+   */
+  const updateCategory = (fileState: FileUploadState, categoryId: string) => {
+    setUploads((prev) =>
+      prev.map((upload) => (upload.file === fileState.file ? { ...upload, categoryId } : upload))
+    )
   }
 
   /**
@@ -392,11 +440,32 @@ export function FileUpload({
                 <File className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-1" />
                 <div className="flex-1 min-w-0 space-y-2">
                   <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0 space-y-1">
                       <p className="text-sm font-medium truncate">{upload.file.name}</p>
                       <p className="text-xs text-muted-foreground">
                         {formatFileSize(upload.file.size)}
                       </p>
+                      {/* Category selector for pending uploads */}
+                      {upload.status === "pending" && (
+                        <Select
+                          value={upload.categoryId}
+                          onValueChange={(value) => updateCategory(upload, value)}
+                        >
+                          <SelectTrigger className="h-8 w-full text-xs">
+                            <SelectValue placeholder="Select category" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="photos">Photos</SelectItem>
+                            <SelectItem value="receipts">Receipts</SelectItem>
+                            <SelectItem value="invoices">Invoices</SelectItem>
+                            <SelectItem value="contracts">Contracts</SelectItem>
+                            <SelectItem value="permits">Permits</SelectItem>
+                            <SelectItem value="plans">Plans & Drawings</SelectItem>
+                            <SelectItem value="inspections">Inspection Reports</SelectItem>
+                            <SelectItem value="warranties">Warranties</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
                     </div>
                     {upload.status === "uploading" && (
                       <Button

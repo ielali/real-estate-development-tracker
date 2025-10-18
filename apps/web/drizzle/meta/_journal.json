@@ -15,6 +15,13 @@
       "when": 1759716941653,
       "tag": "0001_quiet_meltdown",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1760302784247,
+      "tag": "0002_cultured_captain_universe",
+      "breakpoints": true
     }
   ]
 }

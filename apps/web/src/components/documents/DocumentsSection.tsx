@@ -1,28 +1,31 @@
 "use client"
 
-import { FileUpload } from "./FileUpload"
+import { FileUpload, DocumentList } from "./index"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
+import { api } from "@/lib/trpc/client"
 
 interface DocumentsSectionProps {
   projectId: string
 }
 
 /**
- * DocumentsSection - Displays document upload interface for a project
+ * DocumentsSection - Displays document upload interface and document list for a project
  *
- * Provides file upload functionality and will display uploaded documents
- * in a list/grid view (to be implemented in Story 3.2).
+ * Provides file upload functionality with automatic categorization
+ * and displays uploaded documents in a grid view with filtering and sorting.
  */
 export function DocumentsSection({ projectId }: DocumentsSectionProps) {
   const { toast } = useToast()
+  const utils = api.useUtils()
 
   const handleUploadSuccess = (_documentId: string) => {
     toast({
       title: "Success",
       description: "Document uploaded successfully",
     })
-    // TODO: Refresh documents list when implemented in Story 3.2
+    // Refresh documents list after upload
+    utils.documents.list.invalidate()
   }
 
   const handleUploadError = (error: string) => {
@@ -48,15 +51,13 @@ export function DocumentsSection({ projectId }: DocumentsSectionProps) {
         </CardContent>
       </Card>
 
-      {/* Document list/grid will be added in Story 3.2 */}
+      {/* Document list with thumbnails */}
       <Card>
         <CardHeader>
           <CardTitle>Documents</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground text-center py-8">
-            Document list and thumbnail view will be added in Story 3.2
-          </p>
+          <DocumentList projectId={projectId} />
         </CardContent>
       </Card>
     </div>

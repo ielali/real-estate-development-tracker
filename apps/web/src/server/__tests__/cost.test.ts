@@ -70,12 +70,12 @@ describe("Cost Router", () => {
       .values(CATEGORIES)
       .onConflictDoNothing({ target: [categories.id, categories.type] })
 
-    // Create test users
+    // Create test users with unique IDs to avoid conflicts
     const user1 = await testDbInstance.db
       .insert(users)
       .values({
-        id: "test-user-1",
-        email: "testuser@example.com",
+        id: crypto.randomUUID(),
+        email: `testuser-${Date.now()}-${Math.random()}@example.com`,
         name: "Test User",
         firstName: "Test",
         lastName: "User",
@@ -86,8 +86,8 @@ describe("Cost Router", () => {
     const user2 = await testDbInstance.db
       .insert(users)
       .values({
-        id: "test-user-2",
-        email: "anotheruser@example.com",
+        id: crypto.randomUUID(),
+        email: `anotheruser-${Date.now()}-${Math.random()}@example.com`,
         name: "Another User",
         firstName: "Another",
         lastName: "User",

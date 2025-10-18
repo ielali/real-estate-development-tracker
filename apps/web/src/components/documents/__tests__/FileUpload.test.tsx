@@ -6,31 +6,65 @@
  */
 
 import React from "react"
-import { describe, test, expect, vi } from "vitest"
-import { render, screen, fireEvent, waitFor } from "@testing-library/react"
+import { describe, test, expect, vi, afterEach, beforeEach } from "vitest"
+import { render, screen, fireEvent, waitFor, cleanup } from "@testing-library/react"
 import { FileUpload } from "../FileUpload"
+import { TRPCWrapper } from "@/test/test-utils"
+
+// Mock the tRPC client to prevent actual API calls
+vi.mock("@/lib/trpc/client", () => ({
+  api: {
+    documents: {
+      upload: {
+        useMutation: () => ({
+          mutate: vi.fn(),
+          mutateAsync: vi.fn(() => Promise.resolve({ id: "mock-doc-id" })),
+          isLoading: false,
+          isError: false,
+          isSuccess: false,
+        }),
+      },
+    },
+  },
+}))
 
 describe("FileUpload Component", () => {
   const mockProjectId = "test-project-123"
   const mockOnSuccess = vi.fn()
   const mockOnError = vi.fn()
 
+  // Helper to render with tRPC context
+  const renderWithProviders = (ui: React.ReactElement) => {
+    return render(<TRPCWrapper>{ui}</TRPCWrapper>)
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  // Cleanup after each test to prevent async operations from running after unmount
+  afterEach(async () => {
+    cleanup()
+    // Allow any pending async operations to complete
+    await new Promise((resolve) => setTimeout(resolve, 50))
+  })
+
   test("renders drag-and-drop zone", () => {
-    render(<FileUpload projectId={mockProjectId} />)
+    renderWithProviders(<FileUpload projectId={mockProjectId} />)
 
     expect(screen.getByText(/drag and drop files here/i)).toBeInTheDocument()
     expect(screen.getByText(/browse files/i)).toBeInTheDocument()
   })
 
   test("displays file type and size requirements", () => {
-    render(<FileUpload projectId={mockProjectId} />)
+    renderWithProviders(<FileUpload projectId={mockProjectId} />)
 
     expect(screen.getByText(/supports.*images.*pdfs.*documents/i)).toBeInTheDocument()
     expect(screen.getByText(/maximum file size.*10mb/i)).toBeInTheDocument()
   })
 
   test("has accessible file input", () => {
-    render(<FileUpload projectId={mockProjectId} />)
+    renderWithProviders(<FileUpload projectId={mockProjectId} />)
 
     const fileInput = screen.getByLabelText(/file input/i, { selector: "input[type='file']" })
     expect(fileInput).toBeInTheDocument()
@@ -39,7 +73,7 @@ describe("FileUpload Component", () => {
   })
 
   test("accepts multiple file selection", () => {
-    render(<FileUpload projectId={mockProjectId} />)
+    renderWithProviders(<FileUpload projectId={mockProjectId} />)
 
     const fileInput = screen.getByLabelText(/file input/i, {
       selector: "input[type='file']",
@@ -49,7 +83,7 @@ describe("FileUpload Component", () => {
   })
 
   test("triggers file input when browse button clicked", () => {
-    render(<FileUpload projectId={mockProjectId} />)
+    renderWithProviders(<FileUpload projectId={mockProjectId} />)
 
     const fileInput = screen.getByLabelText(/file input/i, {
       selector: "input[type='file']",
@@ -63,7 +97,7 @@ describe("FileUpload Component", () => {
   })
 
   test("shows error for file over 10MB", async () => {
-    render(<FileUpload projectId={mockProjectId} onError={mockOnError} />)
+    renderWithProviders(<FileUpload projectId={mockProjectId} onError={mockOnError} />)
 
     const fileInput = screen.getByLabelText(/file input/i, {
       selector: "input[type='file']",
@@ -88,7 +122,7 @@ describe("FileUpload Component", () => {
   })
 
   test("shows error for invalid file type", async () => {
-    render(<FileUpload projectId={mockProjectId} onError={mockOnError} />)
+    renderWithProviders(<FileUpload projectId={mockProjectId} onError={mockOnError} />)
 
     const fileInput = screen.getByLabelText(/file input/i, {
       selector: "input[type='file']",
@@ -106,7 +140,7 @@ describe("FileUpload Component", () => {
   })
 
   test("accepts valid JPEG image", async () => {
-    render(<FileUpload projectId={mockProjectId} onSuccess={mockOnSuccess} />)
+    renderWithProviders(<FileUpload projectId={mockProjectId} onSuccess={mockOnSuccess} />)
 
     const fileInput = screen.getByLabelText(/file input/i, {
       selector: "input[type='file']",
@@ -123,7 +157,7 @@ describe("FileUpload Component", () => {
   })
 
   test("accepts valid PDF document", async () => {
-    render(<FileUpload projectId={mockProjectId} />)
+    renderWithProviders(<FileUpload projectId={mockProjectId} />)
 
     const fileInput = screen.getByLabelText(/file input/i, {
       selector: "input[type='file']",
@@ -140,7 +174,7 @@ describe("FileUpload Component", () => {
   })
 
   test("displays upload progress for selected files", async () => {
-    render(<FileUpload projectId={mockProjectId} />)
+    renderWithProviders(<FileUpload projectId={mockProjectId} />)
 
     const fileInput = screen.getByLabelText(/file input/i, {
       selector: "input[type='file']",
@@ -167,7 +201,7 @@ describe("FileUpload Component", () => {
   })
 
   test("allows canceling upload", async () => {
-    render(<FileUpload projectId={mockProjectId} />)
+    renderWithProviders(<FileUpload projectId={mockProjectId} />)
 
     const fileInput = screen.getByLabelText(/file input/i, {
       selector: "input[type='file']",
@@ -188,7 +222,7 @@ describe("FileUpload Component", () => {
   })
 
   test("handles drag and drop events", () => {
-    render(<FileUpload projectId={mockProjectId} />)
+    renderWithProviders(<FileUpload projectId={mockProjectId} />)
 
     const dropZone = screen.getByText(/drag and drop files here/i).closest("div")
     expect(dropZone).toBeInTheDocument()
@@ -204,7 +238,7 @@ describe("FileUpload Component", () => {
   })
 
   test("handles drop event with valid file", async () => {
-    render(<FileUpload projectId={mockProjectId} />)
+    renderWithProviders(<FileUpload projectId={mockProjectId} />)
 
     const dropZone = screen.getByText(/drag and drop files here/i).closest("div")!
     const file = new File(["content"], "dropped.jpg", { type: "image/jpeg" })
@@ -223,7 +257,7 @@ describe("FileUpload Component", () => {
     // Mock window.innerWidth for mobile
     global.innerWidth = 500
 
-    render(<FileUpload projectId={mockProjectId} />)
+    renderWithProviders(<FileUpload projectId={mockProjectId} />)
 
     // Trigger resize event to update mobile state
     fireEvent(window, new Event("resize"))
@@ -236,14 +270,14 @@ describe("FileUpload Component", () => {
   })
 
   test("does not allow uploads when disabled", () => {
-    render(<FileUpload projectId={mockProjectId} disabled={true} />)
+    renderWithProviders(<FileUpload projectId={mockProjectId} disabled={true} />)
 
     const browseButton = screen.getByRole("button", { name: /upload files/i })
     expect(browseButton).toBeDisabled()
   })
 
   test("displays file size in readable format", async () => {
-    render(<FileUpload projectId={mockProjectId} />)
+    renderWithProviders(<FileUpload projectId={mockProjectId} />)
 
     const fileInput = screen.getByLabelText(/file input/i, {
       selector: "input[type='file']",
@@ -261,7 +295,7 @@ describe("FileUpload Component", () => {
   })
 
   test("handles multiple simultaneous file uploads", async () => {
-    render(<FileUpload projectId={mockProjectId} />)
+    renderWithProviders(<FileUpload projectId={mockProjectId} />)
 
     const fileInput = screen.getByLabelText(/file input/i, {
       selector: "input[type='file']",

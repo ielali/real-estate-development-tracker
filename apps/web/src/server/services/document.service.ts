@@ -1,5 +1,6 @@
 import { getStore, getDeployStore } from "@netlify/blobs"
 import { TRPCError } from "@trpc/server"
+import sharp from "sharp"
 
 /**
  * File metadata extracted during upload validation
@@ -226,27 +227,100 @@ export class DocumentService {
   }
 
   /**
-   * Generate signed URL for secure document access
-   * (Story 3.2 - not implemented in this story)
+   * Generate thumbnail for image documents
    *
-   * @param documentId - Document UUID
-   * @returns Signed URL with expiration
+   * Creates a 200x200px thumbnail from the source image and stores it
+   * in Netlify Blobs with a -thumb suffix. Returns the thumbnail blob key.
+   *
+   * For non-image files, returns placeholder icon paths.
+   *
+   * @param blobKey - Blob key of the original document
+   * @param mimeType - MIME type of the document
+   * @returns Thumbnail blob key or placeholder icon path
+   * @throws {TRPCError} INTERNAL_SERVER_ERROR - Thumbnail generation failure
    */
-  async getSignedUrl(_documentId: string): Promise<string> {
-    // Placeholder for Story 3.2
-    throw new Error("getSignedUrl not yet implemented")
+  async generateThumbnail(blobKey: string, mimeType: string): Promise<string> {
+    // Check if file is an image
+    const imageTypes = ["image/jpeg", "image/png", "image/webp", "image/heic"]
+
+    if (!imageTypes.includes(mimeType)) {
+      // Return placeholder icons for non-images
+      if (mimeType === "application/pdf") {
+        return "/icons/pdf-placeholder.svg"
+      }
+      if (
+        mimeType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+        mimeType === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      ) {
+        return "/icons/doc-placeholder.svg"
+      }
+      return "/icons/file-placeholder.svg"
+    }
+
+    try {
+      // 1. Fetch original image from Netlify Blobs
+      const imageData = await this.store.get(blobKey)
+      if (!imageData) {
+        throw new Error("Original image not found")
+      }
+
+      // Convert blob data to buffer for Sharp processing
+      // Netlify Blobs returns data as string, need to convert to Buffer
+      const imageBuffer = Buffer.from(imageData, "base64")
+
+      // 2. Generate thumbnail using Sharp (200x200px max, maintain aspect ratio)
+      const thumbnailBuffer = await sharp(imageBuffer)
+        .resize(200, 200, { fit: "inside", withoutEnlargement: true })
+        .jpeg({ quality: 80 })
+        .toBuffer()
+
+      // 3. Upload thumbnail to Netlify Blobs with -thumb suffix
+      const thumbnailKey = `${blobKey}-thumb`
+      await this.store.set(thumbnailKey, bufferToArrayBuffer(thumbnailBuffer), {
+        metadata: {
+          originalBlobKey: blobKey,
+          thumbnailSize: "200x200",
+          generatedAt: new Date().toISOString(),
+        },
+      })
+
+      // 4. Return thumbnail blob key
+      return thumbnailKey
+    } catch (error) {
+      console.error("Thumbnail generation failed:", error)
+      // On failure, return default file placeholder
+      return "/icons/file-placeholder.svg"
+    }
   }
 
   /**
-   * Generate thumbnail for image documents
-   * (Story 3.2 - not implemented in this story)
+   * Get document blob for download with authorization
    *
-   * @param imageUrl - Source image URL
-   * @returns Thumbnail URL
+   * Fetches the document blob from Netlify Blobs storage.
+   * Authorization must be checked by the caller (tRPC procedure).
+   *
+   * @param blobKey - Blob key of the document
+   * @returns Object with data as string (base64 or text)
+   * @throws {TRPCError} NOT_FOUND - Document blob not found
    */
-  async generateThumbnail(_imageUrl: string): Promise<string> {
-    // Placeholder for Story 3.2
-    throw new Error("generateThumbnail not yet implemented")
+  async getDocumentBlob(blobKey: string): Promise<string> {
+    try {
+      const data = await this.store.get(blobKey)
+      if (!data) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Document not found in storage",
+        })
+      }
+
+      return data
+    } catch (error) {
+      console.error("Failed to retrieve document blob:", error)
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Document not found",
+      })
+    }
   }
 }
 

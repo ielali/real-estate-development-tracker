@@ -31,7 +31,7 @@ describe("Authentication", () => {
   describe("User Registration", () => {
     it("should hash password before storing", async () => {
       const userData = {
-        email: "test@example.com",
+        email: `test-${Date.now()}-${Math.random()}@example.com`,
         firstName: "Test",
         lastName: "User",
         password: "password123",
@@ -71,7 +71,7 @@ describe("Authentication", () => {
 
     it("should create user with admin role", async () => {
       const userData = {
-        email: "admin@example.com",
+        email: `admin-${Date.now()}-${Math.random()}@example.com`,
         firstName: "Admin",
         lastName: "User",
         password: "password123",
@@ -99,9 +99,10 @@ describe("Authentication", () => {
     })
 
     it("should prevent duplicate email registration", async () => {
+      const uniqueEmail = `duplicate-${Date.now()}-${Math.random()}@example.com`
       const userData = {
         id: crypto.randomUUID(),
-        email: "duplicate@example.com",
+        email: uniqueEmail,
         firstName: "Test",
         lastName: "User",
         name: "Test User",
@@ -142,7 +143,7 @@ describe("Authentication", () => {
     it("should find user by email", async () => {
       const userData = {
         id: crypto.randomUUID(),
-        email: "lookup@example.com",
+        email: `lookup-${Date.now()}-${Math.random()}@example.com`,
         firstName: "Lookup",
         lastName: "User",
         name: "Lookup User",
@@ -171,11 +172,11 @@ describe("Authentication", () => {
     let testUserId: string
 
     beforeEach(async () => {
-      // Create a test user for session tests
+      // Create a test user for session tests with unique email to avoid conflicts
       testUserId = crypto.randomUUID()
       await db.insert(users).values({
         id: testUserId,
-        email: "session-test@example.com",
+        email: `session-test-${Date.now()}-${Math.random()}@example.com`,
         firstName: "Session",
         lastName: "Test",
         name: "Session Test",

@@ -89,14 +89,17 @@
 
 # Dev server configuration
 [dev]
-  command = "cd apps/web && bun run dev"
-  port = 3000
+  command = "bun run dev"
+  port = 8888
   targetPort = 3000
-  framework = "#custom"
+  framework = "next"
+  autoLaunch = false
 
 # Context-specific settings
 [context.production]
   command = """
+    echo '🧹 Ensuring latest dependencies...' && \
+    bun install --frozen-lockfile && \
     cd apps/web && \
     echo '🚀 Production Build Pipeline' && \
     bun run lint && \
@@ -109,22 +112,28 @@
 
 [context.deploy-preview]
   command = """
+    echo '🧹 Ensuring latest dependencies...' && \
+    bun install --frozen-lockfile && \
     cd apps/web && \
     echo '👀 Deploy Preview Build Pipeline' && \
     bun run lint && \
     bun run type-check && \
     bun run test:component && \
+    bun run db:migrate && \
     bun run build && \
     echo '✅ Deploy preview build complete'
   """
 
 [context.branch-deploy]
   command = """
+    echo '🧹 Ensuring latest dependencies...' && \
+    bun install --frozen-lockfile && \
     cd apps/web && \
     echo '🌿 Branch Deploy Build Pipeline' && \
     bun run lint && \
     bun run type-check && \
     bun run test:component && \
+    bun run db:migrate && \
     bun run build && \
     echo '✅ Branch deploy build complete'
   """
