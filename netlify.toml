@@ -98,6 +98,8 @@
 # Context-specific settings
 [context.production]
   command = """
+    echo '🧹 Ensuring latest dependencies...' && \
+    bun install --frozen-lockfile && \
     cd apps/web && \
     echo '🚀 Production Build Pipeline' && \
     bun run lint && \
@@ -110,6 +112,8 @@
 
 [context.deploy-preview]
   command = """
+    echo '🧹 Ensuring latest dependencies...' && \
+    bun install --frozen-lockfile && \
     cd apps/web && \
     echo '👀 Deploy Preview Build Pipeline' && \
     bun run lint && \
@@ -122,6 +126,8 @@
 
 [context.branch-deploy]
   command = """
+    echo '🧹 Ensuring latest dependencies...' && \
+    bun install --frozen-lockfile && \
     cd apps/web && \
     echo '🌿 Branch Deploy Build Pipeline' && \
     bun run lint && \
