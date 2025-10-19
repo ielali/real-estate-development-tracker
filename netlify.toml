@@ -98,9 +98,9 @@
 # Context-specific settings
 [context.production]
   command = """
-    echo '🧹 Clearing old dependencies and installing fresh...' && \
-    rm -rf node_modules && \
-    bun install --frozen-lockfile && \
+    echo '🧹 Clearing Bun cache and all dependencies...' && \
+    rm -rf ~/.bun/install/cache node_modules apps/web/node_modules && \
+    bun install --no-cache --frozen-lockfile && \
     cd apps/web && \
     echo '🚀 Production Build Pipeline' && \
     bun run lint && \
@@ -113,10 +113,12 @@
 
 [context.deploy-preview]
   command = """
-    echo '🧹 Clearing old dependencies and installing fresh...' && \
-    rm -rf node_modules && \
-    bun install --frozen-lockfile && \
+    echo '🧹 Clearing Bun cache and all dependencies...' && \
+    rm -rf ~/.bun/install/cache node_modules apps/web/node_modules && \
+    bun install --no-cache --frozen-lockfile && \
     cd apps/web && \
+    echo '📦 Verifying @hookform/resolvers version...' && \
+    cat ../node_modules/@hookform/resolvers/package.json | grep version && \
     echo '👀 Deploy Preview Build Pipeline' && \
     bun run lint && \
     bun run type-check && \
@@ -128,9 +130,9 @@
 
 [context.branch-deploy]
   command = """
-    echo '🧹 Clearing old dependencies and installing fresh...' && \
-    rm -rf node_modules && \
-    bun install --frozen-lockfile && \
+    echo '🧹 Clearing Bun cache and all dependencies...' && \
+    rm -rf ~/.bun/install/cache node_modules apps/web/node_modules && \
+    bun install --no-cache --frozen-lockfile && \
     cd apps/web && \
     echo '🌿 Branch Deploy Build Pipeline' && \
     bun run lint && \
