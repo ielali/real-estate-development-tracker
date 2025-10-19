@@ -43,18 +43,7 @@ export async function validateDocumentCategory(categoryId: string): Promise<stri
     return categoryId
   }
 
-  // Check if it's a custom category in the database
-  const customCategory = await db
-    .select()
-    .from(categories)
-    .where(and(eq(categories.id, categoryId), eq(categories.type, "document")))
-    .limit(1)
-
-  if (customCategory.length > 0) {
-    return categoryId
-  }
-
-  // Attempt to fix common mistakes: singular → plural
+  // Attempt to fix common mistakes FIRST (before DB query): singular → plural
   const singularToPlural: Record<string, string> = {
     photo: "photos",
     receipt: "receipts",
@@ -72,6 +61,17 @@ export async function validateDocumentCategory(categoryId: string): Promise<stri
       `[Document Category] Auto-corrected invalid category "${categoryId}" → "${corrected}"`
     )
     return corrected
+  }
+
+  // Check if it's a custom category in the database (only if not auto-correctable)
+  const customCategory = await db
+    .select()
+    .from(categories)
+    .where(and(eq(categories.id, categoryId), eq(categories.type, "document")))
+    .limit(1)
+
+  if (customCategory.length > 0) {
+    return categoryId
   }
 
   // Category doesn't exist
