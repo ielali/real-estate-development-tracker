@@ -116,9 +116,9 @@
     echo '🧹 Clearing Bun cache and all dependencies...' && \
     rm -rf ~/.bun/install/cache node_modules apps/web/node_modules && \
     bun install --no-cache --frozen-lockfile && \
-    cd apps/web && \
     echo '📦 Verifying @hookform/resolvers version...' && \
-    cat ../node_modules/@hookform/resolvers/package.json | grep version && \
+    cat node_modules/@hookform/resolvers/package.json | grep version && \
+    cd apps/web && \
     echo '👀 Deploy Preview Build Pipeline' && \
     bun run lint && \
     bun run type-check && \
