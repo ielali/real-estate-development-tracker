@@ -58,10 +58,15 @@ function formatRelativeTime(date: Date): string {
  */
 function getCategoryLabel(categoryId: string): string {
   const labels: Record<string, string> = {
-    photo: "Photo",
-    receipt: "Receipt",
-    contract: "Contract",
-    permit: "Permit",
+    photos: "Photo",
+    receipts: "Receipt",
+    invoices: "Invoice",
+    contracts: "Contract",
+    permits: "Permit",
+    plans: "Plan",
+    inspections: "Inspection",
+    warranties: "Warranty",
+    correspondence: "Correspondence",
   }
   return labels[categoryId] || categoryId
 }
@@ -71,10 +76,15 @@ function getCategoryLabel(categoryId: string): string {
  */
 function getCategoryColor(categoryId: string): string {
   const colors: Record<string, string> = {
-    photo: "bg-blue-100 text-blue-800",
-    receipt: "bg-green-100 text-green-800",
-    contract: "bg-purple-100 text-purple-800",
-    permit: "bg-orange-100 text-orange-800",
+    photos: "bg-blue-100 text-blue-800",
+    receipts: "bg-green-100 text-green-800",
+    invoices: "bg-yellow-100 text-yellow-800",
+    contracts: "bg-purple-100 text-purple-800",
+    permits: "bg-orange-100 text-orange-800",
+    plans: "bg-indigo-100 text-indigo-800",
+    inspections: "bg-red-100 text-red-800",
+    warranties: "bg-teal-100 text-teal-800",
+    correspondence: "bg-gray-100 text-gray-800",
   }
   return colors[categoryId] || "bg-gray-100 text-gray-800"
 }
@@ -196,10 +206,15 @@ export function DocumentList({ projectId, initialCategory }: DocumentListProps) 
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Categories</SelectItem>
-              <SelectItem value="photo">Photos</SelectItem>
-              <SelectItem value="receipt">Receipts</SelectItem>
-              <SelectItem value="contract">Contracts</SelectItem>
-              <SelectItem value="permit">Permits</SelectItem>
+              <SelectItem value="photos">Photos</SelectItem>
+              <SelectItem value="receipts">Receipts</SelectItem>
+              <SelectItem value="invoices">Invoices</SelectItem>
+              <SelectItem value="contracts">Contracts</SelectItem>
+              <SelectItem value="permits">Permits</SelectItem>
+              <SelectItem value="plans">Plans & Drawings</SelectItem>
+              <SelectItem value="inspections">Inspection Reports</SelectItem>
+              <SelectItem value="warranties">Warranties</SelectItem>
+              <SelectItem value="correspondence">Correspondence</SelectItem>
             </SelectContent>
           </Select>
         </div>
