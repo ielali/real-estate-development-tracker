@@ -98,7 +98,8 @@
 # Context-specific settings
 [context.production]
   command = """
-    echo '🧹 Ensuring latest dependencies...' && \
+    echo '🧹 Clearing old dependencies and installing fresh...' && \
+    rm -rf node_modules && \
     bun install --frozen-lockfile && \
     cd apps/web && \
     echo '🚀 Production Build Pipeline' && \
@@ -112,7 +113,8 @@
 
 [context.deploy-preview]
   command = """
-    echo '🧹 Ensuring latest dependencies...' && \
+    echo '🧹 Clearing old dependencies and installing fresh...' && \
+    rm -rf node_modules && \
     bun install --frozen-lockfile && \
     cd apps/web && \
     echo '👀 Deploy Preview Build Pipeline' && \
@@ -126,7 +128,8 @@
 
 [context.branch-deploy]
   command = """
-    echo '🧹 Ensuring latest dependencies...' && \
+    echo '🧹 Clearing old dependencies and installing fresh...' && \
+    rm -rf node_modules && \
     bun install --frozen-lockfile && \
     cd apps/web && \
     echo '🌿 Branch Deploy Build Pipeline' && \
