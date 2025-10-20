@@ -9,6 +9,9 @@ export * from "./documents"
 export * from "./events"
 export * from "./projectAccess"
 export * from "./projectContact"
+export * from "./eventContacts"
+export * from "./eventDocuments"
+export * from "./eventCosts"
 export * from "./auditLog"
 export * from "./categories"
 
@@ -22,6 +25,9 @@ import { documents } from "./documents"
 import { events } from "./events"
 import { projectAccess } from "./projectAccess"
 import { projectContact } from "./projectContact"
+import { eventContacts } from "./eventContacts"
+import { eventDocuments } from "./eventDocuments"
+import { eventCosts } from "./eventCosts"
 import { categories } from "./categories"
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -94,7 +100,7 @@ export const documentsRelations = relations(documents, ({ one }) => ({
   }),
 }))
 
-export const eventsRelations = relations(events, ({ one }) => ({
+export const eventsRelations = relations(events, ({ one, many }) => ({
   project: one(projects, {
     fields: [events.projectId],
     references: [projects.id],
@@ -103,6 +109,13 @@ export const eventsRelations = relations(events, ({ one }) => ({
     fields: [events.categoryId],
     references: [categories.id],
   }),
+  createdBy: one(users, {
+    fields: [events.createdById],
+    references: [users.id],
+  }),
+  eventContacts: many(eventContacts),
+  eventDocuments: many(eventDocuments),
+  eventCosts: many(eventCosts),
 }))
 
 export const projectAccessRelations = relations(projectAccess, ({ one }) => ({
@@ -137,4 +150,37 @@ export const categoriesRelations = relations(categories, ({ one, many }) => ({
     references: [categories.id],
   }),
   children: many(categories),
+}))
+
+export const eventContactsRelations = relations(eventContacts, ({ one }) => ({
+  event: one(events, {
+    fields: [eventContacts.eventId],
+    references: [events.id],
+  }),
+  contact: one(contacts, {
+    fields: [eventContacts.contactId],
+    references: [contacts.id],
+  }),
+}))
+
+export const eventDocumentsRelations = relations(eventDocuments, ({ one }) => ({
+  event: one(events, {
+    fields: [eventDocuments.eventId],
+    references: [events.id],
+  }),
+  document: one(documents, {
+    fields: [eventDocuments.documentId],
+    references: [documents.id],
+  }),
+}))
+
+export const eventCostsRelations = relations(eventCosts, ({ one }) => ({
+  event: one(events, {
+    fields: [eventCosts.eventId],
+    references: [events.id],
+  }),
+  cost: one(costs, {
+    fields: [eventCosts.costId],
+    references: [costs.id],
+  }),
 }))

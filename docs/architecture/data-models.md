@@ -224,8 +224,9 @@ interface Contact extends BaseEntity {
 - categoryId: string - Category ID from unified category system
 - date: Date - Transaction date
 - contactId: string | null - Optional vendor reference
-- documentIds: string[] - Linked receipts/invoices
 - createdById: string - User who entered the cost
+
+**Note:** Linked documents (receipts/invoices) are stored in the CostDocument junction table to maintain referential integrity and enable efficient document management.
 
 ### TypeScript Interface
 
@@ -237,7 +238,6 @@ interface Cost extends BaseEntity {
   categoryId: string // References Category.id
   date: Date
   contactId: string | null
-  documentIds: string[]
   createdById: string
 }
 ```
@@ -246,8 +246,43 @@ interface Cost extends BaseEntity {
 
 - Belongs to Project
 - Belongs to Contact (optional, as vendor)
-- Has many Documents (receipts/invoices)
+- Has many Documents through CostDocument junction table
 - Belongs to User (creator)
+
+## CostDocument
+
+**Purpose:** Junction table linking costs to supporting documents (receipts, invoices, proof of payment)
+
+**Key Attributes:**
+
+- Extends BaseEntity (id, createdAt, updatedAt, deletedAt)
+- costId: string - Associated cost
+- documentId: string - Associated document
+
+### TypeScript Interface
+
+```typescript
+interface CostDocument extends BaseEntity {
+  costId: string
+  documentId: string
+}
+```
+
+### Relationships
+
+- Belongs to Cost (CASCADE on delete)
+- Belongs to Document (CASCADE on delete)
+
+### Database Constraints
+
+```sql
+-- Prevent duplicate document links
+UNIQUE(cost_id, document_id) WHERE deleted_at IS NULL
+
+-- Composite index for efficient queries
+CREATE INDEX idx_cost_documents_cost ON cost_documents(cost_id) WHERE deleted_at IS NULL;
+CREATE INDEX idx_cost_documents_document ON cost_documents(document_id) WHERE deleted_at IS NULL;
+```
 
 ## Document
 
@@ -300,10 +335,9 @@ interface Document extends BaseEntity {
 - description: string | null - Detailed description
 - date: Date - Event date/time
 - categoryId: string - Category ID from unified category system
-- contactIds: string[] - Related contacts
-- documentIds: string[] - Attached documents
-- costIds: string[] - Related costs
 - createdById: string - User who created event
+
+**Note:** Related contacts, documents, and costs are stored in separate junction tables (EventContact, EventDocument, EventCost) to maintain referential integrity and enable efficient querying.
 
 ### TypeScript Interface
 
@@ -314,9 +348,6 @@ interface Event extends BaseEntity {
   description: string | null
   date: Date
   categoryId: string // References Category.id
-  contactIds: string[]
-  documentIds: string[]
-  costIds: string[]
   createdById: string
 }
 ```
@@ -324,10 +355,115 @@ interface Event extends BaseEntity {
 ### Relationships
 
 - Belongs to Project
-- Has many Contacts (participants)
-- Has many Documents (attachments)
-- Has many Costs (related expenses)
+- Has many Contacts through EventContact junction table
+- Has many Documents through EventDocument junction table
+- Has many Costs through EventCost junction table
 - Belongs to User (creator)
+
+## EventContact
+
+**Purpose:** Junction table linking events to contacts (e.g., meeting attendees, inspection participants)
+
+**Key Attributes:**
+
+- Extends BaseEntity (id, createdAt, updatedAt, deletedAt)
+- eventId: string - Associated event
+- contactId: string - Associated contact
+
+### TypeScript Interface
+
+```typescript
+interface EventContact extends BaseEntity {
+  eventId: string
+  contactId: string
+}
+```
+
+### Relationships
+
+- Belongs to Event (CASCADE on delete)
+- Belongs to Contact (CASCADE on delete)
+
+### Database Constraints
+
+```sql
+-- Prevent duplicate contact links
+UNIQUE(event_id, contact_id) WHERE deleted_at IS NULL
+
+-- Composite index for efficient queries
+CREATE INDEX idx_event_contacts_event ON event_contacts(event_id) WHERE deleted_at IS NULL;
+CREATE INDEX idx_event_contacts_contact ON event_contacts(contact_id) WHERE deleted_at IS NULL;
+```
+
+## EventDocument
+
+**Purpose:** Junction table linking events to documents (e.g., meeting notes, inspection photos)
+
+**Key Attributes:**
+
+- Extends BaseEntity (id, createdAt, updatedAt, deletedAt)
+- eventId: string - Associated event
+- documentId: string - Associated document
+
+### TypeScript Interface
+
+```typescript
+interface EventDocument extends BaseEntity {
+  eventId: string
+  documentId: string
+}
+```
+
+### Relationships
+
+- Belongs to Event (CASCADE on delete)
+- Belongs to Document (CASCADE on delete)
+
+### Database Constraints
+
+```sql
+-- Prevent duplicate document links
+UNIQUE(event_id, document_id) WHERE deleted_at IS NULL
+
+-- Composite index for efficient queries
+CREATE INDEX idx_event_documents_event ON event_documents(event_id) WHERE deleted_at IS NULL;
+CREATE INDEX idx_event_documents_document ON event_documents(document_id) WHERE deleted_at IS NULL;
+```
+
+## EventCost
+
+**Purpose:** Junction table linking events to costs (e.g., expenses incurred during an event)
+
+**Key Attributes:**
+
+- Extends BaseEntity (id, createdAt, updatedAt, deletedAt)
+- eventId: string - Associated event
+- costId: string - Associated cost
+
+### TypeScript Interface
+
+```typescript
+interface EventCost extends BaseEntity {
+  eventId: string
+  costId: string
+}
+```
+
+### Relationships
+
+- Belongs to Event (CASCADE on delete)
+- Belongs to Cost (CASCADE on delete)
+
+### Database Constraints
+
+```sql
+-- Prevent duplicate cost links
+UNIQUE(event_id, cost_id) WHERE deleted_at IS NULL
+
+-- Composite index for efficient queries
+CREATE INDEX idx_event_costs_event ON event_costs(event_id) WHERE deleted_at IS NULL;
+CREATE INDEX idx_event_costs_cost ON event_costs(cost_id) WHERE deleted_at IS NULL;
+```
 
 ## ProjectAccess
 

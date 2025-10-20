@@ -31,6 +31,8 @@ import { ProjectMap } from "@/components/maps/ProjectMap"
 import { SearchAndFilter } from "@/components/costs/SearchAndFilter"
 import { useCostFilters } from "@/hooks/useCostFilters"
 import { useFilterPersistence, loadSavedFilters } from "@/hooks/useFilterPersistence"
+import { Timeline, EventEntryForm, TimelineFilter } from "@/components/events"
+import { Plus } from "lucide-react"
 
 // Lazy load the costs components
 const CostsList = lazy(() =>
@@ -69,6 +71,11 @@ export default function ProjectDetailPage() {
   const { toast } = useToast()
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [costsViewMode, setCostsViewMode] = useState<"list" | "contact" | "category">("list")
+  const [eventDialogOpen, setEventDialogOpen] = useState(false)
+  const [categoryFilter, setCategoryFilter] = useState<string | undefined>()
+  const [contactFilter, setContactFilter] = useState<string | undefined>()
+  const [dateRangeStart, setDateRangeStart] = useState<Date | undefined>()
+  const [dateRangeEnd, setDateRangeEnd] = useState<Date | undefined>()
 
   const projectId = params.id as string
   const utils = api.useUtils()
@@ -294,11 +301,12 @@ export default function ProjectDetailPage() {
           </div>
         </div>
 
-        {/* Tabs for Project Details and Costs */}
+        {/* Tabs for Project Details, Costs, and Events */}
         <Tabs defaultValue="details" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="details">Project Details</TabsTrigger>
             <TabsTrigger value="costs">Costs</TabsTrigger>
+            <TabsTrigger value="events">Events</TabsTrigger>
           </TabsList>
 
           {/* Details Tab */}
@@ -457,6 +465,75 @@ export default function ProjectDetailPage() {
                 </Suspense>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Events Tab */}
+          <TabsContent value="events" className="mt-6">
+            <div className="space-y-6">
+              {/* Add Event Button */}
+              <div className="flex justify-end">
+                <Dialog open={eventDialogOpen} onOpenChange={setEventDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Event
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                      <DialogTitle>Create Event</DialogTitle>
+                      <DialogDescription>
+                        Add a new milestone, meeting, or inspection to your project timeline
+                      </DialogDescription>
+                    </DialogHeader>
+                    <EventEntryForm
+                      projectId={projectId}
+                      onSuccess={() => setEventDialogOpen(false)}
+                      onCancel={() => setEventDialogOpen(false)}
+                    />
+                  </DialogContent>
+                </Dialog>
+              </div>
+
+              {/* Filters */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Filter Events</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <TimelineFilter
+                    categoryId={categoryFilter}
+                    onCategoryChange={setCategoryFilter}
+                    contactId={contactFilter}
+                    onContactChange={setContactFilter}
+                    startDate={dateRangeStart}
+                    endDate={dateRangeEnd}
+                    onDateRangeChange={(start, end) => {
+                      setDateRangeStart(start)
+                      setDateRangeEnd(end)
+                    }}
+                  />
+                </CardContent>
+              </Card>
+
+              {/* Timeline */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Timeline & Events</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Timeline
+                    projectId={projectId}
+                    filters={{
+                      categoryId: categoryFilter,
+                      contactId: contactFilter,
+                      startDate: dateRangeStart,
+                      endDate: dateRangeEnd,
+                    }}
+                  />
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
       </div>
