@@ -54,6 +54,13 @@ describe("Cost Router", () => {
 
   beforeAll(async () => {
     testDbInstance = await createTestDb()
+
+    // Seed categories ONCE (static reference data - use onConflictDoNothing for idempotency)
+    // Categories don't need to be cleaned between tests since they're static reference data
+    await testDbInstance.db
+      .insert(categories)
+      .values(CATEGORIES)
+      .onConflictDoNothing({ target: [categories.id, categories.type] })
   })
 
   afterAll(async () => {
@@ -62,13 +69,8 @@ describe("Cost Router", () => {
 
   beforeEach(async () => {
     // Clean up before each test - ensure remote DB is empty for test isolation
+    // NOTE: Categories table is NOT truncated because they're static reference data
     await testDbInstance.cleanup()
-
-    // Seed categories (static reference data - use onConflictDoNothing for idempotency)
-    await testDbInstance.db
-      .insert(categories)
-      .values(CATEGORIES)
-      .onConflictDoNothing({ target: [categories.id, categories.type] })
 
     // Create test users with unique IDs to avoid conflicts
     const user1 = await testDbInstance.db

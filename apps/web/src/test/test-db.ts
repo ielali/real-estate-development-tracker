@@ -63,11 +63,13 @@ export const createTestDb = async () => {
 /**
  * Creates cleanup function that deletes all test data.
  * Uses TRUNCATE CASCADE for reliable cleanup that handles FK constraints automatically.
+ * NOTE: Categories table is NOT truncated because it contains static reference data.
  */
 function createCleanupFunction(db: ReturnType<typeof drizzle<typeof schema>>) {
   return async () => {
     // TRUNCATE CASCADE automatically handles foreign key dependencies
     // Much more reliable than manual DELETE ordering
+    // NOTE: categories table is excluded - it contains static reference data that's seeded once
     await db.execute(sql`
       TRUNCATE TABLE
         audit_log,
@@ -82,8 +84,7 @@ function createCleanupFunction(db: ReturnType<typeof drizzle<typeof schema>>) {
         accounts,
         verifications,
         addresses,
-        users,
-        categories
+        users
       CASCADE
     `)
   }

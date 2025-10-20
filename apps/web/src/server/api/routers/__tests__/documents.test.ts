@@ -5,18 +5,20 @@
  */
 
 import { describe, test, expect, beforeAll, afterAll, beforeEach, vi } from "vitest"
-import { appRouter } from "../../root"
-import { createTestDb, cleanupAllTestDatabases } from "@/test/test-db"
-import type { User } from "@/server/db/schema/users"
-import { users } from "@/server/db/schema/users"
 
-// Mock Netlify Blobs
+// IMPORTANT: vi.mock must be at the top of the file (after imports from vitest)
+// This is a Vitest requirement for hoisting mocks
 vi.mock("@netlify/blobs", () => ({
   getStore: () => ({
     set: vi.fn().mockResolvedValue(undefined),
     getURL: vi.fn((id: string) => `https://blob.example.com/${id}`),
   }),
 }))
+
+import { appRouter } from "../../root"
+import { createTestDb, cleanupAllTestDatabases } from "@/test/test-db"
+import type { User } from "@/server/db/schema/users"
+import { users } from "@/server/db/schema/users"
 
 describe("Documents Router", () => {
   let testDbInstance: Awaited<ReturnType<typeof createTestDb>>

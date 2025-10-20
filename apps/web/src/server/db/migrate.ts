@@ -3,6 +3,14 @@ import { drizzle } from "drizzle-orm/neon-serverless"
 import { Pool, neonConfig } from "@neondatabase/serverless"
 import * as path from "path"
 import ws from "ws"
+import dotenv from "dotenv"
+import { existsSync } from "fs"
+
+// Load .env file if it exists (for local development)
+const envPath = path.join(process.cwd(), ".env")
+if (existsSync(envPath)) {
+  dotenv.config({ path: envPath })
+}
 
 async function main() {
   console.log("Running PostgreSQL migrations...")
