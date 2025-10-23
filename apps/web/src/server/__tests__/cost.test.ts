@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, beforeAll, afterAll } from "vitest"
+import { sql } from "drizzle-orm"
 import { appRouter } from "../api/root"
 import { createTestDb, cleanupAllTestDatabases } from "@/test/test-db"
 import type { User } from "../db/schema/users"
@@ -65,10 +66,14 @@ describe("Cost Router", () => {
     await testDbInstance.cleanup()
 
     // Seed categories (static reference data - use onConflictDoNothing for idempotency)
-    await testDbInstance.db
-      .insert(categories)
-      .values(CATEGORIES)
-      .onConflictDoNothing({ target: [categories.id, categories.type] })
+    // Skip if categories already exist (first test seeds them, others reuse)
+    const existingCategories = await testDbInstance.db
+      .select({ count: sql<number>`count(*)` })
+      .from(categories)
+
+    if (Number(existingCategories[0]?.count) === 0) {
+      await testDbInstance.db.insert(categories).values(CATEGORIES)
+    }
 
     // Create test users with unique IDs to avoid conflicts
     const user1 = await testDbInstance.db

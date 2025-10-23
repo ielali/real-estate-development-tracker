@@ -23,6 +23,7 @@ target/
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+web-bundles/
 .claude/
 .cursor/
 .bmad-core/

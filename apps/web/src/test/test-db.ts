@@ -15,12 +15,10 @@ let globalDb: ReturnType<typeof drizzle<typeof schema>> | null = null
 
 // Get test database URL from environment
 function getTestDbUrl(): string {
-  const testDbUrl = process.env.NEON_TEST_DATABASE_URL || process.env.NETLIFY_DATABASE_URL
+  const testDbUrl = process.env.DATABASE_URL
 
   if (!testDbUrl) {
-    throw new Error(
-      "NEON_TEST_DATABASE_URL or NETLIFY_DATABASE_URL environment variable is required for tests"
-    )
+    throw new Error("DATABASE_URL environment variable is required for tests")
   }
 
   return testDbUrl
