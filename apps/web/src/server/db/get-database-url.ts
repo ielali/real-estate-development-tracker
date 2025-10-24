@@ -3,18 +3,18 @@
  * Single source of truth for database connection string resolution
  *
  * Environment Variables:
- * - NEON_TEST_DATABASE_URL: Test database (NODE_ENV=test)
+ * - NETLIFY_TEST_DATABASE_URL: Test database (NODE_ENV=test)
  * - NETLIFY_DATABASE_URL: Production database (NODE_ENV=production, auto-set by Netlify)
- * - NEON_DATABASE_URL: Development database (local development)
+ * - NETLIFY_DATABASE_URL: Development database (local development)
  */
 export function getDatabaseUrl(): string {
   const nodeEnv = process.env.NODE_ENV
 
   // Test environment: Use dedicated test database
   if (nodeEnv === "test") {
-    const testUrl = process.env.NEON_TEST_DATABASE_URL
+    const testUrl = process.env.NETLIFY_TEST_DATABASE_URL
     if (!testUrl) {
-      throw new Error("Test database not configured. Set NEON_TEST_DATABASE_URL in .env file")
+      throw new Error("Test database not configured. Set NETLIFY_TEST_DATABASE_URL in .env file")
     }
     return testUrl
   }
@@ -30,10 +30,10 @@ export function getDatabaseUrl(): string {
     return prodUrl
   }
 
-  // Development environment: Use NEON_DATABASE_URL from .env
-  const devUrl = process.env.NEON_DATABASE_URL
+  // Development environment: Use NETLIFY_DATABASE_URL from .env
+  const devUrl = process.env.NETLIFY_DATABASE_URL
   if (!devUrl) {
-    throw new Error("Development database not configured. Set NEON_DATABASE_URL in .env file")
+    throw new Error("Development database not configured. Set NETLIFY_DATABASE_URL in .env file")
   }
   return devUrl
 }

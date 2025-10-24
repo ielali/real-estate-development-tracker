@@ -103,14 +103,14 @@ This is configured in `vitest.config.ts` via `environmentMatchGlobs`.
 
 ## Test Database Setup
 
-API tests use a separate test database configured via `NEON_TEST_DATABASE_URL` environment variable.
+API tests use a separate test database configured via `NETLIFY_TEST_DATABASE_URL` environment variable.
 
 ### Local Development
 
 1. **Environment Variable**: Add the test database URL to your `.env` file:
 
    ```bash
-   NEON_TEST_DATABASE_URL="postgresql://user:password@host/database?sslmode=require"
+   NETLIFY_TEST_DATABASE_URL="postgresql://user:password@host/database?sslmode=require"
    ```
 
 2. **Run Migrations** (first time only):
@@ -275,7 +275,7 @@ Tests run automatically in GitHub Actions on:
 
 The test database URL is stored as a GitHub Actions secret:
 
-- Secret name: `NEON_TEST_DATABASE_URL`
+- Secret name: `NETLIFY_TEST_DATABASE_URL`
 - The workflow automatically uses this secret when running tests
 
 ## Troubleshooting
@@ -307,7 +307,7 @@ This indicates DOM pollution between tests. Ensure:
 
 ### Issue: Tests timeout waiting for database
 
-**Cause:** Missing `NEON_TEST_DATABASE_URL` environment variable
+**Cause:** Missing `NETLIFY_TEST_DATABASE_URL` environment variable
 **Solution:** Ensure `.env` file contains valid test database URL
 
 ### Issue: Tests fail with "jsdom not found"

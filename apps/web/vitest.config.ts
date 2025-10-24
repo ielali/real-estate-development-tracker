@@ -44,8 +44,8 @@ export default defineConfig({
 
     env: {
       NODE_ENV: "test",
-      // Test database - getDatabaseUrl() will use NEON_TEST_DATABASE_URL when NODE_ENV=test
-      NEON_TEST_DATABASE_URL: process.env.NEON_TEST_DATABASE_URL,
+      // Test database - getDatabaseUrl() will use NETLIFY_TEST_DATABASE_URL when NODE_ENV=test
+      NETLIFY_TEST_DATABASE_URL: process.env.NETLIFY_TEST_DATABASE_URL,
       DEPLOY_PRIME_URL: process.env.DEPLOY_PRIME_URL || "http://localhost:3000",
       BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET || "test-secret-minimum-32-chars-long",
     },

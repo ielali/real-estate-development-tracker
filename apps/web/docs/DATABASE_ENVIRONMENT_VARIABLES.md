@@ -8,14 +8,14 @@ This project uses a **single source of truth** approach for database connections
 
 ### Development (Local)
 
-- **Variable**: `NEON_DATABASE_URL`
+- **Variable**: `NETLIFY_DATABASE_URL`
 - **Purpose**: Development database for local testing
 - **Set in**: `.env` file
 - **Example**: `postgresql://user:pass@shiny-meadow-12345.neon.tech/dev?sslmode=require`
 
 ### Test (Vitest)
 
-- **Variable**: `NEON_TEST_DATABASE_URL`
+- **Variable**: `NETLIFY_TEST_DATABASE_URL`
 - **Purpose**: Dedicated test database to avoid polluting development data
 - **Set in**: `.env` file
 - **Example**: `postgresql://user:pass@purple-heart-67890.neon.tech/test?sslmode=require`
@@ -39,9 +39,9 @@ export function getDatabaseUrl(): string {
 
   // Test environment: Use dedicated test database
   if (nodeEnv === "test") {
-    const testUrl = process.env.NEON_TEST_DATABASE_URL
+    const testUrl = process.env.NETLIFY_TEST_DATABASE_URL
     if (!testUrl) {
-      throw new Error("Test database not configured. Set NEON_TEST_DATABASE_URL in .env file")
+      throw new Error("Test database not configured. Set NETLIFY_TEST_DATABASE_URL in .env file")
     }
     return testUrl
   }
@@ -57,10 +57,10 @@ export function getDatabaseUrl(): string {
     return prodUrl
   }
 
-  // Development environment: Use NEON_DATABASE_URL from .env
-  const devUrl = process.env.NEON_DATABASE_URL
+  // Development environment: Use NETLIFY_DATABASE_URL from .env
+  const devUrl = process.env.NETLIFY_DATABASE_URL
   if (!devUrl) {
-    throw new Error("Development database not configured. Set NEON_DATABASE_URL in .env file")
+    throw new Error("Development database not configured. Set NETLIFY_DATABASE_URL in .env file")
   }
   return devUrl
 }
@@ -82,10 +82,10 @@ Create `.env` file in `apps/web/`:
 
 ```bash
 # Development database
-NEON_DATABASE_URL="postgresql://user:pass@your-dev-db.neon.tech/database?sslmode=require"
+NETLIFY_DATABASE_URL="postgresql://user:pass@your-dev-db.neon.tech/database?sslmode=require"
 
 # Test database
-NEON_TEST_DATABASE_URL="postgresql://user:pass@your-test-db.neon.tech/test-database?sslmode=require"
+NETLIFY_TEST_DATABASE_URL="postgresql://user:pass@your-test-db.neon.tech/test-database?sslmode=require"
 ```
 
 ### 2. Run Migrations
@@ -101,7 +101,7 @@ NODE_ENV=test bun run db:migrate
 ### 3. Run Tests
 
 ```bash
-# Tests automatically use NEON_TEST_DATABASE_URL (NODE_ENV=test)
+# Tests automatically use NETLIFY_TEST_DATABASE_URL (NODE_ENV=test)
 bun test
 
 # Run specific test suite
@@ -150,18 +150,18 @@ bun test src/server/api/routers/__tests__/documents.test.ts
 
 ### Error: "Development database not configured"
 
-**Solution**: Add `NEON_DATABASE_URL` to your `.env` file
+**Solution**: Add `NETLIFY_DATABASE_URL` to your `.env` file
 
 ```bash
-NEON_DATABASE_URL="postgresql://user:pass@host.neon.tech/db?sslmode=require"
+NETLIFY_DATABASE_URL="postgresql://user:pass@host.neon.tech/db?sslmode=require"
 ```
 
 ### Error: "Test database not configured"
 
-**Solution**: Add `NEON_TEST_DATABASE_URL` to your `.env` file
+**Solution**: Add `NETLIFY_TEST_DATABASE_URL` to your `.env` file
 
 ```bash
-NEON_TEST_DATABASE_URL="postgresql://user:pass@host.neon.tech/test-db?sslmode=require"
+NETLIFY_TEST_DATABASE_URL="postgresql://user:pass@host.neon.tech/test-db?sslmode=require"
 ```
 
 ### Error: "Production database not configured"
@@ -175,7 +175,7 @@ NEON_TEST_DATABASE_URL="postgresql://user:pass@host.neon.tech/test-db?sslmode=re
 ```typescript
 env: {
   NODE_ENV: "test",
-  NEON_TEST_DATABASE_URL: process.env.NEON_TEST_DATABASE_URL,
+  NETLIFY_TEST_DATABASE_URL: process.env.NETLIFY_TEST_DATABASE_URL,
   // ...
 }
 ```
@@ -184,8 +184,8 @@ env: {
 
 **Check**: Migrations respect `NODE_ENV`:
 
-- `bun run db:migrate` → Development database (`NEON_DATABASE_URL`)
-- `NODE_ENV=test bun run db:migrate` → Test database (`NEON_TEST_DATABASE_URL`)
+- `bun run db:migrate` → Development database (`NETLIFY_DATABASE_URL`)
+- `NODE_ENV=test bun run db:migrate` → Test database (`NETLIFY_TEST_DATABASE_URL`)
 - In Netlify → Production database (`NETLIFY_DATABASE_URL`)
 
 ## Migration from DATABASE_URL

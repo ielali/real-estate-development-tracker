@@ -52,16 +52,16 @@ async function main() {
   console.log("🔄 Dropping all tables from both databases...")
 
   // Drop from development database
-  const devUrl = process.env.NEON_DATABASE_URL
+  const devUrl = process.env.NETLIFY_DATABASE_URL
   if (!devUrl) {
-    throw new Error("NEON_DATABASE_URL not set")
+    throw new Error("NETLIFY_DATABASE_URL not set")
   }
   await dropAllTables(devUrl, "DEVELOPMENT DATABASE")
 
   // Drop from test database
-  const testUrl = process.env.NEON_TEST_DATABASE_URL
+  const testUrl = process.env.NETLIFY_TEST_DATABASE_URL
   if (!testUrl) {
-    throw new Error("NEON_TEST_DATABASE_URL not set")
+    throw new Error("NETLIFY_TEST_DATABASE_URL not set")
   }
   await dropAllTables(testUrl, "TEST DATABASE")
 
