@@ -357,9 +357,20 @@ describe("Cost Router - Search and Filter (Story 2.4)", () => {
 
   describe("Authorization", () => {
     test("should verify project ownership before querying", async () => {
-      // Create a different user context
-      const otherCtx = await createTestContext()
-      const otherCaller = appRouter.createCaller(otherCtx)
+      // Create a different user
+      const otherUser = await testDbInstance.db
+        .insert(users)
+        .values({
+          id: "test-user-2",
+          email: "otheruser@example.com",
+          name: "Other User",
+          firstName: "Other",
+          lastName: "User",
+        })
+        .returning()
+        .then((rows) => rows[0]!)
+
+      const otherCaller = appRouter.createCaller(createMockContext(otherUser))
 
       await expect(
         otherCaller.costs.list({

@@ -4,12 +4,12 @@ import { Pool, neonConfig } from "@neondatabase/serverless"
 import * as path from "path"
 import ws from "ws"
 import dotenv from "dotenv"
-import { getDatabaseUrl, getDatabaseEnvironment } from "./get-database-url"
+import { existsSync } from "fs"
 
-// Load environment variables from .env file (only for local development)
-// In Netlify, environment variables are injected automatically
-if (process.env.NODE_ENV !== "production") {
-  dotenv.config({ path: path.join(process.cwd(), ".env") })
+// Load .env file if it exists (for local development)
+const envPath = path.join(process.cwd(), ".env")
+if (existsSync(envPath)) {
+  dotenv.config({ path: envPath })
 }
 
 async function main() {

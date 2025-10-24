@@ -5,35 +5,9 @@
  */
 
 import { describe, test, expect, beforeAll, afterAll, beforeEach, vi } from "vitest"
-import { sql } from "drizzle-orm"
-import { appRouter } from "../../root"
-import { createTestDb, cleanupAllTestDatabases } from "@/test/test-db"
-import type { User } from "@/server/db/schema/users"
-import { users } from "@/server/db/schema/users"
-import { categories } from "@/server/db/schema/categories"
-import { CATEGORIES } from "@/server/db/types"
-import sharp from "sharp"
 
-// Helper function to create a valid 1x1 pixel JPEG for testing
-async function createTestImage(): Promise<string> {
-  const imageBuffer = await sharp({
-    create: {
-      width: 1,
-      height: 1,
-      channels: 3,
-      background: { r: 255, g: 0, b: 0 },
-    },
-  })
-    .jpeg()
-    .toBuffer()
-
-  return imageBuffer.toString("base64")
-}
-
-// Mock Netlify Blobs with in-memory storage
-// Store as ArrayBuffer, return as base64 string (matching Netlify Blobs behavior)
-const mockStorage = new Map<string, ArrayBuffer>()
-
+// IMPORTANT: vi.mock must be at the top of the file (after imports from vitest)
+// This is a Vitest requirement for hoisting mocks
 vi.mock("@netlify/blobs", () => ({
   getStore: () => ({
     set: vi.fn(async (key: string, value: string | ArrayBuffer | Blob) => {
@@ -86,6 +60,11 @@ vi.mock("@netlify/blobs", () => ({
     getURL: vi.fn((id: string) => `https://blob.example.com/${id}`),
   }),
 }))
+
+import { appRouter } from "../../root"
+import { createTestDb, cleanupAllTestDatabases } from "@/test/test-db"
+import type { User } from "@/server/db/schema/users"
+import { users } from "@/server/db/schema/users"
 
 describe("Documents Router", () => {
   let testDbInstance: Awaited<ReturnType<typeof createTestDb>>

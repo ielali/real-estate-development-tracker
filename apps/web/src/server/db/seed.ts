@@ -644,6 +644,7 @@ async function seed() {
         description: "Initial meeting with contractor",
         date: new Date("2024-01-15"),
         categoryId: "meeting",
+        createdById: adminUser.id,
       },
       {
         projectId: activeRenovation.id,
@@ -651,6 +652,7 @@ async function seed() {
         description: "Interior demolition finished",
         date: new Date("2024-01-25"),
         categoryId: "milestone",
+        createdById: adminUser.id,
       },
       {
         projectId: activeRenovation.id,
@@ -658,6 +660,7 @@ async function seed() {
         description: "City electrical inspection passed",
         date: new Date("2024-02-05"),
         categoryId: "inspection",
+        createdById: adminUser.id,
       },
       {
         projectId: onHoldNewBuild.id,
@@ -665,13 +668,15 @@ async function seed() {
         description: "Architectural plans review meeting",
         date: new Date("2024-02-15"),
         categoryId: "meeting",
+        createdById: adminUser.id,
       },
       {
         projectId: onHoldNewBuild.id,
         title: "Project On Hold",
         description: "Awaiting financing approval",
         date: new Date("2024-03-25"),
-        categoryId: "status_change",
+        categoryId: "milestone",
+        createdById: adminUser.id,
       },
       {
         projectId: completedDevelopment.id,
@@ -679,6 +684,7 @@ async function seed() {
         description: "Foundation pour and curing complete",
         date: new Date("2023-08-15"),
         categoryId: "milestone",
+        createdById: adminUser.id,
       },
       {
         projectId: completedDevelopment.id,
@@ -686,6 +692,7 @@ async function seed() {
         description: "Final beam placed ceremony",
         date: new Date("2023-10-30"),
         categoryId: "milestone",
+        createdById: adminUser.id,
       },
       {
         projectId: completedDevelopment.id,
@@ -693,6 +700,7 @@ async function seed() {
         description: "COO received from city",
         date: new Date("2024-01-10"),
         categoryId: "milestone",
+        createdById: adminUser.id,
       },
     ]
 

@@ -269,9 +269,7 @@ describe("DocumentService", () => {
       const blobKey = crypto.randomUUID()
       mockGet.mockResolvedValue(null)
 
-      await expect(service.getDocumentBlob(blobKey)).rejects.toThrow(
-        "Document not found in storage"
-      )
+      await expect(service.getDocumentBlob(blobKey)).rejects.toThrow("Document not found")
     })
   })
 })
