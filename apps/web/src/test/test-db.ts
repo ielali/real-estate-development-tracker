@@ -1,8 +1,11 @@
 import { drizzle } from "drizzle-orm/neon-serverless"
 import { Pool, neonConfig } from "@neondatabase/serverless"
 import * as schema from "../server/db/schema"
+import { categories } from "../server/db/schema/categories"
+import { CATEGORIES } from "../server/db/types"
 import { sql } from "drizzle-orm"
 import ws from "ws"
+import { getDatabaseUrl } from "@/server/db/get-database-url"
 
 // Configure Neon WebSocket for Node.js environment
 // This is required for Neon PostgreSQL connections in Node.js
@@ -12,18 +15,11 @@ if (typeof WebSocket === "undefined") {
 
 let globalPool: Pool | null = null
 let globalDb: ReturnType<typeof drizzle<typeof schema>> | null = null
+let categoriesSeeded = false
 
 // Get test database URL from environment
 function getTestDbUrl(): string {
-  const testDbUrl = process.env.NEON_TEST_DATABASE_URL || process.env.NETLIFY_DATABASE_URL
-
-  if (!testDbUrl) {
-    throw new Error(
-      "NEON_TEST_DATABASE_URL or NETLIFY_DATABASE_URL environment variable is required for tests"
-    )
-  }
-
-  return testDbUrl
+  return getDatabaseUrl()
 }
 
 /**
@@ -42,17 +38,26 @@ function getTestDbUrl(): string {
 export const createTestDb = async () => {
   const dbUrl = getTestDbUrl()
 
-  // Reuse existing connection if available
-  if (globalPool && globalDb) {
-    return {
-      db: globalDb,
-      cleanup: createCleanupFunction(globalDb),
-    }
+  // Create new connection if needed
+  if (!globalPool || !globalDb) {
+    globalPool = new Pool({ connectionString: dbUrl })
+    globalDb = drizzle(globalPool, { schema })
   }
 
-  // Create new connection
-  globalPool = new Pool({ connectionString: dbUrl })
-  globalDb = drizzle(globalPool, { schema })
+  // Seed categories if not already seeded
+  // Categories are static reference data that persist across tests
+  if (!categoriesSeeded) {
+    // Check if categories already exist in the database
+    const existingCategories = await globalDb
+      .select({ count: sql<number>`count(*)` })
+      .from(categories)
+
+    if (Number(existingCategories[0]?.count) === 0) {
+      // No categories exist, insert them all at once
+      await globalDb.insert(categories).values(CATEGORIES)
+    }
+    categoriesSeeded = true
+  }
 
   return {
     db: globalDb,
@@ -63,11 +68,13 @@ export const createTestDb = async () => {
 /**
  * Creates cleanup function that deletes all test data.
  * Uses TRUNCATE CASCADE for reliable cleanup that handles FK constraints automatically.
+ * NOTE: Categories table is NOT truncated because it contains static reference data.
  */
 function createCleanupFunction(db: ReturnType<typeof drizzle<typeof schema>>) {
   return async () => {
     // TRUNCATE CASCADE automatically handles foreign key dependencies
     // Much more reliable than manual DELETE ordering
+    // NOTE: categories table is excluded - it contains static reference data that's seeded once
     await db.execute(sql`
       TRUNCATE TABLE
         audit_log,
@@ -82,8 +89,7 @@ function createCleanupFunction(db: ReturnType<typeof drizzle<typeof schema>>) {
         accounts,
         verifications,
         addresses,
-        users,
-        categories
+        users
       CASCADE
     `)
   }

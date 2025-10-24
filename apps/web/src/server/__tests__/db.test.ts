@@ -31,6 +31,7 @@ describe("Database Operations", () => {
   beforeAll(async () => {
     testDbConnection = await createTestDb()
     db = testDbConnection.db
+    // Categories are seeded globally in test/setup.ts
   })
 
   afterAll(async () => {
@@ -232,7 +233,7 @@ describe("Database Operations", () => {
             parentId: null,
           },
         ])
-        .onConflictDoNothing({ target: [categories.id, categories.type] })
+        .onConflictDoNothing({ target: categories.id })
 
       testUser = await db
         .insert(users)
@@ -342,7 +343,7 @@ describe("Database Operations", () => {
           { id: "photos", type: "document", displayName: "Photos", parentId: null },
           { id: "inspection", type: "event", displayName: "Inspection", parentId: null },
         ])
-        .onConflictDoNothing({ target: [categories.id, categories.type] })
+        .onConflictDoNothing({ target: categories.id })
     })
 
     it("should format Australian addresses correctly", () => {

@@ -4,47 +4,66 @@ This section establishes the foundation with technical summary, platform infrast
 
 ## Technical Summary
 
-The Real Estate Development Tracker employs a **modern monolithic fullstack architecture** deployed as a Progressive Web App (PWA). Built on Next.js 15.5+ with App Router, the system leverages **Server Components for optimal performance** and **API routes with tRPC for type-safe client-server communication**. The frontend utilizes **Shadcn/ui components with Tailwind CSS** for professional mobile-first design, while the backend centers around **SQLite with Drizzle ORM 0.44+** for portable, efficient data management. **Vercel provides seamless deployment** with edge runtime support, and **Better-auth handles secure session management**. This architecture achieves the PRD goals of sub-30-second mobile cost entry, instant partner transparency via real-time dashboards, and comprehensive relationship tracking between projects, costs, contacts, and documents.
+The Real Estate Development Tracker employs a **modern monolithic fullstack architecture** deployed as a Progressive Web App (PWA). Built on Next.js 15.5+ with App Router, the system leverages **Server Components for optimal performance** and **API routes with tRPC for type-safe client-server communication**. The frontend utilizes **Shadcn/ui components with Tailwind CSS** for professional mobile-first design, while the backend centers around **Neon PostgreSQL (serverless) with Drizzle ORM 0.44+** for scalable, managed data storage with full referential integrity. **Netlify provides seamless deployment** with edge network delivery, serverless functions, and integrated Neon database connectivity, while **Better-auth handles secure session management**. This architecture achieves the PRD goals of sub-30-second mobile cost entry, instant partner transparency via real-time dashboards, and comprehensive relationship tracking between projects, costs, contacts, and documents.
 
 ## Platform and Infrastructure Choice
 
-Based on PRD requirements for rapid development, mobile optimization, and partner transparency, I recommend:
+Based on PRD requirements for rapid development, mobile optimization, and partner transparency, the selected platform is:
 
-**Option 1: Vercel + SQLite (Recommended)**
+**✅ Selected: Netlify + Neon PostgreSQL (Production Deployment)**
 
-- **Pros:** Optimized Next.js hosting, edge runtime, automatic scaling, seamless CI/CD, excellent mobile performance
-- **Cons:** Vendor lock-in, SQLite scaling limitations for very large datasets
-- **Best for:** Rapid MVP deployment with excellent developer experience
+- **Pros:**
+  - Optimized Next.js hosting with zero-config deployment
+  - Neon PostgreSQL provides serverless auto-scaling with full ACID compliance
+  - Integrated Netlify Blobs for file storage with CDN delivery
+  - Automatic preview deployments for every branch/PR
+  - Excellent mobile performance via global edge network
+  - Database branching for isolated preview environments
+  - Built-in form handling and serverless functions
+- **Cons:**
+  - Platform-specific features (Netlify Blobs, deploy contexts)
+  - Less control than self-hosted solutions
+- **Best for:** Rapid deployment with enterprise-grade database and scalability
+- **Rationale:** See [ADR-001: Neon PostgreSQL vs SQLite](../adr/001-neon-postgresql-choice.md) for detailed decision
 
-**Option 2: AWS Full Stack**
+**Alternatives Considered:**
 
-- **Pros:** Enterprise scalability, full control, comprehensive services, database migration flexibility
-- **Cons:** Complex setup, higher operational overhead, slower initial deployment
-- **Best for:** Enterprise requirements with dedicated DevOps resources
+**Option 2: Vercel + Neon PostgreSQL**
 
-**Option 3: Self-hosted + Digital Ocean/Hetzner**
+- Similar serverless PostgreSQL benefits
+- Vercel Edge Runtime for global performance
+- Not selected: Netlify's integrated approach (Blobs + Functions + Database) provides better cohesion
 
-- **Pros:** Cost control, full ownership, simple PostgreSQL scaling path
-- **Cons:** Manual infrastructure management, deployment complexity, monitoring setup required
-- **Best for:** Cost-sensitive deployments with technical operations capability
+**Option 3: AWS Full Stack**
 
-**Recommendation:** **Vercel + SQLite** for initial deployment, with migration path to Turso (hosted SQLite) or PostgreSQL as scaling needs emerge.
+- Enterprise scalability with full control
+- RDS PostgreSQL or Aurora Serverless
+- Not selected: Operational complexity and slower iteration speed
 
-**Platform:** Vercel
-**Key Services:** Next.js hosting, Edge Runtime, Serverless Functions, Automatic deployments
-**Deployment Host and Regions:** Vercel Global Edge Network (primary: Sydney for Australian users)
+**Option 4: Self-hosted + Digital Ocean/Hetzner**
+
+- Full ownership and cost control
+- Self-managed PostgreSQL
+- Not selected: Requires dedicated DevOps resources
+
+**Platform:** Netlify
+**Key Services:** Next.js hosting, Edge Network, Serverless Functions, Netlify Blobs, Automatic deployments, Form handling
+**Database:** Neon PostgreSQL (serverless, auto-scaling, branching support)
+**Deployment Host and Regions:** Netlify Global Edge Network (automatically optimized for Australian users)
 
 **Scaling Strategy:**
 
-- **Triggers:** >50GB database size, >100 concurrent partner sessions, >20 active projects
-- **Migration Path:** SQLite → Turso (hosted SQLite) → PostgreSQL on Railway/Supabase
-- **Data Portability:** Drizzle migrations ensure zero-downtime database transitions
+- **Database:** Neon PostgreSQL auto-scales compute and storage independently
+- **Triggers:** Neon handles scaling automatically based on connection pool and query load
+- **Migration Path:** Already using PostgreSQL - can migrate to self-hosted PostgreSQL if needed
+- **Data Portability:** Standard PostgreSQL dump/restore, Drizzle migrations ensure compatibility
 
 **Backup Architecture:**
 
-- **Strategy:** GitHub Actions daily SQLite dumps to encrypted S3 bucket
-- **Retention:** 30 daily, 12 monthly, 5 yearly backups
-- **Recovery:** One-click restoration via Vercel environment variables
+- **Database:** Neon provides automatic daily backups with point-in-time recovery (7-day retention on free tier, 30-day on paid)
+- **Blob Storage:** Netlify Blobs includes automatic replication and durability
+- **Additional Backups:** Optional GitHub Actions workflow for weekly full database exports to encrypted S3
+- **Recovery:** Neon console for point-in-time restore, Netlify for blob recovery
 
 ## Repository Structure
 
@@ -79,19 +98,20 @@ graph TB
     end
 
     subgraph "Data Layer"
-        SQLITE[(SQLite Database)]
-        BACKUP[Automated Backups]
+        NEON[(Neon PostgreSQL)]
+        BACKUP[Automatic Backups & PITR]
     end
 
     subgraph "External Services"
-        EMAIL[Email Service]
-        VERCEL_BLOB[Vercel Blob Storage]
+        EMAIL[Email Service - Resend]
+        NETLIFY_BLOB[Netlify Blobs Storage]
     end
 
-    subgraph "Infrastructure - Vercel"
-        EDGE[Edge Runtime]
+    subgraph "Infrastructure - Netlify"
+        EDGE[Edge Network]
         DEPLOY[Auto Deployments]
-        MONITOR[Analytics]
+        MONITOR[Analytics & Speed Insights]
+        FUNCTIONS[Serverless Functions]
     end
 
     DEV --> PWA
@@ -103,16 +123,17 @@ graph TB
     STATE --> TRPC
 
     TRPC --> AUTH
-    TRPC --> SQLITE
-    TRPC --> VERCEL_BLOB
-    AUTH --> SQLITE
+    TRPC --> NEON
+    TRPC --> NETLIFY_BLOB
+    AUTH --> NEON
 
-    SQLITE --> BACKUP
+    NEON --> BACKUP
 
     TRPC --> EMAIL
 
     EDGE --> PWA
-    DEPLOY --> EDGE
+    DEPLOY --> FUNCTIONS
+    FUNCTIONS --> TRPC
     MONITOR --> PWA
 ```
 
@@ -136,18 +157,19 @@ graph TB
 
 **Document Strategy:**
 
-- **All files:** Vercel Blob storage for scalable, reliable document handling
-- **Metadata:** SQLite stores file references, categories, upload dates, and relationships
-- **Thumbnails:** Generated and cached in Vercel Blob for quick preview loading
-- **Benefits:** Eliminates SQLite bloat, enables CDN delivery, supports large files up to 500MB
+- **All files:** Netlify Blobs storage for scalable, reliable document handling
+- **Metadata:** Neon PostgreSQL stores file references, categories, upload dates, and relationships
+- **Thumbnails:** Generated and cached in Netlify Blobs for quick preview loading
+- **Environment-aware:** Production uses global store (strong consistency), non-production uses deploy-scoped stores (automatic cleanup)
+- **Benefits:** Serverless storage with CDN delivery, supports large construction documents, isolated preview environments
 
 ## Runtime Distribution Strategy
 
 **Compute Distribution:**
 
-- **Edge Runtime:** Static pages, lightweight API routes, partner dashboards, authentication middleware
-- **Node.js Runtime:** File uploads to Vercel Blob, complex database operations, document processing, email sending
-- **Client-Side:** Optimistic UI updates, real-time dashboard updates
+- **Netlify Edge Functions:** Static pages, lightweight API routes, partner dashboards, authentication middleware (future enhancement)
+- **Netlify Serverless Functions (Node.js):** tRPC API routes, file uploads to Netlify Blobs, database operations via Neon, document processing, email sending
+- **Client-Side:** Optimistic UI updates, real-time dashboard updates with React Query
 
 ## PWA and Offline Strategy (Future Enhancement)
 

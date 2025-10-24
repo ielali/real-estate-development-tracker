@@ -330,6 +330,111 @@ await db.update(projects).set({ deletedAt: new Date() }).where(eq(projects.id, p
 - Enforce unique constraints at database level
 - Validate foreign key relationships exist
 
+**Array Usage Guidelines:**
+
+Arrays and JSON columns should be used sparingly and only for specific use cases. Follow this decision framework:
+
+**❌ NEVER Use Arrays For:**
+
+- **Entity ID relationships** - Always use junction tables with foreign keys
+
+  ```typescript
+  // ❌ ANTI-PATTERN
+  interface Event {
+    contactIds: string[] // BAD: No referential integrity
+  }
+
+  // ✅ CORRECT PATTERN
+  interface EventContact extends BaseEntity {
+    eventId: string // FK to events.id (CASCADE)
+    contactId: string // FK to contacts.id (CASCADE)
+  }
+  ```
+
+- **Data requiring referential integrity** - Use proper foreign key constraints
+- **Frequently queried/filtered data** - Full table scans are expensive
+- **Mutable source-of-truth data** - Use normalized tables
+
+**✅ Arrays ARE Acceptable For:**
+
+1. **Immutable Audit Trail Snapshots**
+
+   ```typescript
+   // ✅ APPROPRIATE: Display-only historical snapshot
+   interface AuditMetadata {
+     relatedEntities?: Array<{ type: string; id: string; name: string }>
+   }
+   // Stored as JSONB, never queried, preserves historical names
+   ```
+
+2. **Simple Non-Entity Value Lists**
+
+   ```typescript
+   // ✅ APPROPRIATE: Fixed list of values (not entity IDs)
+   interface Project {
+     allowedMimeTypes: string[] // ['image/jpeg', 'image/png', 'application/pdf']
+   }
+   // With GIN index if querying: CREATE INDEX USING GIN (allowed_mime_types)
+   ```
+
+3. **Denormalized Performance Caches** (with caution)
+   ```typescript
+   // ⚠️ USE CAREFULLY: Only if source of truth exists elsewhere
+   interface ReportCache {
+     categoryBreakdown: Array<{ category: string; total: number }>
+   }
+   ```
+
+**Database Type Selection:**
+
+- **JSONB** (preferred) - For arrays/objects with native PostgreSQL support
+
+  ```typescript
+  // ✅ Use JSONB for JSON data
+  export const auditLogs = pgTable("audit_logs", {
+    metadata: jsonb("metadata").$type<AuditMetadata>(),
+  })
+  ```
+
+- **TEXT** (anti-pattern) - Avoid storing JSON as strings
+  ```typescript
+  // ❌ NEVER DO THIS
+  relatedIds: text("related_ids") // Storing '["id1","id2"]' as string
+  ```
+
+**Decision Checklist:**
+
+Before using an array, verify:
+
+- [ ] NOT storing entity IDs → Use junction table instead
+- [ ] NOT requiring referential integrity → Use foreign keys instead
+- [ ] NOT frequently querying individual values → Use normalized table instead
+- [ ] IS immutable/display-only OR simple value list → Array may be appropriate
+- [ ] Using JSONB (not TEXT) for storage
+- [ ] GIN index created if querying array contents
+
+**Performance Considerations:**
+
+```typescript
+// ❌ BAD: Client-side filtering (O(n))
+const events = await db.query.events.findMany()
+const filtered = events.filter((e) => JSON.parse(e.contactIds).includes(targetId))
+
+// ✅ GOOD: Database-level JOIN (O(log n))
+const events = await db.query.events.findMany({
+  with: {
+    eventContacts: {
+      where: eq(eventContacts.contactId, targetId),
+    },
+  },
+})
+```
+
+**Additional Resources:**
+
+- See [array-usage-analysis.md](array-usage-analysis.md) for detailed evaluation framework
+- See [junction-table-migration-plan.md](junction-table-migration-plan.md) for migration patterns
+
 ## Testing Standards
 
 ### Test Organization

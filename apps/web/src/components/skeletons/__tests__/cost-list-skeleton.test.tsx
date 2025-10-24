@@ -1,9 +1,13 @@
-import { describe, it, expect } from "vitest"
-import { render } from "@testing-library/react"
+import { describe, it, expect, afterEach } from "vitest"
+import { render, cleanup } from "@testing-library/react"
 import React from "react"
 import { CostListSkeleton } from "../cost-list-skeleton"
 
 describe("CostListSkeleton", () => {
+  afterEach(() => {
+    cleanup()
+  })
+
   describe("Rendering", () => {
     it("renders default number of skeleton items (3)", () => {
       const { container } = render(<CostListSkeleton />)

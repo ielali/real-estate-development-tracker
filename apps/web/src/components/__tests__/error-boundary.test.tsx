@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
-import { render, screen, waitFor, within } from "@testing-library/react"
+import { render, waitFor, within, cleanup } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import React from "react"
 import { ErrorBoundary, type ErrorFallbackProps } from "../error-boundary"
@@ -34,29 +34,32 @@ describe("ErrorBoundary", () => {
   })
 
   afterEach(() => {
+    cleanup()
     vi.restoreAllMocks()
   })
 
   describe("Error catching", () => {
     it("renders children when no error occurs", () => {
-      render(
+      const { container } = render(
         <ErrorBoundary>
           <ThrowError shouldThrow={false} />
         </ErrorBoundary>
       )
 
-      expect(screen.getByText("Normal content")).toBeInTheDocument()
+      expect(within(container).getByText("Normal content")).toBeInTheDocument()
     })
 
     it("renders default fallback UI when child component throws error", () => {
-      render(
+      const { container } = render(
         <ErrorBoundary>
           <ThrowError shouldThrow={true} />
         </ErrorBoundary>
       )
 
-      expect(screen.getByText("Something went wrong")).toBeInTheDocument()
-      expect(screen.getByText(/We're sorry, but something unexpected happened/)).toBeInTheDocument()
+      expect(within(container).getByText("Something went wrong")).toBeInTheDocument()
+      expect(
+        within(container).getByText(/We're sorry, but something unexpected happened/)
+      ).toBeInTheDocument()
     })
 
     it("displays error in fallback UI", () => {
@@ -73,7 +76,7 @@ describe("ErrorBoundary", () => {
 
   describe("Error logging", () => {
     it("catches and logs errors via componentDidCatch", async () => {
-      render(
+      const { container } = render(
         <ErrorBoundary>
           <ThrowError shouldThrow={true} />
         </ErrorBoundary>
@@ -81,13 +84,15 @@ describe("ErrorBoundary", () => {
 
       // Wait for error boundary to render fallback UI (indicates componentDidCatch was called)
       await waitFor(() => {
-        expect(screen.getByText("Something went wrong")).toBeInTheDocument()
+        expect(within(container).getByText("Something went wrong")).toBeInTheDocument()
       })
 
       // Verify the error boundary rendered the fallback, which means componentDidCatch was invoked
       // Note: console.error is called by both React and the ErrorBoundary, but checking the spy
       // can be flaky in test environments. The fallback UI rendering is the important behavior.
-      expect(screen.getByText(/We're sorry, but something unexpected happened/)).toBeInTheDocument()
+      expect(
+        within(container).getByText(/We're sorry, but something unexpected happened/)
+      ).toBeInTheDocument()
     })
   })
 
@@ -239,13 +244,13 @@ describe("ErrorBoundary", () => {
     })
 
     it("error icon has aria-hidden attribute", () => {
-      render(
+      const { container } = render(
         <ErrorBoundary>
           <ThrowError shouldThrow={true} />
         </ErrorBoundary>
       )
 
-      const icon = document.querySelector('svg[aria-hidden="true"]')
+      const icon = container.querySelector('svg[aria-hidden="true"]')
       expect(icon).toBeInTheDocument()
     })
   })

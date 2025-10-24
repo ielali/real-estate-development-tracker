@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, beforeAll, afterAll } from "vitest"
+import { sql } from "drizzle-orm"
 import { appRouter } from "../api/root"
 import { createTestDb, cleanupAllTestDatabases } from "@/test/test-db"
 import type { User } from "../db/schema/users"
@@ -54,6 +55,7 @@ describe("Cost Router", () => {
 
   beforeAll(async () => {
     testDbInstance = await createTestDb()
+    // Categories are seeded globally in test/setup.ts
   })
 
   afterAll(async () => {
@@ -62,13 +64,16 @@ describe("Cost Router", () => {
 
   beforeEach(async () => {
     // Clean up before each test - ensure remote DB is empty for test isolation
+    // NOTE: Categories table is NOT truncated because they're static reference data
     await testDbInstance.cleanup()
 
-    // Seed categories (static reference data - use onConflictDoNothing for idempotency)
-    await testDbInstance.db
-      .insert(categories)
-      .values(CATEGORIES)
-      .onConflictDoNothing({ target: [categories.id, categories.type] })
+    // Seed categories (static reference data - use idempotent check)
+    const existingCategories = await testDbInstance.db
+      .select({ count: sql<number>`count(*)` })
+      .from(categories)
+    if (Number(existingCategories[0]?.count) === 0) {
+      await testDbInstance.db.insert(categories).values(CATEGORIES)
+    }
 
     // Create test users with unique IDs to avoid conflicts
     const user1 = await testDbInstance.db
@@ -544,9 +549,13 @@ describe("Cost Router", () => {
       const ctx = createMockContext(testUser)
       const caller = appRouter.createCaller(ctx)
 
-      // Get one cost and delete it
+      // Get all costs and delete the oldest one (10000)
+      // Costs are sorted by date desc by default:
+      // costs[0] = 5000 (newest, 2024-03-15)
+      // costs[1] = 20000 (middle, 2024-02-01)
+      // costs[2] = 10000 (oldest, 2024-01-15)
       const costs = await caller.costs.list({ projectId: testProjectId })
-      await caller.costs.softDelete({ id: costs[0].id })
+      await caller.costs.softDelete({ id: costs[2].id })
 
       const result = await caller.costs.getTotal({ projectId: testProjectId })
 

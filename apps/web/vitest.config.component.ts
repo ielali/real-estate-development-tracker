@@ -5,7 +5,7 @@ import path from "path"
  * Vitest configuration for component and hook tests (no database required)
  *
  * This config is specifically for frontend tests that don't need database access.
- * It runs faster and doesn't require NEON_TEST_DATABASE_URL environment variable.
+ * It runs faster and doesn't require NETLIFY_TEST_DATABASE_URL environment variable.
  *
  * Use this for:
  * - Component tests (src/components/**\/*.test.tsx)

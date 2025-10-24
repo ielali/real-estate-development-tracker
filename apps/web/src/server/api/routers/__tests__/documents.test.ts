@@ -5,18 +5,80 @@
  */
 
 import { describe, test, expect, beforeAll, afterAll, beforeEach, vi } from "vitest"
+
+// Mock storage for Netlify Blobs
+const mockStorage = new Map<string, ArrayBuffer>()
+
+// IMPORTANT: vi.mock must be at the top of the file (after imports from vitest)
+// This is a Vitest requirement for hoisting mocks
+vi.mock("@netlify/blobs", () => ({
+  getStore: () => ({
+    set: vi.fn(async (key: string, value: string | ArrayBuffer | Blob) => {
+      // Convert to ArrayBuffer for consistent storage
+      if (typeof value === "string") {
+        const buffer = Buffer.from(value, "base64")
+        mockStorage.set(key, buffer.buffer)
+      } else if (value instanceof ArrayBuffer) {
+        mockStorage.set(key, value)
+      } else {
+        // Blob - convert to ArrayBuffer
+        const arrayBuffer = await value.arrayBuffer()
+        mockStorage.set(key, arrayBuffer)
+      }
+    }),
+    get: vi.fn(async (key: string) => {
+      const stored = mockStorage.get(key)
+      if (!stored) return null
+      // Return as base64 string (matching Netlify Blobs behavior)
+      return Buffer.from(stored).toString("base64")
+    }),
+    delete: vi.fn(async (key: string) => {
+      mockStorage.delete(key)
+    }),
+    getURL: vi.fn((id: string) => `https://blob.example.com/${id}`),
+  }),
+  getDeployStore: () => ({
+    set: vi.fn(async (key: string, value: string | ArrayBuffer | Blob) => {
+      // Convert to ArrayBuffer for consistent storage
+      if (typeof value === "string") {
+        const buffer = Buffer.from(value, "base64")
+        mockStorage.set(key, buffer.buffer)
+      } else if (value instanceof ArrayBuffer) {
+        mockStorage.set(key, value)
+      } else {
+        // Blob - convert to ArrayBuffer
+        const arrayBuffer = await value.arrayBuffer()
+        mockStorage.set(key, arrayBuffer)
+      }
+    }),
+    get: vi.fn(async (key: string) => {
+      const stored = mockStorage.get(key)
+      if (!stored) return null
+      // Return as base64 string (matching Netlify Blobs behavior)
+      return Buffer.from(stored).toString("base64")
+    }),
+    delete: vi.fn(async (key: string) => {
+      mockStorage.delete(key)
+    }),
+    getURL: vi.fn((id: string) => `https://blob.example.com/${id}`),
+  }),
+}))
+
+import { sql } from "drizzle-orm"
 import { appRouter } from "../../root"
 import { createTestDb, cleanupAllTestDatabases } from "@/test/test-db"
 import type { User } from "@/server/db/schema/users"
 import { users } from "@/server/db/schema/users"
+import { categories } from "@/server/db/schema/categories"
+import { CATEGORIES } from "@/server/db/types"
 
-// Mock Netlify Blobs
-vi.mock("@netlify/blobs", () => ({
-  getStore: () => ({
-    set: vi.fn().mockResolvedValue(undefined),
-    getURL: vi.fn((id: string) => `https://blob.example.com/${id}`),
-  }),
-}))
+// Helper function to create a test image (1x1 pixel PNG)
+async function createTestImage(): Promise<string> {
+  // 1x1 pixel transparent PNG in base64
+  const base64 =
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+  return base64
+}
 
 describe("Documents Router", () => {
   let testDbInstance: Awaited<ReturnType<typeof createTestDb>>
@@ -58,6 +120,18 @@ describe("Documents Router", () => {
 
   beforeEach(async () => {
     await testDbInstance.cleanup()
+
+    // Clear mock storage between tests
+    mockStorage.clear()
+
+    // Seed categories (static reference data)
+    const existingCategories = await testDbInstance.db
+      .select({ count: sql<number>`count(*)` })
+      .from(categories)
+
+    if (Number(existingCategories[0]?.count) === 0) {
+      await testDbInstance.db.insert(categories).values(CATEGORIES)
+    }
 
     // Create test users
     testUser = await testDbInstance.db
@@ -104,18 +178,13 @@ describe("Documents Router", () => {
     })
     projectId = project.id
 
-    // Create a test category
-    const category = await caller.category.create({
-      displayName: "Photo",
-      type: "document",
-      parentId: null,
-    })
-    categoryId = category.id
+    // Use existing category from CATEGORIES
+    categoryId = "photos"
   })
 
   describe("upload", () => {
     test("uploads document with valid file", async () => {
-      const base64Image = Buffer.from("fake image content").toString("base64")
+      const base64Image = await createTestImage()
 
       const result = await caller.documents.upload({
         projectId,
@@ -137,7 +206,8 @@ describe("Documents Router", () => {
         uploadedById: testUser.id,
       })
       expect(result.id).toBeTruthy()
-      expect(result.blobUrl).toContain("blob.example.com")
+      expect(result.blobUrl).toBe(result.id) // blobUrl is the documentId (blob key)
+      expect(result.thumbnailUrl).toBe(`${result.id}-thumb`) // thumbnailUrl is documentId-thumb
     })
 
     test("rejects file over 10MB", async () => {
@@ -175,7 +245,7 @@ describe("Documents Router", () => {
     })
 
     test("rejects upload to project user does not own", async () => {
-      const base64Image = Buffer.from("fake image content").toString("base64")
+      const base64Image = await createTestImage()
 
       await expect(
         otherCaller.documents.upload({
@@ -192,7 +262,7 @@ describe("Documents Router", () => {
     })
 
     test("creates audit log entry on successful upload", async () => {
-      const base64Image = Buffer.from("fake image content").toString("base64")
+      const base64Image = await createTestImage()
 
       await caller.documents.upload({
         projectId,
@@ -220,7 +290,7 @@ describe("Documents Router", () => {
   describe("list", () => {
     test("lists documents for owned project", async () => {
       // Upload a document first
-      const base64Image = Buffer.from("fake image content").toString("base64")
+      const base64Image = await createTestImage()
       const uploaded = await caller.documents.upload({
         projectId,
         categoryId,
@@ -233,10 +303,10 @@ describe("Documents Router", () => {
       })
 
       // List documents
-      const documents = await caller.documents.list(projectId)
+      const result = await caller.documents.list({ projectId })
 
-      expect(documents).toHaveLength(1)
-      expect(documents[0]).toMatchObject({
+      expect(result.documents).toHaveLength(1)
+      expect(result.documents[0]).toMatchObject({
         id: uploaded.id,
         fileName: "test.jpg",
         projectId,
@@ -244,13 +314,13 @@ describe("Documents Router", () => {
     })
 
     test("returns empty array for project with no documents", async () => {
-      const documents = await caller.documents.list(projectId)
-      expect(documents).toEqual([])
+      const result = await caller.documents.list({ projectId })
+      expect(result.documents).toEqual([])
     })
 
     test("does not return deleted documents", async () => {
       // Upload and delete a document
-      const base64Image = Buffer.from("fake image content").toString("base64")
+      const base64Image = await createTestImage()
       const uploaded = await caller.documents.upload({
         projectId,
         categoryId,
@@ -265,19 +335,19 @@ describe("Documents Router", () => {
       await caller.documents.delete(uploaded.id)
 
       // List documents
-      const documents = await caller.documents.list(projectId)
-      expect(documents).toEqual([])
+      const result = await caller.documents.list({ projectId })
+      expect(result.documents).toEqual([])
     })
 
     test("rejects listing documents for project user does not own", async () => {
-      await expect(otherCaller.documents.list(projectId)).rejects.toThrow("permission")
+      await expect(otherCaller.documents.list({ projectId })).rejects.toThrow("permission")
     })
   })
 
   describe("delete", () => {
     test("soft deletes document from owned project", async () => {
       // Upload a document first
-      const base64Image = Buffer.from("fake image content").toString("base64")
+      const base64Image = await createTestImage()
       const uploaded = await caller.documents.upload({
         projectId,
         categoryId,
@@ -290,17 +360,17 @@ describe("Documents Router", () => {
       })
 
       // Delete the document
-      const result = await caller.documents.delete(uploaded.id)
-      expect(result.success).toBe(true)
+      const deleteResult = await caller.documents.delete(uploaded.id)
+      expect(deleteResult.success).toBe(true)
 
       // Verify document is soft deleted (not in list)
-      const documents = await caller.documents.list(projectId)
-      expect(documents).toEqual([])
+      const listResult = await caller.documents.list({ projectId })
+      expect(listResult.documents).toEqual([])
     })
 
     test("rejects deleting document from project user does not own", async () => {
       // Upload a document as testUser
-      const base64Image = Buffer.from("fake image content").toString("base64")
+      const base64Image = await createTestImage()
       const uploaded = await caller.documents.upload({
         projectId,
         categoryId,
@@ -323,7 +393,7 @@ describe("Documents Router", () => {
 
     test("creates audit log entry on successful delete", async () => {
       // Upload a document first
-      const base64Image = Buffer.from("fake image content").toString("base64")
+      const base64Image = await createTestImage()
       const uploaded = await caller.documents.upload({
         projectId,
         categoryId,

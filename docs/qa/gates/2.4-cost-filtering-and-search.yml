@@ -15,8 +15,7 @@ top_issues:
     suggested_action: "Fix remaining 10 test assertion issues (CSS classes, ARIA labels)"
     suggested_owner: dev
     refs:
-      - "apps/web/TEST_CONFIGURATION_FIX.md"
-      - "apps/web/TESTING.md"
+      - "apps/web/docs/TESTING.md"
 
   - id: "FEAT-001"
     severity: low
@@ -196,8 +195,7 @@ test_infrastructure_fixes:
     files_created:
       - "apps/web/vitest.config.component.ts"
       - "apps/web/src/test/setup-component.ts"
-      - "apps/web/TESTING.md"
-      - "apps/web/TEST_CONFIGURATION_FIX.md"
+      - "apps/web/docs/TESTING.md"
     result: "182/192 tests passing (95% success rate)"
     time_invested: "~45 minutes"
     impact: "Unblocked automated testing of all UI components"

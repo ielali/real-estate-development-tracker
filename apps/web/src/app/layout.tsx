@@ -28,15 +28,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <html lang="en">
-      <head>
+      <body className={inter.className}>
         {googleMapsApiKey && (
           <Script
             src={`https://maps.googleapis.com/maps/api/js?key=${googleMapsApiKey}&libraries=places&loading=async`}
-            strategy="beforeInteractive"
+            strategy="afterInteractive"
           />
         )}
-      </head>
-      <body className={inter.className}>
         <ErrorBoundary>
           <OfflineBanner />
           <Providers>{children}</Providers>

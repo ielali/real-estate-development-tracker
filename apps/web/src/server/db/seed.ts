@@ -44,7 +44,7 @@ async function seed() {
       .insert(users)
       .values({
         id: crypto.randomUUID(),
-        email: "admin@realestate-portfolio.com",
+        email: "imad.elali@pm.me",
         name: "Admin User",
         firstName: "Admin",
         lastName: "User",
@@ -57,7 +57,7 @@ async function seed() {
       .insert(users)
       .values({
         id: crypto.randomUUID(),
-        email: "partner1@example.com",
+        email: "subscriptions.ie@pm.me",
         name: "Partner One",
         firstName: "Partner",
         lastName: "One",
@@ -70,7 +70,7 @@ async function seed() {
       .insert(users)
       .values({
         id: crypto.randomUUID(),
-        email: "partner2@example.com",
+        email: "bitwave.pty@pm.me",
         name: "Partner Two",
         firstName: "Partner",
         lastName: "Two",
@@ -295,7 +295,7 @@ async function seed() {
         firstName: "Wendy",
         lastName: "Windows",
         company: "ClearView Windows",
-        categoryId: "windows_doors",
+        categoryId: "glazier",
         email: "wendy@clearview.com.au",
         phone: "03-9555-0006",
       },
@@ -303,7 +303,7 @@ async function seed() {
         firstName: "Ron",
         lastName: "Roofer",
         company: "TopShield Roofing",
-        categoryId: "roofing",
+        categoryId: "roofer",
         email: "ron@topshield.com.au",
         phone: "03-9555-0007",
       },
@@ -327,7 +327,7 @@ async function seed() {
         firstName: "Larry",
         lastName: "Landscaper",
         company: "Green Gardens",
-        categoryId: "landscaping",
+        categoryId: "landscaper",
         email: "larry@greengardens.com.au",
         mobile: "0400-555-010",
       },
@@ -335,7 +335,7 @@ async function seed() {
         firstName: "Sam",
         lastName: "Supplier",
         company: "BuildMart Supplies",
-        categoryId: "supplier",
+        categoryId: "building_supplies",
         email: "sam@buildmart.com.au",
         phone: "03-9555-0011",
       },
@@ -351,7 +351,7 @@ async function seed() {
         firstName: "Ian",
         lastName: "Inspector",
         company: "VIC Building Authority",
-        categoryId: "inspector",
+        categoryId: "building_inspector",
         email: "ian@vba.vic.gov.au",
         phone: "03-9555-0013",
       },
@@ -359,7 +359,7 @@ async function seed() {
         firstName: "Rachel",
         lastName: "Realtor",
         company: "Prime Properties",
-        categoryId: "realtor",
+        categoryId: "real_estate_agent",
         email: "rachel@primeprops.com.au",
         mobile: "0400-555-014",
       },
@@ -367,7 +367,7 @@ async function seed() {
         firstName: "Dan",
         lastName: "Drywaller",
         company: "Smooth Walls Inc",
-        categoryId: "drywall",
+        categoryId: "carpenter",
         email: "dan@smoothwalls.com.au",
         phone: "03-9555-0015",
       },
@@ -644,6 +644,7 @@ async function seed() {
         description: "Initial meeting with contractor",
         date: new Date("2024-01-15"),
         categoryId: "meeting",
+        createdById: adminUser.id,
       },
       {
         projectId: activeRenovation.id,
@@ -651,6 +652,7 @@ async function seed() {
         description: "Interior demolition finished",
         date: new Date("2024-01-25"),
         categoryId: "milestone",
+        createdById: adminUser.id,
       },
       {
         projectId: activeRenovation.id,
@@ -658,6 +660,7 @@ async function seed() {
         description: "City electrical inspection passed",
         date: new Date("2024-02-05"),
         categoryId: "inspection",
+        createdById: adminUser.id,
       },
       {
         projectId: onHoldNewBuild.id,
@@ -665,13 +668,15 @@ async function seed() {
         description: "Architectural plans review meeting",
         date: new Date("2024-02-15"),
         categoryId: "meeting",
+        createdById: adminUser.id,
       },
       {
         projectId: onHoldNewBuild.id,
         title: "Project On Hold",
         description: "Awaiting financing approval",
         date: new Date("2024-03-25"),
-        categoryId: "status_change",
+        categoryId: "milestone",
+        createdById: adminUser.id,
       },
       {
         projectId: completedDevelopment.id,
@@ -679,6 +684,7 @@ async function seed() {
         description: "Foundation pour and curing complete",
         date: new Date("2023-08-15"),
         categoryId: "milestone",
+        createdById: adminUser.id,
       },
       {
         projectId: completedDevelopment.id,
@@ -686,6 +692,7 @@ async function seed() {
         description: "Final beam placed ceremony",
         date: new Date("2023-10-30"),
         categoryId: "milestone",
+        createdById: adminUser.id,
       },
       {
         projectId: completedDevelopment.id,
@@ -693,6 +700,7 @@ async function seed() {
         description: "COO received from city",
         date: new Date("2024-01-10"),
         categoryId: "milestone",
+        createdById: adminUser.id,
       },
     ]
 
