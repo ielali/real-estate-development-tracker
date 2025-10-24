@@ -6,13 +6,51 @@ This guide covers database operations, migrations, and maintenance for the Real 
 
 The project includes several database management scripts, each serving a specific purpose:
 
-| Script       | Command               | Purpose                                              | Drops Drizzle Schema? | Use When                           |
-| ------------ | --------------------- | ---------------------------------------------------- | --------------------- | ---------------------------------- |
-| **Generate** | `npm run db:generate` | Generate new migration files from schema changes     | No                    | After modifying schema files       |
-| **Migrate**  | `npm run db:migrate`  | Apply pending migrations to database                 | No                    | Deploying schema changes           |
-| **Seed**     | `npm run db:seed`     | Populate database with initial/test data             | No                    | Setting up new database or testing |
-| **Reset**    | `npm run db:reset`    | Clear all data and re-seed (keeps migration history) | **No**                | Resetting data during development  |
-| **Rebuild**  | `npm run db:rebuild`  | Complete database recreation from scratch            | **Yes**               | Migration issues or fresh start    |
+| Script       | Command               | Purpose                                              | Drops Drizzle Schema? | Production Protected? | Use When                           |
+| ------------ | --------------------- | ---------------------------------------------------- | --------------------- | --------------------- | ---------------------------------- |
+| **Generate** | `npm run db:generate` | Generate new migration files from schema changes     | No                    | No                    | After modifying schema files       |
+| **Migrate**  | `npm run db:migrate`  | Apply pending migrations to database                 | No                    | No                    | Deploying schema changes           |
+| **Seed**     | `npm run db:seed`     | Populate database with initial/test data             | No                    | No                    | Setting up new database or testing |
+| **Reset**    | `npm run db:reset`    | Clear all data and re-seed (keeps migration history) | **No**                | **Yes** 🛡️            | Resetting data during development  |
+| **Rebuild**  | `npm run db:rebuild`  | Complete database recreation from scratch            | **Yes**               | **Yes** 🛡️            | Migration issues or fresh start    |
+
+### Production Protection 🛡️
+
+**`db:reset` and `db:rebuild` have multi-layered protection against accidental production use:**
+
+**Safety Layers:**
+
+1. **Environment Detection** - Checks `NODE_ENV=production` and database URL patterns
+2. **Explicit Flag Required** - Must use `--allow-production` flag
+3. **Interactive Confirmation** - Requires typing exact phrase `DELETE ALL PRODUCTION DATA`
+4. **Fail-Safe Default** - Aborts immediately without flag on production
+
+**Development Usage (no protection):**
+
+```bash
+npm run db:reset      # Works directly on dev/test databases
+npm run db:rebuild    # Works directly on dev/test databases
+```
+
+**Production Usage (protected):**
+
+```bash
+# Step 1: Requires --allow-production flag
+npm run db:reset -- --allow-production
+
+# Step 2: Interactive prompt appears
+⚠️  You are about to RESET the PRODUCTION database!
+Type "DELETE ALL PRODUCTION DATA" (exactly) to confirm: _
+
+# Step 3: Must type exact phrase to proceed
+```
+
+**Bypassing Prompts (CI/CD):**
+
+```bash
+# For automated scripts only - EXTREMELY DANGEROUS
+npm run db:rebuild -- --allow-production --skip-prompt
+```
 
 ## Common Workflows
 
@@ -143,7 +181,71 @@ CREATE UNIQUE INDEX "unique_cost_document_idx"
   WHERE deleted_at IS NULL;
 ```
 
+## Production Safety Testing
+
+To verify the production protection mechanisms are working:
+
+### Testing Environment Detection
+
+```bash
+# Set production environment
+export NODE_ENV=production
+
+# Try to run reset (should fail)
+npm run db:reset
+
+# Expected output:
+# ⚠️  PRODUCTION DATABASE DETECTED ⚠️
+# ❌ ERROR: Destructive operations on production require explicit confirmation
+# To allow this operation on production, run:
+#    npm run db:reset -- --allow-production
+```
+
+### Testing Safety Flags
+
+```bash
+# With production flag (will prompt)
+npm run db:reset -- --allow-production
+
+# Expected: Interactive prompt requiring exact phrase
+# Type anything other than "DELETE ALL PRODUCTION DATA" to test abort
+```
+
+### How Environment Detection Works
+
+The safety system uses **multiple detection layers**:
+
+1. **NODE_ENV Check**
+   - `NODE_ENV=production` → Production database
+   - `NODE_ENV=test` → Test database
+   - `NODE_ENV=development` or unset → Development database
+
+2. **URL Pattern Matching**
+   - Contains `purple-heart` → Test database
+   - Contains `shiny-meadow` → Development database
+   - No known pattern → **Assumed production** (fail-safe)
+
+3. **Fail-Safe Logic**
+   - If **either** check indicates production → Protection activates
+   - Unknown databases are treated as production
+   - Better to block safe operations than allow destructive ones
+
 ## Troubleshooting
+
+### Production protection blocking development database
+
+**Cause:** Database URL doesn't contain known dev patterns, so safety system assumes it might be production.
+
+**Solution:**
+
+```bash
+# Option 1: Add identifying pattern to your dev database name
+# When creating Neon database, include 'dev' or specific identifier
+
+# Option 2: Ensure NODE_ENV is not set to 'production' locally
+echo $NODE_ENV  # Should be empty or 'development'
+unset NODE_ENV  # If it's set to production
+```
 
 ### "Migration already applied" error
 

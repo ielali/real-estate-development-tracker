@@ -1,6 +1,7 @@
 import { db } from "./index"
 import { sql } from "drizzle-orm"
 import { execSync } from "child_process"
+import { checkProductionSafety, parseSafetyFlags } from "./safety-check"
 
 /**
  * Database Rebuild Script
@@ -19,10 +20,23 @@ import { execSync } from "child_process"
  * WARNING: This will DELETE ALL DATA in the database!
  *
  * For data-only reset (keeping migration history), use db:reset instead.
+ *
+ * Production Safety:
+ * - Requires --allow-production flag for production databases
+ * - Requires interactive confirmation with exact text match
+ * - Multiple environment detection layers (NODE_ENV + URL patterns)
  */
 async function rebuild() {
   console.log("🔨 Starting complete database rebuild...")
   console.log("⚠️  WARNING: This will delete ALL data and migration history!")
+
+  // Safety check: Prevent accidental production data loss
+  const safetyFlags = parseSafetyFlags()
+  await checkProductionSafety({
+    operation: "rebuild",
+    allowProduction: safetyFlags.allowProduction,
+    skipPrompt: safetyFlags.skipPrompt,
+  })
 
   try {
     console.log("\n1️⃣  Dropping all schemas...")

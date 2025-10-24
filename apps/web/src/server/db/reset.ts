@@ -1,9 +1,18 @@
 import { db } from "./index"
 import { sql } from "drizzle-orm"
 import { execSync } from "child_process"
+import { checkProductionSafety, parseSafetyFlags } from "./safety-check"
 
 async function reset() {
   console.log("🔄 Starting database reset...")
+
+  // Safety check: Prevent accidental production data loss
+  const safetyFlags = parseSafetyFlags()
+  await checkProductionSafety({
+    operation: "reset",
+    allowProduction: safetyFlags.allowProduction,
+    skipPrompt: safetyFlags.skipPrompt,
+  })
 
   try {
     console.log("Dropping all tables...")
