@@ -60,7 +60,7 @@ describe("Cost Router", () => {
     await testDbInstance.db
       .insert(categories)
       .values(CATEGORIES)
-      .onConflictDoNothing({ target: [categories.id, categories.type] })
+      .onConflictDoNothing({ target: categories.id })
   })
 
   afterAll(async () => {

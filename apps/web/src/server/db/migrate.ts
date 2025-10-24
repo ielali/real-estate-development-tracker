@@ -5,6 +5,7 @@ import * as path from "path"
 import ws from "ws"
 import dotenv from "dotenv"
 import { existsSync } from "fs"
+import { getDatabaseUrl, getDatabaseEnvironment } from "./get-database-url"
 
 // Load .env file if it exists (for local development)
 const envPath = path.join(process.cwd(), ".env")
