@@ -1,5 +1,4 @@
 import { describe, it, expect, beforeEach, beforeAll, afterAll } from "vitest"
-import { sql } from "drizzle-orm"
 import { appRouter } from "../api/root"
 import { createTestDb, cleanupAllTestDatabases } from "@/test/test-db"
 import type { User } from "../db/schema/users"

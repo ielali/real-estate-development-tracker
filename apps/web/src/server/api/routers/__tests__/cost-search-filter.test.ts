@@ -45,23 +45,6 @@ describe("Cost Router - Search and Filter (Story 2.4)", () => {
     user,
   })
 
-  // Helper function to create a test context with a new user
-  const createTestContext = async () => {
-    const otherUser = await testDbInstance.db
-      .insert(users)
-      .values({
-        id: crypto.randomUUID(),
-        email: `other-${Date.now()}@example.com`,
-        name: "Other User",
-        firstName: "Other",
-        lastName: "User",
-      })
-      .returning()
-      .then((rows) => rows[0]!)
-
-    return createMockContext(otherUser)
-  }
-
   beforeAll(async () => {
     testDbInstance = await createTestDb()
   })
