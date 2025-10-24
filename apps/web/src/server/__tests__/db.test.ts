@@ -31,6 +31,7 @@ describe("Database Operations", () => {
   beforeAll(async () => {
     testDbConnection = await createTestDb()
     db = testDbConnection.db
+    // Categories are seeded globally in test/setup.ts
   })
 
   afterAll(async () => {

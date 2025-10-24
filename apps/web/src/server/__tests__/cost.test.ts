@@ -5,8 +5,6 @@ import type { User } from "../db/schema/users"
 import { users } from "../db/schema/users"
 import { projects } from "../db/schema/projects"
 import { addresses } from "../db/schema/addresses"
-import { categories } from "../db/schema/categories"
-import { CATEGORIES } from "../db/types"
 
 /**
  * Cost Router Tests
@@ -54,13 +52,7 @@ describe("Cost Router", () => {
 
   beforeAll(async () => {
     testDbInstance = await createTestDb()
-
-    // Seed categories ONCE (static reference data - use onConflictDoNothing for idempotency)
-    // Categories don't need to be cleaned between tests since they're static reference data
-    await testDbInstance.db
-      .insert(categories)
-      .values(CATEGORIES)
-      .onConflictDoNothing({ target: categories.id })
+    // Categories are seeded globally in test/setup.ts
   })
 
   afterAll(async () => {

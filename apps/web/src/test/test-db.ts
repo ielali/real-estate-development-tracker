@@ -1,6 +1,8 @@
 import { drizzle } from "drizzle-orm/neon-serverless"
 import { Pool, neonConfig } from "@neondatabase/serverless"
 import * as schema from "../server/db/schema"
+import { categories } from "../server/db/schema/categories"
+import { CATEGORIES } from "../server/db/types"
 import { sql } from "drizzle-orm"
 import ws from "ws"
 import { getDatabaseUrl } from "@/server/db/get-database-url"
@@ -46,6 +48,10 @@ export const createTestDb = async () => {
   // Create new connection
   globalPool = new Pool({ connectionString: dbUrl })
   globalDb = drizzle(globalPool, { schema })
+
+  // Seed categories ONCE when first creating the connection
+  // Categories are static reference data that persist across tests
+  await globalDb.insert(categories).values(CATEGORIES).onConflictDoNothing()
 
   return {
     db: globalDb,
