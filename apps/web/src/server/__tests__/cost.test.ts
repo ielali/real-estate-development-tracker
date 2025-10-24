@@ -1,10 +1,13 @@
 import { describe, it, expect, beforeEach, beforeAll, afterAll } from "vitest"
+import { sql } from "drizzle-orm"
 import { appRouter } from "../api/root"
 import { createTestDb, cleanupAllTestDatabases } from "@/test/test-db"
 import type { User } from "../db/schema/users"
 import { users } from "../db/schema/users"
 import { projects } from "../db/schema/projects"
 import { addresses } from "../db/schema/addresses"
+import { categories } from "../db/schema/categories"
+import { CATEGORIES } from "../db/types"
 
 /**
  * Cost Router Tests
@@ -63,6 +66,14 @@ describe("Cost Router", () => {
     // Clean up before each test - ensure remote DB is empty for test isolation
     // NOTE: Categories table is NOT truncated because they're static reference data
     await testDbInstance.cleanup()
+
+    // Seed categories (static reference data - use idempotent check)
+    const existingCategories = await testDbInstance.db
+      .select({ count: sql<number>`count(*)` })
+      .from(categories)
+    if (Number(existingCategories[0]?.count) === 0) {
+      await testDbInstance.db.insert(categories).values(CATEGORIES)
+    }
 
     // Create test users with unique IDs to avoid conflicts
     const user1 = await testDbInstance.db

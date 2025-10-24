@@ -15,6 +15,7 @@ if (typeof WebSocket === "undefined") {
 
 let globalPool: Pool | null = null
 let globalDb: ReturnType<typeof drizzle<typeof schema>> | null = null
+let categoriesSeeded = false
 
 // Get test database URL from environment
 function getTestDbUrl(): string {
@@ -37,21 +38,26 @@ function getTestDbUrl(): string {
 export const createTestDb = async () => {
   const dbUrl = getTestDbUrl()
 
-  // Reuse existing connection if available
-  if (globalPool && globalDb) {
-    return {
-      db: globalDb,
-      cleanup: createCleanupFunction(globalDb),
-    }
+  // Create new connection if needed
+  if (!globalPool || !globalDb) {
+    globalPool = new Pool({ connectionString: dbUrl })
+    globalDb = drizzle(globalPool, { schema })
   }
 
-  // Create new connection
-  globalPool = new Pool({ connectionString: dbUrl })
-  globalDb = drizzle(globalPool, { schema })
-
-  // Seed categories ONCE when first creating the connection
+  // Seed categories if not already seeded
   // Categories are static reference data that persist across tests
-  await globalDb.insert(categories).values(CATEGORIES).onConflictDoNothing()
+  if (!categoriesSeeded) {
+    // Check if categories already exist in the database
+    const existingCategories = await globalDb
+      .select({ count: sql<number>`count(*)` })
+      .from(categories)
+
+    if (Number(existingCategories[0]?.count) === 0) {
+      // No categories exist, insert them all at once
+      await globalDb.insert(categories).values(CATEGORIES)
+    }
+    categoriesSeeded = true
+  }
 
   return {
     db: globalDb,
