@@ -49,7 +49,10 @@ interface LegacyCategory {
 }
 
 // Helper to convert legacy category to full Category with tax metadata
-function toCategoryWithDefaults(legacy: LegacyCategory): Category {
+// For predefined categories, omit createdById and createdAt (they're only for custom categories)
+function toCategoryWithDefaults(
+  legacy: LegacyCategory
+): Omit<Category, "createdById" | "createdAt"> {
   return {
     ...legacy,
     taxDeductible: null,
@@ -57,8 +60,6 @@ function toCategoryWithDefaults(legacy: LegacyCategory): Category {
     notes: null,
     isCustom: false,
     isArchived: false,
-    createdById: null,
-    createdAt: null,
   }
 }
 
@@ -685,16 +686,21 @@ const LEGACY_CATEGORIES: LegacyCategory[] = [
   { id: "completion", type: "event", displayName: "Completion", parentId: null },
 ]
 
-// Convert all legacy categories to full Category objects
-export const CATEGORIES: Category[] = LEGACY_CATEGORIES.map(toCategoryWithDefaults)
+// Convert all legacy categories to full Category objects (without createdById/createdAt for predefined categories)
+export const CATEGORIES: Omit<Category, "createdById" | "createdAt">[] =
+  LEGACY_CATEGORIES.map(toCategoryWithDefaults)
 
 // Helper function to get categories by type
-export function getCategoriesByType(type: CategoryType): Category[] {
+export function getCategoriesByType(
+  type: CategoryType
+): Omit<Category, "createdById" | "createdAt">[] {
   return CATEGORIES.filter((cat) => cat.type === type)
 }
 
 // Helper function to get category by id
-export function getCategoryById(id: string): Category | undefined {
+export function getCategoryById(
+  id: string
+): Omit<Category, "createdById" | "createdAt"> | undefined {
   return CATEGORIES.find((cat) => cat.id === id)
 }
 

@@ -3,12 +3,16 @@
  */
 
 import React from "react"
-import { describe, test, expect, vi } from "vitest"
-import { render, screen, fireEvent } from "@testing-library/react"
+import { describe, test, expect, vi, afterEach } from "vitest"
+import { render, fireEvent, cleanup, within } from "@testing-library/react"
 import { ActiveFilters } from "../ActiveFilters"
 import type { CostFilters } from "@/lib/utils/cost-filters"
 
 describe("ActiveFilters", () => {
+  afterEach(() => {
+    cleanup()
+  })
+
   test("should render nothing when no filters active", () => {
     const { container } = render(
       <ActiveFilters
@@ -23,7 +27,7 @@ describe("ActiveFilters", () => {
   })
 
   test("should display search filter badge", () => {
-    render(
+    const { container } = render(
       <ActiveFilters
         filters={{}}
         searchText="plumbing"
@@ -33,12 +37,12 @@ describe("ActiveFilters", () => {
       />
     )
 
-    expect(screen.getByText(/Search: "plumbing"/i)).toBeInTheDocument()
+    expect(within(container).getByText(/Search: "plumbing"/i)).toBeInTheDocument()
   })
 
   test("should display category filter badge", () => {
     const filters: CostFilters = { categoryId: "cat-1" }
-    render(
+    const { container } = render(
       <ActiveFilters
         filters={filters}
         onRemoveFilter={vi.fn()}
@@ -47,7 +51,7 @@ describe("ActiveFilters", () => {
       />
     )
 
-    expect(screen.getByText(/Category/i)).toBeInTheDocument()
+    expect(within(container).getByText(/Category/i)).toBeInTheDocument()
   })
 
   test("should display date range filter badge", () => {
@@ -55,7 +59,7 @@ describe("ActiveFilters", () => {
       startDate: new Date("2024-01-01"),
       endDate: new Date("2024-01-31"),
     }
-    render(
+    const { container } = render(
       <ActiveFilters
         filters={filters}
         onRemoveFilter={vi.fn()}
@@ -64,7 +68,7 @@ describe("ActiveFilters", () => {
       />
     )
 
-    const badge = screen.getByText(/1\/1\/2024.*1\/31\/2024/i)
+    const badge = within(container).getByText(/1\/1\/2024.*1\/31\/2024/i)
     expect(badge).toBeInTheDocument()
   })
 
@@ -73,7 +77,7 @@ describe("ActiveFilters", () => {
       minAmount: 100000, // $1000
       maxAmount: 500000, // $5000
     }
-    render(
+    const { container } = render(
       <ActiveFilters
         filters={filters}
         onRemoveFilter={vi.fn()}
@@ -82,13 +86,13 @@ describe("ActiveFilters", () => {
       />
     )
 
-    const badge = screen.getByText(/\$1000\.00.*\$5000\.00/i)
+    const badge = within(container).getByText(/\$1000\.00.*\$5000\.00/i)
     expect(badge).toBeInTheDocument()
   })
 
   test("should display contact filter badge", () => {
     const filters: CostFilters = { contactId: "contact-1" }
-    render(
+    const { container } = render(
       <ActiveFilters
         filters={filters}
         onRemoveFilter={vi.fn()}
@@ -97,12 +101,12 @@ describe("ActiveFilters", () => {
       />
     )
 
-    expect(screen.getByText(/Contact/i)).toBeInTheDocument()
+    expect(within(container).getByText(/Contact/i)).toBeInTheDocument()
   })
 
   test("should call onClearSearch when search badge removed", () => {
     const onClearSearch = vi.fn()
-    render(
+    const { container } = render(
       <ActiveFilters
         filters={{}}
         searchText="test"
@@ -112,7 +116,7 @@ describe("ActiveFilters", () => {
       />
     )
 
-    const removeButton = screen.getByLabelText(/clear search/i)
+    const removeButton = within(container).getByLabelText(/clear search/i)
     fireEvent.click(removeButton)
 
     expect(onClearSearch).toHaveBeenCalled()
@@ -121,7 +125,7 @@ describe("ActiveFilters", () => {
   test("should call onRemoveFilter when filter badge removed", () => {
     const onRemoveFilter = vi.fn()
     const filters: CostFilters = { categoryId: "cat-1" }
-    render(
+    const { container } = render(
       <ActiveFilters
         filters={filters}
         onRemoveFilter={onRemoveFilter}
@@ -130,7 +134,7 @@ describe("ActiveFilters", () => {
       />
     )
 
-    const removeButton = screen.getByLabelText(/remove category filter/i)
+    const removeButton = within(container).getByLabelText(/remove category filter/i)
     fireEvent.click(removeButton)
 
     expect(onRemoveFilter).toHaveBeenCalledWith("categoryId")
@@ -138,7 +142,7 @@ describe("ActiveFilters", () => {
 
   test("should call onClearAll when clear all button clicked", () => {
     const onClearAll = vi.fn()
-    render(
+    const { container } = render(
       <ActiveFilters
         filters={{ categoryId: "cat-1" }}
         searchText="test"
@@ -148,7 +152,7 @@ describe("ActiveFilters", () => {
       />
     )
 
-    fireEvent.click(screen.getByText(/clear all/i))
+    fireEvent.click(within(container).getByText(/clear all/i))
 
     expect(onClearAll).toHaveBeenCalled()
   })
@@ -159,7 +163,7 @@ describe("ActiveFilters", () => {
       minAmount: 1000,
       contactId: "contact-1",
     }
-    render(
+    const { container } = render(
       <ActiveFilters
         filters={filters}
         searchText="test"
@@ -169,10 +173,10 @@ describe("ActiveFilters", () => {
       />
     )
 
-    expect(screen.getByText(/Search/i)).toBeInTheDocument()
-    expect(screen.getByText(/Category/i)).toBeInTheDocument()
-    expect(screen.getByText(/Contact/i)).toBeInTheDocument()
-    expect(screen.getByText(/Min \$/i)).toBeInTheDocument()
+    expect(within(container).getByText(/Search/i)).toBeInTheDocument()
+    expect(within(container).getByText(/Category/i)).toBeInTheDocument()
+    expect(within(container).getByText(/Contact/i)).toBeInTheDocument()
+    expect(within(container).getByText(/Min \$/i)).toBeInTheDocument()
   })
 
   test("should handle removing date range filter", () => {
@@ -181,7 +185,7 @@ describe("ActiveFilters", () => {
       startDate: new Date(),
       endDate: new Date(),
     }
-    render(
+    const { container } = render(
       <ActiveFilters
         filters={filters}
         onRemoveFilter={onRemoveFilter}
@@ -190,7 +194,7 @@ describe("ActiveFilters", () => {
       />
     )
 
-    const removeButton = screen.getByLabelText(/remove date filter/i)
+    const removeButton = within(container).getByLabelText(/remove date filter/i)
     fireEvent.click(removeButton)
 
     expect(onRemoveFilter).toHaveBeenCalledWith("startDate")

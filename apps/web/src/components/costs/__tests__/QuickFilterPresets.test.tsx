@@ -3,24 +3,31 @@
  */
 
 import React from "react"
-import { describe, test, expect, vi } from "vitest"
-import { render, screen, fireEvent } from "@testing-library/react"
+import { describe, test, expect, vi, afterEach } from "vitest"
+import { render, fireEvent, cleanup } from "@testing-library/react"
 import { QuickFilterPresets } from "../QuickFilterPresets"
 
 describe("QuickFilterPresets", () => {
-  test("should render all preset buttons", () => {
-    render(<QuickFilterPresets onPresetSelect={vi.fn()} />)
+  afterEach(() => {
+    cleanup()
+  })
 
-    expect(screen.getByText("Last 30 days")).toBeInTheDocument()
-    expect(screen.getByText("Over $1,000")).toBeInTheDocument()
-    expect(screen.getByText("This month")).toBeInTheDocument()
+  test("should render all preset buttons", () => {
+    const { container } = render(<QuickFilterPresets onPresetSelect={vi.fn()} />)
+
+    expect(container.textContent).toContain("Last 30 days")
+    expect(container.textContent).toContain("Over $1,000")
+    expect(container.textContent).toContain("This month")
   })
 
   test("should call onPresetSelect when preset clicked", () => {
     const onPresetSelect = vi.fn()
-    render(<QuickFilterPresets onPresetSelect={onPresetSelect} />)
+    const { container } = render(<QuickFilterPresets onPresetSelect={onPresetSelect} />)
 
-    fireEvent.click(screen.getByText("Last 30 days"))
+    const button = Array.from(container.querySelectorAll("button")).find((btn) =>
+      btn.textContent?.includes("Last 30 days")
+    )
+    if (button) fireEvent.click(button)
 
     expect(onPresetSelect).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -34,15 +41,18 @@ describe("QuickFilterPresets", () => {
   })
 
   test("should highlight active preset", () => {
-    render(<QuickFilterPresets onPresetSelect={vi.fn()} activePreset="last-30-days" />)
+    const { container } = render(
+      <QuickFilterPresets onPresetSelect={vi.fn()} activePreset="last-30-days" />
+    )
 
-    const activeButton = screen.getByText("Last 30 days").closest("button")
-    const inactiveButton = screen.getByText("Over $1,000").closest("button")
+    const buttons = Array.from(container.querySelectorAll("button"))
+    const activeButton = buttons.find((btn) => btn.textContent?.includes("Last 30 days"))
+    const inactiveButton = buttons.find((btn) => btn.textContent?.includes("Over $1,000"))
 
     // Active button has default variant (bg-gray-900)
-    expect(activeButton).toHaveClass("bg-gray-900")
+    expect(activeButton?.className).toContain("bg-gray-900")
     // Inactive button does not have default variant class
-    expect(inactiveButton).not.toHaveClass("bg-gray-900")
+    expect(inactiveButton?.className).not.toContain("bg-gray-900")
   })
 
   test("should show icons for presets", () => {
@@ -55,9 +65,12 @@ describe("QuickFilterPresets", () => {
 
   test("should apply Over $1,000 preset correctly", () => {
     const onPresetSelect = vi.fn()
-    render(<QuickFilterPresets onPresetSelect={onPresetSelect} />)
+    const { container } = render(<QuickFilterPresets onPresetSelect={onPresetSelect} />)
 
-    fireEvent.click(screen.getByText("Over $1,000"))
+    const button = Array.from(container.querySelectorAll("button")).find((btn) =>
+      btn.textContent?.includes("Over $1,000")
+    )
+    if (button) fireEvent.click(button)
 
     expect(onPresetSelect).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -71,9 +84,12 @@ describe("QuickFilterPresets", () => {
 
   test("should apply This month preset correctly", () => {
     const onPresetSelect = vi.fn()
-    render(<QuickFilterPresets onPresetSelect={onPresetSelect} />)
+    const { container } = render(<QuickFilterPresets onPresetSelect={onPresetSelect} />)
 
-    fireEvent.click(screen.getByText("This month"))
+    const button = Array.from(container.querySelectorAll("button")).find((btn) =>
+      btn.textContent?.includes("This month")
+    )
+    if (button) fireEvent.click(button)
 
     expect(onPresetSelect).toHaveBeenCalledWith(
       expect.objectContaining({

@@ -131,6 +131,7 @@ export function CostEntryForm({ projectId, onSuccess, defaultValues }: CostEntry
 
       // Optimistically update with temporary ID
       if (previousCosts) {
+        const categoryData = getCategoryById(newCost.categoryId)
         const optimisticCost = {
           id: `temp-${Date.now()}`,
           ...newCost,
@@ -141,7 +142,7 @@ export function CostEntryForm({ projectId, onSuccess, defaultValues }: CostEntry
           createdAt: new Date(),
           updatedAt: new Date(),
           deletedAt: null,
-          category: getCategoryById(newCost.categoryId) ?? null,
+          category: categoryData ? { ...categoryData, createdById: null, createdAt: null } : null,
         }
         utils.costs.list.setData({ projectId }, [...previousCosts, optimisticCost])
       }

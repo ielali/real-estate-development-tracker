@@ -77,8 +77,15 @@ async function getAllCategories(
     createdAt: cat.createdAt ? new Date(cat.createdAt) : null,
   }))
 
+  // Add missing fields to predefined categories to match Category type
+  const predefinedWithFields: Category[] = predefined.map((cat) => ({
+    ...cat,
+    createdById: null,
+    createdAt: null,
+  }))
+
   // Merge and return (predefined first, then custom)
-  return [...predefined, ...custom]
+  return [...predefinedWithFields, ...custom]
 }
 
 /**

@@ -2,6 +2,13 @@ import { exec } from "child_process"
 import { promisify } from "util"
 import * as fs from "fs"
 import * as path from "path"
+import dotenv from "dotenv"
+
+// Load environment variables from .env file (only for local development)
+// In Netlify, environment variables are injected automatically
+if (process.env.NODE_ENV !== "production") {
+  dotenv.config({ path: path.join(process.cwd(), ".env") })
+}
 
 const execAsync = promisify(exec)
 
@@ -9,11 +16,8 @@ async function backup() {
   console.log("💾 Starting database backup...")
 
   try {
-    const dbUrl = process.env.NETLIFY_DATABASE_URL
-
-    if (!dbUrl) {
-      throw new Error("NETLIFY_DATABASE_URL environment variable is not set")
-    }
+    import { getDatabaseUrl } from "./get-database-url"
+    const dbUrl = getDatabaseUrl()
 
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, -1)
     const backupDir = path.join(process.cwd(), "backups")

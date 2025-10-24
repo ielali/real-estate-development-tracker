@@ -20,17 +20,17 @@ async function main() {
     neonConfig.webSocketConstructor = ws
   }
 
-  const dbUrl = process.env.NETLIFY_DATABASE_URL
-
-  if (!dbUrl) {
-    throw new Error("NETLIFY_DATABASE_URL environment variable is not set")
-  }
+  const dbUrl = getDatabaseUrl()
+  console.log(`Using database: ${getDatabaseEnvironment()}`)
 
   const pool = new Pool({ connectionString: dbUrl })
-  const db = drizzle(pool)
+  const db = drizzle(pool, { logger: true })
+
+  const migrationsFolder = path.join(process.cwd(), "drizzle")
+  console.log(`Migrations folder: ${migrationsFolder}`)
 
   await migrate(db, {
-    migrationsFolder: path.join(process.cwd(), "drizzle"),
+    migrationsFolder,
   })
 
   await pool.end()

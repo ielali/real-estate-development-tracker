@@ -3,13 +3,17 @@
  */
 
 import React from "react"
-import { describe, test, expect, vi } from "vitest"
-import { render, screen, fireEvent } from "@testing-library/react"
+import { describe, test, expect, vi, afterEach } from "vitest"
+import { render, screen, fireEvent, cleanup } from "@testing-library/react"
 import { AmountRangeInput } from "../AmountRangeInput"
 
 describe("AmountRangeInput", () => {
+  afterEach(() => {
+    cleanup()
+  })
+
   test("should render min and max inputs", () => {
-    render(
+    const { container } = render(
       <AmountRangeInput
         minAmount={undefined}
         maxAmount={undefined}
@@ -18,12 +22,12 @@ describe("AmountRangeInput", () => {
       />
     )
 
-    expect(screen.getByLabelText(/minimum amount/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/maximum amount/i)).toBeInTheDocument()
+    expect(container.querySelector('[aria-label*="Minimum amount"]')).toBeInTheDocument()
+    expect(container.querySelector('[aria-label*="Maximum amount"]')).toBeInTheDocument()
   })
 
   test("should display current values in dollars", () => {
-    render(
+    const { container } = render(
       <AmountRangeInput
         minAmount={100000} // $1000
         maxAmount={500000} // $5000
@@ -32,8 +36,8 @@ describe("AmountRangeInput", () => {
       />
     )
 
-    const minInput = screen.getByLabelText(/minimum amount/i) as HTMLInputElement
-    const maxInput = screen.getByLabelText(/maximum amount/i) as HTMLInputElement
+    const minInput = container.querySelector('[aria-label*="Minimum amount"]') as HTMLInputElement
+    const maxInput = container.querySelector('[aria-label*="Maximum amount"]') as HTMLInputElement
 
     expect(minInput.value).toBe("1000.00")
     expect(maxInput.value).toBe("5000.00")
@@ -41,7 +45,7 @@ describe("AmountRangeInput", () => {
 
   test("should call onMinChange with cents when user enters dollars", () => {
     const onMinChange = vi.fn()
-    render(
+    const { container } = render(
       <AmountRangeInput
         minAmount={undefined}
         maxAmount={undefined}
@@ -50,7 +54,7 @@ describe("AmountRangeInput", () => {
       />
     )
 
-    const minInput = screen.getByLabelText(/minimum amount/i)
+    const minInput = container.querySelector('[aria-label*="Minimum amount"]') as HTMLInputElement
     fireEvent.change(minInput, { target: { value: "1000.00" } })
 
     expect(onMinChange).toHaveBeenCalledWith(100000) // $1000 in cents
@@ -58,7 +62,7 @@ describe("AmountRangeInput", () => {
 
   test("should call onMaxChange with cents when user enters dollars", () => {
     const onMaxChange = vi.fn()
-    render(
+    const { container } = render(
       <AmountRangeInput
         minAmount={undefined}
         maxAmount={undefined}
@@ -67,7 +71,7 @@ describe("AmountRangeInput", () => {
       />
     )
 
-    const maxInput = screen.getByLabelText(/maximum amount/i)
+    const maxInput = container.querySelector('[aria-label*="Maximum amount"]') as HTMLInputElement
     fireEvent.change(maxInput, { target: { value: "5000.00" } })
 
     expect(onMaxChange).toHaveBeenCalledWith(500000) // $5000 in cents
@@ -75,7 +79,7 @@ describe("AmountRangeInput", () => {
 
   test("should call onChange with undefined when input is cleared", () => {
     const onMinChange = vi.fn()
-    render(
+    const { container } = render(
       <AmountRangeInput
         minAmount={100000}
         maxAmount={undefined}
@@ -84,7 +88,7 @@ describe("AmountRangeInput", () => {
       />
     )
 
-    const minInput = screen.getByLabelText(/minimum amount/i)
+    const minInput = container.querySelector('[aria-label*="Minimum amount"]') as HTMLInputElement
     fireEvent.change(minInput, { target: { value: "" } })
 
     expect(onMinChange).toHaveBeenCalledWith(undefined)
@@ -92,7 +96,7 @@ describe("AmountRangeInput", () => {
 
   test("should handle decimal inputs", () => {
     const onMinChange = vi.fn()
-    render(
+    const { container } = render(
       <AmountRangeInput
         minAmount={undefined}
         maxAmount={undefined}
@@ -101,7 +105,7 @@ describe("AmountRangeInput", () => {
       />
     )
 
-    const minInput = screen.getByLabelText(/minimum amount/i)
+    const minInput = container.querySelector('[aria-label*="Minimum amount"]') as HTMLInputElement
     fireEvent.change(minInput, { target: { value: "123.45" } })
 
     expect(onMinChange).toHaveBeenCalledWith(12345) // $123.45 in cents
