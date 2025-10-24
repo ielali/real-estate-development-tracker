@@ -6,6 +6,9 @@
 
 import { describe, test, expect, beforeAll, afterAll, beforeEach, vi } from "vitest"
 
+// Mock storage for Netlify Blobs
+const mockStorage = new Map<string, ArrayBuffer>()
+
 // IMPORTANT: vi.mock must be at the top of the file (after imports from vitest)
 // This is a Vitest requirement for hoisting mocks
 vi.mock("@netlify/blobs", () => ({
@@ -61,10 +64,21 @@ vi.mock("@netlify/blobs", () => ({
   }),
 }))
 
+import { sql } from "drizzle-orm"
 import { appRouter } from "../../root"
 import { createTestDb, cleanupAllTestDatabases } from "@/test/test-db"
 import type { User } from "@/server/db/schema/users"
 import { users } from "@/server/db/schema/users"
+import { categories } from "@/server/db/schema/categories"
+import { CATEGORIES } from "@/server/db/types"
+
+// Helper function to create a test image (1x1 pixel PNG)
+async function createTestImage(): Promise<string> {
+  // 1x1 pixel transparent PNG in base64
+  const base64 =
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+  return base64
+}
 
 describe("Documents Router", () => {
   let testDbInstance: Awaited<ReturnType<typeof createTestDb>>
