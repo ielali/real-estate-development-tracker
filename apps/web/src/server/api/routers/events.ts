@@ -97,10 +97,11 @@ export const eventsRouter = createTRPCRouter({
       })
       .returning()
 
-    // Create junction records for related contacts
+    // Create junction records for related contacts (deduplicate contact IDs)
     if (input.relatedContactIds && input.relatedContactIds.length > 0) {
+      const uniqueContactIds = Array.from(new Set(input.relatedContactIds))
       await ctx.db.insert(eventContacts).values(
-        input.relatedContactIds.map((contactId) => ({
+        uniqueContactIds.map((contactId) => ({
           id: crypto.randomUUID(),
           eventId: eventId,
           contactId: contactId,
@@ -180,6 +181,7 @@ export const eventsRouter = createTRPCRouter({
                 firstName: true,
                 lastName: true,
                 company: true,
+                deletedAt: true,
               },
             },
           },
@@ -187,10 +189,16 @@ export const eventsRouter = createTRPCRouter({
       },
     })
 
+    // Filter out deleted contacts from eventContacts
+    const eventsWithActiveContacts = eventsList.map((event) => ({
+      ...event,
+      eventContacts: event.eventContacts.filter((ec) => !ec.contact.deletedAt),
+    }))
+
     // Filter events that have the specified contact (if contactId provided)
     const filteredEvents = input.contactId
-      ? eventsList.filter((event) => event.eventContacts.length > 0)
-      : eventsList
+      ? eventsWithActiveContacts.filter((event) => event.eventContacts.length > 0)
+      : eventsWithActiveContacts
 
     // Determine next cursor for pagination
     let nextCursor: string | undefined

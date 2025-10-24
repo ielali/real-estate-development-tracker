@@ -193,7 +193,7 @@ describe("Events Router", () => {
           categoryId: "milestone",
           relatedContactIds: [],
         })
-      ).rejects.toThrow("FORBIDDEN")
+      ).rejects.toThrow("You do not have permission to access this project")
     })
 
     test("links multiple contacts to event", async () => {
@@ -302,7 +302,9 @@ describe("Events Router", () => {
     })
 
     test("rejects listing for unauthorized user", async () => {
-      await expect(otherCaller.events.list({ projectId })).rejects.toThrow("FORBIDDEN")
+      await expect(otherCaller.events.list({ projectId })).rejects.toThrow(
+        "You do not have permission to access this project"
+      )
     })
   })
 
@@ -386,7 +388,7 @@ describe("Events Router", () => {
           id: eventId,
           title: "Unauthorized Update",
         })
-      ).rejects.toThrow("FORBIDDEN")
+      ).rejects.toThrow("You do not have permission to access this project")
     })
   })
 
@@ -419,7 +421,9 @@ describe("Events Router", () => {
     })
 
     test("rejects delete for unauthorized user", async () => {
-      await expect(otherCaller.events.delete(eventId)).rejects.toThrow("FORBIDDEN")
+      await expect(otherCaller.events.delete(eventId)).rejects.toThrow(
+        "Only project owner can delete events"
+      )
     })
   })
 
