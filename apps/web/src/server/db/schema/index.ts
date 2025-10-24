@@ -12,6 +12,8 @@ export * from "./projectContact"
 export * from "./eventContacts"
 export * from "./eventDocuments"
 export * from "./eventCosts"
+export * from "./costDocuments"
+export * from "./contactDocuments"
 export * from "./auditLog"
 export * from "./categories"
 
@@ -28,6 +30,8 @@ import { projectContact } from "./projectContact"
 import { eventContacts } from "./eventContacts"
 import { eventDocuments } from "./eventDocuments"
 import { eventCosts } from "./eventCosts"
+import { costDocuments } from "./costDocuments"
+import { contactDocuments } from "./contactDocuments"
 import { categories } from "./categories"
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -57,7 +61,7 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
   projectContacts: many(projectContact),
 }))
 
-export const costsRelations = relations(costs, ({ one }) => ({
+export const costsRelations = relations(costs, ({ one, many }) => ({
   project: one(projects, {
     fields: [costs.projectId],
     references: [projects.id],
@@ -74,6 +78,7 @@ export const costsRelations = relations(costs, ({ one }) => ({
     fields: [costs.createdById],
     references: [users.id],
   }),
+  costDocuments: many(costDocuments),
 }))
 
 export const contactsRelations = relations(contacts, ({ one, many }) => ({
@@ -87,9 +92,10 @@ export const contactsRelations = relations(contacts, ({ one, many }) => ({
   }),
   costs: many(costs),
   projects: many(projectContact),
+  contactDocuments: many(contactDocuments),
 }))
 
-export const documentsRelations = relations(documents, ({ one }) => ({
+export const documentsRelations = relations(documents, ({ one, many }) => ({
   project: one(projects, {
     fields: [documents.projectId],
     references: [projects.id],
@@ -98,6 +104,9 @@ export const documentsRelations = relations(documents, ({ one }) => ({
     fields: [documents.categoryId],
     references: [categories.id],
   }),
+  costDocuments: many(costDocuments),
+  eventDocuments: many(eventDocuments),
+  contactDocuments: many(contactDocuments),
 }))
 
 export const eventsRelations = relations(events, ({ one, many }) => ({
@@ -182,5 +191,27 @@ export const eventCostsRelations = relations(eventCosts, ({ one }) => ({
   cost: one(costs, {
     fields: [eventCosts.costId],
     references: [costs.id],
+  }),
+}))
+
+export const costDocumentsRelations = relations(costDocuments, ({ one }) => ({
+  cost: one(costs, {
+    fields: [costDocuments.costId],
+    references: [costs.id],
+  }),
+  document: one(documents, {
+    fields: [costDocuments.documentId],
+    references: [documents.id],
+  }),
+}))
+
+export const contactDocumentsRelations = relations(contactDocuments, ({ one }) => ({
+  contact: one(contacts, {
+    fields: [contactDocuments.contactId],
+    references: [contacts.id],
+  }),
+  document: one(documents, {
+    fields: [contactDocuments.documentId],
+    references: [documents.id],
   }),
 }))

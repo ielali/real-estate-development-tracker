@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server"
-import { eq, and, isNull, or, ilike, sql } from "drizzle-orm"
+import { eq, and, isNull, or, ilike, sql, desc } from "drizzle-orm"
 import { createTRPCRouter, protectedProcedure } from "../trpc"
 import { contacts } from "@/server/db/schema/contacts"
 import { categories } from "@/server/db/schema/categories"
@@ -7,6 +7,8 @@ import { projectContact } from "@/server/db/schema/projectContact"
 import { projects } from "@/server/db/schema/projects"
 import { costs } from "@/server/db/schema/costs"
 import { addresses } from "@/server/db/schema/addresses"
+import { contactDocuments } from "@/server/db/schema/contactDocuments"
+import { documents } from "@/server/db/schema/documents"
 import {
   contactFormSchema,
   contactUpdateSchema,
@@ -508,5 +510,63 @@ export const contactRouter = createTRPCRouter({
       })
 
       return { success: true, alreadyLinked: false }
+    }),
+
+  /**
+   * Get all documents linked to a specific contact
+   *
+   * Returns documents that have been associated with this contact
+   * (e.g., contracts, quotes). Verifies user has access to the contact.
+   *
+   * @throws {TRPCError} UNAUTHORIZED - User not authenticated
+   * @throws {TRPCError} FORBIDDEN - User does not have permission to access this contact
+   * @throws {TRPCError} NOT_FOUND - Contact not found
+   * @returns {Array} Array of linked document records
+   */
+  getDocuments: protectedProcedure
+    .input(z.string().uuid())
+    .query(async ({ ctx, input: contactId }) => {
+      const userId = ctx.session.user.id
+
+      // Verify contact exists and user has access (via ProjectContact)
+      const [pc] = await ctx.db
+        .select()
+        .from(projectContact)
+        .innerJoin(projects, eq(projectContact.projectId, projects.id))
+        .where(
+          and(
+            eq(projectContact.contactId, contactId),
+            eq(projects.ownerId, userId),
+            isNull(projectContact.deletedAt),
+            isNull(projects.deletedAt)
+          )
+        )
+        .limit(1)
+
+      if (!pc) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Contact not found or you do not have permission to access it",
+        })
+      }
+
+      // Get linked documents via junction table
+      const links = await ctx.db
+        .select({
+          document: documents,
+          linkCreatedAt: contactDocuments.createdAt,
+        })
+        .from(contactDocuments)
+        .innerJoin(documents, eq(contactDocuments.documentId, documents.id))
+        .where(
+          and(
+            eq(contactDocuments.contactId, contactId),
+            isNull(contactDocuments.deletedAt),
+            isNull(documents.deletedAt)
+          )
+        )
+        .orderBy(desc(contactDocuments.createdAt))
+
+      return links.map((link) => link.document)
     }),
 })

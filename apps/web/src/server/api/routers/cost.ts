@@ -5,6 +5,8 @@ import { costs } from "@/server/db/schema/costs"
 import { projects } from "@/server/db/schema/projects"
 import { categories } from "@/server/db/schema/categories"
 import { contacts } from "@/server/db/schema/contacts"
+import { costDocuments } from "@/server/db/schema/costDocuments"
+import { documents } from "@/server/db/schema/documents"
 import {
   createCostSchema,
   updateCostSchema,
@@ -619,5 +621,44 @@ export const costRouter = createTRPCRouter({
         .where(inArray(costs.id, input.costIds))
 
       return { count: costsToUpdate.length }
+    }),
+
+  /**
+   * Get all documents linked to a specific cost
+   *
+   * Returns documents that have been associated with this cost
+   * (e.g., receipts, invoices). Verifies user has access to the cost's project.
+   *
+   * @throws {TRPCError} UNAUTHORIZED - User not authenticated
+   * @throws {TRPCError} FORBIDDEN - User does not have permission to access this cost
+   * @throws {TRPCError} NOT_FOUND - Cost not found
+   * @returns {Array} Array of linked document records
+   */
+  getDocuments: protectedProcedure
+    .input(z.string().uuid())
+    .query(async ({ ctx, input: costId }) => {
+      const userId = ctx.session.user.id
+
+      // Verify cost ownership
+      await verifyCostOwnership(ctx.db, costId, userId)
+
+      // Get linked documents via junction table
+      const links = await ctx.db
+        .select({
+          document: documents,
+          linkCreatedAt: costDocuments.createdAt,
+        })
+        .from(costDocuments)
+        .innerJoin(documents, eq(costDocuments.documentId, documents.id))
+        .where(
+          and(
+            eq(costDocuments.costId, costId),
+            isNull(costDocuments.deletedAt),
+            isNull(documents.deletedAt)
+          )
+        )
+        .orderBy(desc(costDocuments.createdAt))
+
+      return links.map((link) => link.document)
     }),
 })
