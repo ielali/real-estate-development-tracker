@@ -40,6 +40,10 @@ import {
 } from "@/components/ui/alert-dialog"
 import { getCategoriesByType, getCategoryById } from "@/server/db/types"
 import { formatCurrencyInput, dollarsToCents, centsToDollars } from "@/lib/utils/currency"
+import { RelatedDocuments } from "@/components/documents/RelatedDocuments"
+import { DocumentLinkSelector } from "@/components/documents/DocumentLinkSelector"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Link as LinkIcon } from "lucide-react"
 
 /**
  * Client-side form schema for cost editing
@@ -339,6 +343,27 @@ export function CostEditForm({ projectId, costId }: CostEditFormProps) {
             </FormItem>
           )}
         />
+
+        {/* Related Documents */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Related Documents</CardTitle>
+                <CardDescription>Documents linked to this cost</CardDescription>
+              </div>
+              <DocumentLinkSelector entityType="cost" entityId={costId} projectId={projectId}>
+                <Button type="button" variant="outline" size="sm">
+                  <LinkIcon className="mr-2 h-4 w-4" />
+                  Link Documents
+                </Button>
+              </DocumentLinkSelector>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <RelatedDocuments entityType="cost" entityId={costId} />
+          </CardContent>
+        </Card>
 
         {/* Action buttons */}
         <div className="flex flex-col gap-4 pt-4 sm:flex-row sm:justify-between">
