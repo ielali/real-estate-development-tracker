@@ -308,6 +308,69 @@ psql $NETLIFY_DATABASE_URL
 npx drizzle-kit studio
 ```
 
+## Environment Variables Strategy
+
+The project uses a **single source of truth** approach for database connections via the `getDatabaseUrl()` helper function located in `apps/web/src/server/db/get-database-url.ts`.
+
+### Environment-Specific Variables
+
+**Development (Local):**
+
+- **Variable:** `NETLIFY_DATABASE_URL`
+- **Purpose:** Development database for local testing
+- **Set in:** `.env` file
+- **Example:** `postgresql://user:pass@shiny-meadow-12345.neon.tech/dev?sslmode=require`
+
+**Test (Vitest):**
+
+- **Variable:** `NETLIFY_TEST_DATABASE_URL`
+- **Purpose:** Dedicated test database to avoid polluting development data
+- **Set in:** `.env` file
+- **Example:** `postgresql://user:pass@purple-heart-67890.neon.tech/test?sslmode=require`
+
+**Production (Netlify):**
+
+- **Variable:** `NETLIFY_DATABASE_URL`
+- **Purpose:** Production database
+- **Set by:** Netlify Neon integration (automatic)
+- **No manual configuration needed**
+
+### Setup Instructions
+
+**1. Create `.env` file in `apps/web/`:**
+
+```bash
+# Development database
+NETLIFY_DATABASE_URL="postgresql://user:pass@your-dev-db.neon.tech/database?sslmode=require"
+
+# Test database
+NETLIFY_TEST_DATABASE_URL="postgresql://user:pass@your-test-db.neon.tech/test-database?sslmode=require"
+```
+
+**2. Run migrations for each environment:**
+
+```bash
+# Development database
+npm run db:migrate
+
+# Test database
+NODE_ENV=test npm run db:migrate
+```
+
+**3. Production deployment:**
+
+1. Install Netlify Neon integration from [Netlify dashboard](https://app.netlify.com/integrations/neon)
+2. Netlify automatically sets `NETLIFY_DATABASE_URL`
+3. No manual configuration needed!
+
+### Benefits
+
+✅ **Single Source of Truth** - All connections use `getDatabaseUrl()`
+✅ **Environment-Specific** - Clear separation between dev/test/production
+✅ **Fail-Fast Error Messages** - Clear errors tell you exactly what's missing
+✅ **Netlify-Compatible** - Works seamlessly with Netlify's auto-configuration
+✅ **Test Isolation** - Tests always use dedicated test database
+
 ## Migration Files
 
 Migration files are stored in `apps/web/drizzle/`:
