@@ -20,7 +20,11 @@
     "test:ui": "NODE_OPTIONS='--experimental-vm-modules' vitest --ui",
     "test:run": "NODE_OPTIONS='--experimental-vm-modules' vitest run",
     "test:component": "NODE_OPTIONS='--experimental-vm-modules' vitest run --config vitest.config.component.ts",
-    "test:api": "NODE_OPTIONS='--experimental-vm-modules' vitest run --testPathPattern='(server|api).*\\.test\\.(ts|tsx)$'"
+    "test:api": "NODE_OPTIONS='--experimental-vm-modules' vitest run --testPathPattern='(server|api).*\\.test\\.(ts|tsx)$'",
+    "test:e2e": "playwright test",
+    "test:e2e:run": "playwright test --reporter=list",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:debug": "playwright test --debug"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

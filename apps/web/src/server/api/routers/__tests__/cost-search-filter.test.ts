@@ -5,10 +5,13 @@
  */
 
 import { describe, test, expect, beforeAll, afterAll, beforeEach } from "vitest"
+import { sql } from "drizzle-orm"
 import { appRouter } from "../../root"
 import { createTestDb, cleanupAllTestDatabases } from "@/test/test-db"
 import type { User } from "@/server/db/schema/users"
 import { users } from "@/server/db/schema/users"
+import { categories } from "@/server/db/schema/categories"
+import { CATEGORIES } from "@/server/db/types"
 
 describe("Cost Router - Search and Filter (Story 2.4)", () => {
   let testDbInstance: Awaited<ReturnType<typeof createTestDb>>
@@ -17,6 +20,9 @@ describe("Cost Router - Search and Filter (Story 2.4)", () => {
   let projectId: string
   let categoryId: string
   let contactId: string
+
+  // Increase timeout for slower database operations
+  const _testTimeout = 30000 // 30 seconds
 
   const createMockSession = (userId: string) => ({
     id: `session-${userId}`,
@@ -39,6 +45,23 @@ describe("Cost Router - Search and Filter (Story 2.4)", () => {
     user,
   })
 
+  // Helper function to create a test context with a new user
+  const createTestContext = async () => {
+    const otherUser = await testDbInstance.db
+      .insert(users)
+      .values({
+        id: crypto.randomUUID(),
+        email: `other-${Date.now()}@example.com`,
+        name: "Other User",
+        firstName: "Other",
+        lastName: "User",
+      })
+      .returning()
+      .then((rows) => rows[0]!)
+
+    return createMockContext(otherUser)
+  }
+
   beforeAll(async () => {
     testDbInstance = await createTestDb()
   })
@@ -50,12 +73,21 @@ describe("Cost Router - Search and Filter (Story 2.4)", () => {
   beforeEach(async () => {
     await testDbInstance.cleanup()
 
-    // Create test user
+    // Seed categories (static reference data - use onConflictDoNothing for idempotency)
+    const existingCategories = await testDbInstance.db
+      .select({ count: sql<number>`count(*)` })
+      .from(categories)
+
+    if (Number(existingCategories[0]?.count) === 0) {
+      await testDbInstance.db.insert(categories).values(CATEGORIES)
+    }
+
+    // Create test user with unique ID to avoid conflicts
     testUser = await testDbInstance.db
       .insert(users)
       .values({
-        id: "test-user-1",
-        email: "testuser@example.com",
+        id: crypto.randomUUID(),
+        email: `testuser-${Date.now()}-${Math.random()}@example.com`,
         name: "Test User",
         firstName: "Test",
         lastName: "User",
@@ -82,19 +114,16 @@ describe("Cost Router - Search and Filter (Story 2.4)", () => {
     })
     projectId = project.id
 
-    // Create a test category
-    const category = await caller.category.create({
-      displayName: "Plumbing",
-      type: "cost",
-      parentId: null,
-    })
-    categoryId = category.id
+    // Use predefined categories from CATEGORIES constant
+    categoryId = "cost_materials" // Materials category
+    const contactCategoryId = "plumber" // Plumber category
 
     // Create a test contact
     const contact = await caller.contacts.create({
       projectId,
       firstName: "John",
       lastName: "Plumber",
+      categoryId: contactCategoryId,
     })
     contactId = contact.id
 
@@ -121,6 +150,7 @@ describe("Cost Router - Search and Filter (Story 2.4)", () => {
       projectId,
       amount: 25000, // $250
       description: "Install new electrical outlet",
+      categoryId: "cost_labor", // Use labor category for electrical work
       date: new Date("2024-01-10"),
     })
   })
@@ -336,7 +366,7 @@ describe("Cost Router - Search and Filter (Story 2.4)", () => {
           projectId, // Project owned by first user
           searchText: "test",
         })
-      ).rejects.toThrow("FORBIDDEN")
+      ).rejects.toThrow("Project not found or you do not have")
     })
   })
 

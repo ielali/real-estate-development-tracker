@@ -17,6 +17,12 @@ export default defineConfig({
     setupFiles: ["./src/test/setup.ts"],
     isolate: true,
     pool: "forks", // Use forks instead of threads for better isolation
+    reporters: [
+      "default", // Keep terminal output
+      ["json", { outputFile: "test-results/results.json" }],
+    ],
+    // Exclude e2e tests (run with Playwright separately)
+    exclude: ["**/node_modules/**", "**/e2e/**", "**/dist/**", "**/.next/**"],
     poolOptions: {
       forks: {
         singleFork: true, // Run tests sequentially to avoid database conflicts
@@ -38,8 +44,8 @@ export default defineConfig({
 
     env: {
       NODE_ENV: "test",
-      // Use test database URL for all tests
-      DATABASE_URL: process.env.NEON_TEST_DATABASE_URL || process.env.DATABASE_URL,
+      // Test database - getDatabaseUrl() will use NEON_TEST_DATABASE_URL when NODE_ENV=test
+      NEON_TEST_DATABASE_URL: process.env.NEON_TEST_DATABASE_URL,
       DEPLOY_PRIME_URL: process.env.DEPLOY_PRIME_URL || "http://localhost:3000",
       BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET || "test-secret-minimum-32-chars-long",
     },

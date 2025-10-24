@@ -42,7 +42,7 @@ export function CategorySelector({
     const allCategories = getCategoriesByType("contact")
 
     const parents = allCategories.filter((cat) => cat.parentId === null)
-    const groups: Record<string, Category[]> = {}
+    const groups: Record<string, Omit<Category, "createdById" | "createdAt">[]> = {}
 
     parents.forEach((parent) => {
       groups[parent.id] = allCategories.filter((cat) => cat.parentId === parent.id)

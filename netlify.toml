@@ -13,7 +13,7 @@
     bun run type-check && \
     echo '✅ Type check passed' && \
     echo '' && \
-    echo '🧪 Running Tests...' && \
+    echo '🧪 Running Tests (Vitest)...' && \
     bun run test:run && \
     echo '✅ Tests passed' && \
     echo '' && \

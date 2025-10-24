@@ -4,6 +4,7 @@ import { Pool, neonConfig } from "@neondatabase/serverless"
 import * as path from "path"
 import ws from "ws"
 import dotenv from "dotenv"
+import { getDatabaseUrl, getDatabaseEnvironment } from "./get-database-url"
 
 // Load environment variables from .env file (only for local development)
 // In Netlify, environment variables are injected automatically
@@ -19,21 +20,17 @@ async function main() {
     neonConfig.webSocketConstructor = ws
   }
 
-  const dbUrl = process.env.DATABASE_URL
-
-  if (!dbUrl) {
-    throw new Error("DATABASE_URL environment variable is not set")
-  }
-
-  console.log(
-    `Using database: ${dbUrl.includes("purple-heart") ? "TEST DATABASE" : dbUrl.includes("shiny-meadow") ? "DEVELOPMENT DATABASE" : "PRODUCTION DATABASE"}`
-  )
+  const dbUrl = getDatabaseUrl()
+  console.log(`Using database: ${getDatabaseEnvironment()}`)
 
   const pool = new Pool({ connectionString: dbUrl })
-  const db = drizzle(pool)
+  const db = drizzle(pool, { logger: true })
+
+  const migrationsFolder = path.join(process.cwd(), "drizzle")
+  console.log(`Migrations folder: ${migrationsFolder}`)
 
   await migrate(db, {
-    migrationsFolder: path.join(process.cwd(), "drizzle"),
+    migrationsFolder,
   })
 
   await pool.end()

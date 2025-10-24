@@ -16,11 +16,8 @@ async function backup() {
   console.log("💾 Starting database backup...")
 
   try {
-    const dbUrl = process.env.DATABASE_URL
-
-    if (!dbUrl) {
-      throw new Error("DATABASE_URL environment variable is not set")
-    }
+    import { getDatabaseUrl } from "./get-database-url"
+    const dbUrl = getDatabaseUrl()
 
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, -1)
     const backupDir = path.join(process.cwd(), "backups")

@@ -3,6 +3,7 @@ import { Pool, neonConfig } from "@neondatabase/serverless"
 import * as schema from "../server/db/schema"
 import { sql } from "drizzle-orm"
 import ws from "ws"
+import { getDatabaseUrl } from "@/server/db/get-database-url"
 
 // Configure Neon WebSocket for Node.js environment
 // This is required for Neon PostgreSQL connections in Node.js
@@ -15,13 +16,7 @@ let globalDb: ReturnType<typeof drizzle<typeof schema>> | null = null
 
 // Get test database URL from environment
 function getTestDbUrl(): string {
-  const testDbUrl = process.env.DATABASE_URL
-
-  if (!testDbUrl) {
-    throw new Error("DATABASE_URL environment variable is required for tests")
-  }
-
-  return testDbUrl
+  return getDatabaseUrl()
 }
 
 /**

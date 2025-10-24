@@ -40,5 +40,23 @@ backups/
 # Scratchpad for debugging utilities and temporary scripts
 scratchpad/
 
+# Temporary utility scripts at root level (should be in scripts/ folder)
+# See scripts/README.md for script organization guidelines
+/*-tables.ts
+/*-migrations*.ts
+/check-*.ts
+/test-*.ts
+/debug-*.ts
+
+# Temporary documentation at root level (should be in docs/ folder)
+# See docs/TESTING.md for consolidated testing documentation
+/TEST*.md
+/TESTING*.md
+
 # Netlify build artifacts and local state
 .netlify
+
+# Test results and reports
+test-results/
+playwright-report/
+.playwright/

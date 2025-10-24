@@ -1,3 +1,5 @@
+import { Resend } from "resend"
+
 interface SendEmailOptions {
   to: string
   subject: string
@@ -16,6 +18,18 @@ interface PasswordResetEmailData {
 
 export class EmailService {
   private isDevelopment = process.env.NODE_ENV === "development"
+  private resend: Resend | null = null
+
+  private getResendClient(): Resend {
+    if (!this.resend) {
+      const apiKey = process.env.RESEND_API_KEY
+      if (!apiKey) {
+        throw new Error("RESEND_API_KEY environment variable is not set")
+      }
+      this.resend = new Resend(apiKey)
+    }
+    return this.resend
+  }
 
   async sendEmail({ to, subject, html, text }: SendEmailOptions): Promise<void> {
     if (this.isDevelopment) {
@@ -35,9 +49,26 @@ export class EmailService {
       return
     }
 
-    // Production: Integrate with email service
-    // TODO: Implement with Resend, SendGrid, or other email service
-    throw new Error("Production email service not configured yet")
+    // Production: Send via Resend
+    try {
+      const resend = this.getResendClient()
+      const fromEmail = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev"
+
+      const result = await resend.emails.send({
+        from: fromEmail,
+        to,
+        subject,
+        html,
+        ...(text && { text }),
+      })
+
+      console.log("✅ Email sent successfully via Resend:", result)
+    } catch (error) {
+      console.error("❌ Failed to send email via Resend:", error)
+      throw new Error(
+        `Failed to send email: ${error instanceof Error ? error.message : "Unknown error"}`
+      )
+    }
   }
 
   async sendPasswordResetEmail({

@@ -4,6 +4,7 @@ import * as schema from "./schema"
 import ws from "ws"
 import dotenv from "dotenv"
 import * as path from "path"
+import { getDatabaseUrl } from "./get-database-url"
 
 // Load environment variables from .env file when running scripts
 if (process.env.NODE_ENV !== "production") {
@@ -18,12 +19,7 @@ if (typeof WebSocket === "undefined") {
 
 // Create database connection
 const createDatabase = () => {
-  const dbUrl = process.env.DATABASE_URL
-
-  if (!dbUrl) {
-    throw new Error("DATABASE_URL environment variable is not set")
-  }
-
+  const dbUrl = getDatabaseUrl()
   const pool = new Pool({ connectionString: dbUrl })
   return drizzle(pool, { schema })
 }

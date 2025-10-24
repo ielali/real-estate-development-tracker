@@ -549,9 +549,13 @@ describe("Cost Router", () => {
       const ctx = createMockContext(testUser)
       const caller = appRouter.createCaller(ctx)
 
-      // Get one cost and delete it
+      // Get all costs and delete the oldest one (10000)
+      // Costs are sorted by date desc by default:
+      // costs[0] = 5000 (newest, 2024-03-15)
+      // costs[1] = 20000 (middle, 2024-02-01)
+      // costs[2] = 10000 (oldest, 2024-01-15)
       const costs = await caller.costs.list({ projectId: testProjectId })
-      await caller.costs.softDelete({ id: costs[0].id })
+      await caller.costs.softDelete({ id: costs[2].id })
 
       const result = await caller.costs.getTotal({ projectId: testProjectId })
 

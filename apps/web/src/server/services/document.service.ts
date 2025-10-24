@@ -315,6 +315,11 @@ export class DocumentService {
 
       return data
     } catch (error) {
+      // Re-throw TRPCError as-is
+      if (error instanceof TRPCError) {
+        throw error
+      }
+
       console.error("Failed to retrieve document blob:", error)
       throw new TRPCError({
         code: "NOT_FOUND",
