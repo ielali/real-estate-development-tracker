@@ -6,10 +6,13 @@
  */
 
 import { describe, test, expect, beforeAll, afterAll, beforeEach } from "vitest"
+import { sql } from "drizzle-orm"
 import { appRouter } from "../../root"
 import { createTestDb, cleanupAllTestDatabases } from "@/test/test-db"
 import type { User } from "@/server/db/schema/users"
 import { users } from "@/server/db/schema/users"
+import { categories } from "@/server/db/schema/categories"
+import { CATEGORIES } from "@/server/db/types"
 
 describe("Events Router", () => {
   let testDbInstance: Awaited<ReturnType<typeof createTestDb>>
@@ -52,6 +55,14 @@ describe("Events Router", () => {
 
   beforeEach(async () => {
     await testDbInstance.cleanup()
+
+    // Seed categories (static reference data - use idempotent check)
+    const existingCategories = await testDbInstance.db
+      .select({ count: sql<number>`count(*)` })
+      .from(categories)
+    if (Number(existingCategories[0]?.count) === 0) {
+      await testDbInstance.db.insert(categories).values(CATEGORIES)
+    }
 
     // Create test users
     testUser = await testDbInstance.db
