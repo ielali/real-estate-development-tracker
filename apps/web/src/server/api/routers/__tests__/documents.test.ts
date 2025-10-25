@@ -418,4 +418,509 @@ describe("Documents Router", () => {
       expect(deleteLog?.entityType).toBe("document")
     })
   })
+
+  describe("linkToEntity", () => {
+    let documentId1: string
+    let documentId2: string
+    let costId: string
+    let eventId: string
+    let contactId: string
+    let costCategoryId: string
+
+    beforeEach(async () => {
+      // Create cost category
+      const costCategory = await caller.category.create({
+        displayName: "Materials",
+        type: "cost",
+        parentId: null,
+      })
+      costCategoryId = costCategory.id
+
+      // Upload test documents
+      const base64Image = await createTestImage()
+      const doc1 = await caller.documents.upload({
+        projectId,
+        categoryId,
+        file: {
+          name: "test-doc-1.jpg",
+          size: 1024,
+          type: "image/jpeg",
+          data: `data:image/jpeg;base64,${base64Image}`,
+        },
+      })
+      documentId1 = doc1.id
+
+      const doc2 = await caller.documents.upload({
+        projectId,
+        categoryId,
+        file: {
+          name: "test-doc-2.jpg",
+          size: 1024,
+          type: "image/jpeg",
+          data: `data:image/jpeg;base64,${base64Image}`,
+        },
+      })
+      documentId2 = doc2.id
+
+      // Create a cost (use past date to avoid validation error)
+      const cost = await caller.costs.create({
+        projectId,
+        amount: 100000, // $1000 in cents
+        description: "Test Cost",
+        categoryId: costCategoryId,
+        date: new Date("2024-01-01"),
+      })
+      costId = cost.id
+
+      // Create an event
+      const event = await caller.events.create({
+        projectId,
+        title: "Test Event",
+        date: new Date(),
+        categoryId: "milestone",
+        relatedContactIds: [],
+      })
+      eventId = event.id
+
+      // Create a contact
+      const contactCategory = await caller.category.create({
+        displayName: "Builder",
+        type: "contact",
+        parentId: null,
+      })
+      const contact = await caller.contacts.create({
+        firstName: "Test",
+        lastName: "Contact",
+        categoryId: contactCategory.id,
+        email: "test@example.com",
+      })
+      contactId = contact.id
+
+      // Link contact to project
+      await caller.projectContacts.addToProject({
+        projectId,
+        contactId: contact.id,
+      })
+    })
+
+    test("links document to cost", async () => {
+      const result = await caller.documents.linkToEntity({
+        entityType: "cost",
+        entityId: costId,
+        documentIds: [documentId1],
+      })
+
+      expect(result.success).toBe(true)
+      expect(result.linksCreated).toBe(1)
+    })
+
+    test("links multiple documents to cost", async () => {
+      const result = await caller.documents.linkToEntity({
+        entityType: "cost",
+        entityId: costId,
+        documentIds: [documentId1, documentId2],
+      })
+
+      expect(result.success).toBe(true)
+      expect(result.linksCreated).toBe(2)
+    })
+
+    test("links document to event", async () => {
+      const result = await caller.documents.linkToEntity({
+        entityType: "event",
+        entityId: eventId,
+        documentIds: [documentId1],
+      })
+
+      expect(result.success).toBe(true)
+      expect(result.linksCreated).toBe(1)
+    })
+
+    test("links document to contact", async () => {
+      const result = await caller.documents.linkToEntity({
+        entityType: "contact",
+        entityId: contactId,
+        documentIds: [documentId1],
+      })
+
+      expect(result.success).toBe(true)
+      expect(result.linksCreated).toBe(1)
+    })
+
+    test("handles duplicate links gracefully (onConflictDoNothing)", async () => {
+      // Link document first time
+      await caller.documents.linkToEntity({
+        entityType: "cost",
+        entityId: costId,
+        documentIds: [documentId1],
+      })
+
+      // Link same document again
+      const result = await caller.documents.linkToEntity({
+        entityType: "cost",
+        entityId: costId,
+        documentIds: [documentId1],
+      })
+
+      expect(result.success).toBe(true)
+      expect(result.linksCreated).toBe(0) // No new links created due to conflict
+    })
+
+    test("rejects linking document from different project", async () => {
+      // Create another project as otherUser
+      const otherProject = await otherCaller.projects.create({
+        name: "Other Project",
+        address: {
+          streetNumber: "456",
+          streetName: "Other St",
+          suburb: "Melbourne",
+          state: "VIC",
+          postcode: "3000",
+          country: "Australia",
+          formatted: "456 Other St, Melbourne VIC 3000",
+        },
+        startDate: new Date(),
+        projectType: "renovation",
+      })
+
+      // Create cost category for otherUser
+      const otherCostCategory = await otherCaller.category.create({
+        displayName: "Materials",
+        type: "cost",
+        parentId: null,
+      })
+
+      const otherCost = await otherCaller.costs.create({
+        projectId: otherProject.id,
+        amount: 50000,
+        description: "Other Cost",
+        categoryId: otherCostCategory.id,
+        date: new Date("2024-01-01"),
+      })
+
+      // Try to link testUser's document to otherUser's cost
+      await expect(
+        otherCaller.documents.linkToEntity({
+          entityType: "cost",
+          entityId: otherCost.id,
+          documentIds: [documentId1],
+        })
+      ).rejects.toThrow("not found in project")
+    })
+
+    test("rejects linking to non-existent cost", async () => {
+      const fakeId = "00000000-0000-0000-0000-000000000000"
+      await expect(
+        caller.documents.linkToEntity({
+          entityType: "cost",
+          entityId: fakeId,
+          documentIds: [documentId1],
+        })
+      ).rejects.toThrow("Cost not found")
+    })
+
+    test("rejects linking to non-existent event", async () => {
+      const fakeId = "00000000-0000-0000-0000-000000000000"
+      await expect(
+        caller.documents.linkToEntity({
+          entityType: "event",
+          entityId: fakeId,
+          documentIds: [documentId1],
+        })
+      ).rejects.toThrow("Event not found")
+    })
+
+    test("rejects linking to non-existent contact", async () => {
+      const fakeId = "00000000-0000-0000-0000-000000000000"
+      await expect(
+        caller.documents.linkToEntity({
+          entityType: "contact",
+          entityId: fakeId,
+          documentIds: [documentId1],
+        })
+      ).rejects.toThrow("Contact not found")
+    })
+
+    test("rejects linking for unauthorized user", async () => {
+      await expect(
+        otherCaller.documents.linkToEntity({
+          entityType: "cost",
+          entityId: costId,
+          documentIds: [documentId1],
+        })
+      ).rejects.toThrow("permission")
+    })
+
+    test("creates audit log entry on successful link", async () => {
+      await caller.documents.linkToEntity({
+        entityType: "cost",
+        entityId: costId,
+        documentIds: [documentId1],
+      })
+
+      const auditLogs = await testDbInstance.db.query.auditLog.findMany({
+        where: (auditLog, { eq }) => eq(auditLog.userId, testUser.id),
+      })
+
+      const linkLog = auditLogs.find((log) => log.action === "linked")
+      expect(linkLog).toBeTruthy()
+      expect(linkLog?.entityType).toBe("cost")
+    })
+  })
+
+  describe("unlinkFromEntity", () => {
+    let documentId: string
+    let costId: string
+    let eventId: string
+    let costCategoryId: string
+
+    beforeEach(async () => {
+      // Create cost category
+      const costCategory = await caller.category.create({
+        displayName: "Materials",
+        type: "cost",
+        parentId: null,
+      })
+      costCategoryId = costCategory.id
+
+      // Upload test document
+      const base64Image = await createTestImage()
+      const doc = await caller.documents.upload({
+        projectId,
+        categoryId,
+        file: {
+          name: "test-doc.jpg",
+          size: 1024,
+          type: "image/jpeg",
+          data: `data:image/jpeg;base64,${base64Image}`,
+        },
+      })
+      documentId = doc.id
+
+      // Create a cost
+      const cost = await caller.costs.create({
+        projectId,
+        amount: 100000,
+        description: "Test Cost",
+        categoryId: costCategoryId,
+        date: new Date("2024-01-01"),
+      })
+      costId = cost.id
+
+      // Create an event
+      const event = await caller.events.create({
+        projectId,
+        title: "Test Event",
+        date: new Date(),
+        categoryId: "milestone",
+        relatedContactIds: [],
+      })
+      eventId = event.id
+
+      // Link document to cost
+      await caller.documents.linkToEntity({
+        entityType: "cost",
+        entityId: costId,
+        documentIds: [documentId],
+      })
+
+      // Link document to event
+      await caller.documents.linkToEntity({
+        entityType: "event",
+        entityId: eventId,
+        documentIds: [documentId],
+      })
+    })
+
+    test("unlinks document from cost", async () => {
+      const result = await caller.documents.unlinkFromEntity({
+        entityType: "cost",
+        entityId: costId,
+        documentIds: [documentId],
+      })
+
+      expect(result.success).toBe(true)
+    })
+
+    test("unlinks document from event", async () => {
+      const result = await caller.documents.unlinkFromEntity({
+        entityType: "event",
+        entityId: eventId,
+        documentIds: [documentId],
+      })
+
+      expect(result.success).toBe(true)
+    })
+
+    test("rejects unlinking for unauthorized user", async () => {
+      await expect(
+        otherCaller.documents.unlinkFromEntity({
+          entityType: "cost",
+          entityId: costId,
+          documentIds: [documentId],
+        })
+      ).rejects.toThrow("permission")
+    })
+
+    test("rejects unlinking from non-existent cost", async () => {
+      const fakeId = "00000000-0000-0000-0000-000000000000"
+      await expect(
+        caller.documents.unlinkFromEntity({
+          entityType: "cost",
+          entityId: fakeId,
+          documentIds: [documentId],
+        })
+      ).rejects.toThrow("Cost not found")
+    })
+
+    test("creates audit log entry on successful unlink", async () => {
+      await caller.documents.unlinkFromEntity({
+        entityType: "cost",
+        entityId: costId,
+        documentIds: [documentId],
+      })
+
+      const auditLogs = await testDbInstance.db.query.auditLog.findMany({
+        where: (auditLog, { eq }) => eq(auditLog.userId, testUser.id),
+      })
+
+      const unlinkLog = auditLogs.find((log) => log.action === "unlinked")
+      expect(unlinkLog).toBeTruthy()
+      expect(unlinkLog?.entityType).toBe("cost")
+    })
+  })
+
+  describe("listOrphaned", () => {
+    test("lists documents with no entity links", async () => {
+      // Upload multiple documents
+      const base64Image = await createTestImage()
+      const doc1 = await caller.documents.upload({
+        projectId,
+        categoryId,
+        file: {
+          name: "orphan-1.jpg",
+          size: 1024,
+          type: "image/jpeg",
+          data: `data:image/jpeg;base64,${base64Image}`,
+        },
+      })
+
+      const doc2 = await caller.documents.upload({
+        projectId,
+        categoryId,
+        file: {
+          name: "orphan-2.jpg",
+          size: 1024,
+          type: "image/jpeg",
+          data: `data:image/jpeg;base64,${base64Image}`,
+        },
+      })
+
+      // Create cost category
+      const costCategory = await caller.category.create({
+        displayName: "Materials",
+        type: "cost",
+        parentId: null,
+      })
+
+      // Link doc1 to a cost
+      const cost = await caller.costs.create({
+        projectId,
+        amount: 100000,
+        description: "Test Cost",
+        categoryId: costCategory.id,
+        date: new Date("2024-01-01"),
+      })
+
+      await caller.documents.linkToEntity({
+        entityType: "cost",
+        entityId: cost.id,
+        documentIds: [doc1.id],
+      })
+
+      // List orphaned documents
+      const orphaned = await caller.documents.listOrphaned(projectId)
+
+      // Only doc2 should be orphaned
+      expect(orphaned).toHaveLength(1)
+      expect(orphaned[0]!.id).toBe(doc2.id)
+    })
+
+    test("returns empty array when all documents are linked", async () => {
+      // Upload document
+      const base64Image = await createTestImage()
+      const doc = await caller.documents.upload({
+        projectId,
+        categoryId,
+        file: {
+          name: "linked.jpg",
+          size: 1024,
+          type: "image/jpeg",
+          data: `data:image/jpeg;base64,${base64Image}`,
+        },
+      })
+
+      // Create cost category
+      const costCategory = await caller.category.create({
+        displayName: "Materials",
+        type: "cost",
+        parentId: null,
+      })
+
+      // Link to cost
+      const cost = await caller.costs.create({
+        projectId,
+        amount: 100000,
+        description: "Test Cost",
+        categoryId: costCategory.id,
+        date: new Date("2024-01-01"),
+      })
+
+      await caller.documents.linkToEntity({
+        entityType: "cost",
+        entityId: cost.id,
+        documentIds: [doc.id],
+      })
+
+      // List orphaned documents
+      const orphaned = await caller.documents.listOrphaned(projectId)
+
+      expect(orphaned).toHaveLength(0)
+    })
+
+    test("returns all documents when no links exist", async () => {
+      // Upload documents
+      const base64Image = await createTestImage()
+      await caller.documents.upload({
+        projectId,
+        categoryId,
+        file: {
+          name: "orphan-1.jpg",
+          size: 1024,
+          type: "image/jpeg",
+          data: `data:image/jpeg;base64,${base64Image}`,
+        },
+      })
+
+      await caller.documents.upload({
+        projectId,
+        categoryId,
+        file: {
+          name: "orphan-2.jpg",
+          size: 1024,
+          type: "image/jpeg",
+          data: `data:image/jpeg;base64,${base64Image}`,
+        },
+      })
+
+      // List orphaned documents
+      const orphaned = await caller.documents.listOrphaned(projectId)
+
+      expect(orphaned).toHaveLength(2)
+    })
+
+    test("rejects listing orphaned for unauthorized user", async () => {
+      await expect(otherCaller.documents.listOrphaned(projectId)).rejects.toThrow("permission")
+    })
+  })
 })

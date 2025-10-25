@@ -465,4 +465,73 @@ describe("Events Router", () => {
       expect(updatedEvent?.eventContacts).toHaveLength(0)
     })
   })
+
+  describe("getDocuments", () => {
+    let eventId: string
+
+    beforeEach(async () => {
+      // Create event
+      const event = await caller.events.create({
+        projectId,
+        title: "Test Event",
+        date: new Date(),
+        categoryId: "milestone",
+        relatedContactIds: [],
+      })
+      eventId = event.id
+    })
+
+    test("returns linked documents for event", async () => {
+      // For this test, we need to verify the getDocuments query works
+      // This requires document linking which is tested in documents.test.ts
+      // Here we test the query endpoint exists and returns proper structure
+      const documents = await caller.events.getDocuments(eventId)
+
+      expect(Array.isArray(documents)).toBe(true)
+      expect(documents).toHaveLength(0) // No documents linked yet
+    })
+
+    test("rejects getDocuments for unauthorized user", async () => {
+      // Create another user
+      const otherUser = await testDbInstance.db
+        .insert(users)
+        .values({
+          id: "other-user-docs",
+          email: "other@example.com",
+          name: "Other User",
+          firstName: "Other",
+          lastName: "User",
+        })
+        .returning()
+        .then((rows) => rows[0]!)
+
+      const otherCaller = appRouter.createCaller({
+        headers: new Headers(),
+        db: testDbInstance.db,
+        session: {
+          session: {
+            id: `session-${otherUser.id}`,
+            userId: otherUser.id,
+            expiresAt: new Date(Date.now() + 86400000),
+            token: `token-${otherUser.id}`,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            ipAddress: "127.0.0.1",
+            userAgent: "test",
+          },
+          user: otherUser,
+        },
+        user: otherUser,
+      })
+
+      await expect(otherCaller.events.getDocuments(eventId)).rejects.toThrow(
+        "You do not have permission to access this project"
+      )
+    })
+
+    test("rejects getDocuments for non-existent event", async () => {
+      const fakeId = "00000000-0000-0000-0000-000000000000"
+      await expect(caller.events.getDocuments(fakeId)).rejects.toThrow()
+    })
+  })
 })

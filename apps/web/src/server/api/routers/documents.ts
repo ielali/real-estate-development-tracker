@@ -497,7 +497,7 @@ export const documentsRouter = createTRPCRouter({
       }
 
       // 2. Verify project access
-      await verifyProjectAccess(ctx.db, userId, projectId)
+      await verifyProjectAccess(ctx.db, projectId, userId)
 
       // 3. Verify all documents belong to same project
       for (const docId of documentIds) {
@@ -627,7 +627,7 @@ export const documentsRouter = createTRPCRouter({
       }
 
       // 2. Verify project access
-      await verifyProjectAccess(ctx.db, userId, projectId)
+      await verifyProjectAccess(ctx.db, projectId, userId)
 
       // 3. Soft delete junction records
       // We need to update each junction record individually due to Drizzle's limitations with dynamic columns
@@ -699,7 +699,7 @@ export const documentsRouter = createTRPCRouter({
       const userId = ctx.session.user.id
 
       // Verify project access
-      await verifyProjectAccess(ctx.db, userId, projectId)
+      await verifyProjectAccess(ctx.db, projectId, userId)
 
       // Find all documents for project
       const allDocs = await ctx.db.query.documents.findMany({
