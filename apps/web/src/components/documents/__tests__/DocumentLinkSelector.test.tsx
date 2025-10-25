@@ -122,7 +122,7 @@ describe("DocumentLinkSelector Component - Structure Tests", () => {
     ]
 
     const search = "receipt"
-    const categoryFilter = "receipts"
+    const categoryFilter: string = "receipts"
 
     const filtered = documents.filter((doc) => {
       const matchesSearch = doc.fileName.toLowerCase().includes(search.toLowerCase())

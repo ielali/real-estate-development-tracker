@@ -379,7 +379,7 @@ export const eventsRouter = createTRPCRouter({
         throw new TRPCError({ code: "NOT_FOUND", message: "Event not found" })
       }
 
-      await verifyProjectAccess(ctx.db, userId, event.projectId)
+      await verifyProjectAccess(ctx.db, event.projectId, userId)
 
       // Get linked documents via junction table
       const links = await ctx.db

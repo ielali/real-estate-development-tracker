@@ -160,14 +160,14 @@ describe("RelatedDocuments Business Logic", () => {
     })
 
     test("selects costs query for cost entity type", () => {
-      const entityType = "cost"
+      const entityType = "cost" as "cost" | "event" | "contact"
       const queryRouter =
         entityType === "contact" ? "contacts" : entityType === "cost" ? "costs" : "events"
       expect(queryRouter).toBe("costs")
     })
 
     test("selects events query for event entity type", () => {
-      const entityType = "event"
+      const entityType = "event" as "cost" | "event" | "contact"
       const queryRouter =
         entityType === "contact" ? "contacts" : entityType === "cost" ? "costs" : "events"
       expect(queryRouter).toBe("events")
@@ -252,14 +252,22 @@ describe("RelatedDocuments UI State Logic", () => {
     })
 
     test("shows empty state when documents is null", () => {
-      const documents = null
-      const shouldShowEmpty = !documents || documents.length === 0
+      // eslint-disable-next-line prefer-const
+      let documents = null as Array<{ id: string }> | null
+      let shouldShowEmpty = true
+      if (documents) {
+        shouldShowEmpty = documents.length === 0
+      }
       expect(shouldShowEmpty).toBe(true)
     })
 
     test("shows empty state when documents is undefined", () => {
-      const documents = undefined
-      const shouldShowEmpty = !documents || documents.length === 0
+      // eslint-disable-next-line prefer-const
+      let documents = undefined as Array<{ id: string }> | undefined
+      let shouldShowEmpty = true
+      if (documents) {
+        shouldShowEmpty = documents.length === 0
+      }
       expect(shouldShowEmpty).toBe(true)
     })
 

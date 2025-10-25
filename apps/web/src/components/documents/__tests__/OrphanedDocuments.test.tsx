@@ -223,10 +223,12 @@ describe("OrphanedDocuments Business Logic", () => {
 
   describe("Entity Type Selection Logic", () => {
     test("gets costs when entityType is cost", () => {
-      const entityType = "cost"
-      const costs = [{ id: "c1", description: "Cost 1" }]
-      const events = { events: [] }
-      const contacts = []
+      const entityType = "cost" as "cost" | "event" | "contact"
+      const costs: Array<{ id: string; description: string }> = [
+        { id: "c1", description: "Cost 1" },
+      ]
+      const events = { events: [] as Array<{ id: string; title: string }> }
+      const contacts: Array<{ id: string; contact: { firstName: string; lastName: string } }> = []
 
       const result =
         entityType === "cost"
@@ -241,10 +243,10 @@ describe("OrphanedDocuments Business Logic", () => {
     })
 
     test("gets events when entityType is event", () => {
-      const entityType = "event"
-      const costs = []
+      const entityType = "event" as "cost" | "event" | "contact"
+      const costs: Array<{ id: string; description: string }> = []
       const events = { events: [{ id: "e1", title: "Event 1" }] }
-      const contacts = []
+      const contacts: Array<{ id: string; contact: { firstName: string; lastName: string } }> = []
 
       const result =
         entityType === "cost"
@@ -259,10 +261,12 @@ describe("OrphanedDocuments Business Logic", () => {
     })
 
     test("gets contacts when entityType is contact", () => {
-      const entityType = "contact"
-      const costs = []
-      const events = { events: [] }
-      const contacts = [{ id: "con1", contact: { firstName: "John", lastName: "Doe" } }]
+      const entityType = "contact" as "cost" | "event" | "contact"
+      const costs: Array<{ id: string; description: string }> = []
+      const events = { events: [] as Array<{ id: string; title: string }> }
+      const contacts: Array<{ id: string; contact: { firstName: string; lastName: string } }> = [
+        { id: "con1", contact: { firstName: "John", lastName: "Doe" } },
+      ]
 
       const result =
         entityType === "cost"
@@ -284,8 +288,12 @@ describe("OrphanedDocuments Business Logic", () => {
     })
 
     test("returns empty array for null events", () => {
-      const events = null
-      const result = events?.events || []
+      // eslint-disable-next-line prefer-const
+      let events = null as { events: Array<{ id: string; title: string }> } | null
+      let result: Array<{ id: string; title: string }> = []
+      if (events) {
+        result = events.events
+      }
 
       expect(result).toEqual([])
     })
@@ -359,7 +367,7 @@ describe("OrphanedDocuments Business Logic", () => {
 
     test("resets entity selection when entity type changes", () => {
       let selectedEntityId = "cost-123"
-      const newEntityType = "event"
+      const newEntityType = "event" as "cost" | "event" | "contact"
 
       // Simulate entity type change - should reset selection
       if (newEntityType !== "cost") {
@@ -399,14 +407,22 @@ describe("OrphanedDocuments UI State Logic", () => {
     })
 
     test("shows empty state when orphanedDocs is null", () => {
-      const orphanedDocs = null
-      const shouldShowEmpty = !orphanedDocs || orphanedDocs.length === 0
+      // eslint-disable-next-line prefer-const
+      let orphanedDocs = null as Array<{ id: string }> | null
+      let shouldShowEmpty = true
+      if (orphanedDocs) {
+        shouldShowEmpty = orphanedDocs.length === 0
+      }
       expect(shouldShowEmpty).toBe(true)
     })
 
     test("shows empty state when orphanedDocs is undefined", () => {
-      const orphanedDocs = undefined
-      const shouldShowEmpty = !orphanedDocs || orphanedDocs.length === 0
+      // eslint-disable-next-line prefer-const
+      let orphanedDocs = undefined as Array<{ id: string }> | undefined
+      let shouldShowEmpty = true
+      if (orphanedDocs) {
+        shouldShowEmpty = orphanedDocs.length === 0
+      }
       expect(shouldShowEmpty).toBe(true)
     })
 

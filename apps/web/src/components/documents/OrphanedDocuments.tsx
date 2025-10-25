@@ -440,22 +440,33 @@ export function OrphanedDocuments({ projectId }: OrphanedDocumentsProps) {
                   {entities.length === 0 ? (
                     <div className="p-2 text-sm text-muted-foreground">No {entityType}s found</div>
                   ) : (
-                    entities.map(
-                      (entity: {
-                        id: string
-                        description?: string
-                        title?: string
-                        contact?: { firstName: string; lastName: string | null }
-                      }) => (
-                        <SelectItem key={entity.id} value={entity.id}>
-                          {entityType === "cost"
-                            ? entity.description
-                            : entityType === "event"
-                              ? entity.title
-                              : `${entity.contact?.firstName} ${entity.contact?.lastName ?? ""}`}
+                    entities.map((entity) => {
+                      // Get id and display text based on entity type
+                      let entityId = ""
+                      let displayText = ""
+
+                      if (entityType === "cost" && "id" in entity && "description" in entity) {
+                        entityId = entity.id as string
+                        displayText = (entity.description as string) || ""
+                      } else if (entityType === "event" && "id" in entity && "title" in entity) {
+                        entityId = entity.id as string
+                        displayText = (entity.title as string) || ""
+                      } else if (entityType === "contact" && "contact" in entity) {
+                        const contact = entity.contact as {
+                          id: string
+                          firstName: string
+                          lastName: string | null
+                        }
+                        entityId = contact.id
+                        displayText = `${contact.firstName} ${contact.lastName ?? ""}`
+                      }
+
+                      return (
+                        <SelectItem key={entityId} value={entityId}>
+                          {displayText}
                         </SelectItem>
                       )
-                    )
+                    })
                   )}
                 </SelectContent>
               </Select>
