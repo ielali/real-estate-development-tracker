@@ -2,10 +2,12 @@
 
 import * as React from "react"
 import { format } from "date-fns"
-import { Calendar, Clock, User, ChevronDown, ChevronUp } from "lucide-react"
+import { Calendar, Clock, User, ChevronDown, ChevronUp, FileText } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { RelatedDocuments } from "@/components/documents/RelatedDocuments"
+import { DocumentLinkSelector } from "@/components/documents/DocumentLinkSelector"
 
 interface EventContact {
   id: string
@@ -32,6 +34,7 @@ interface EventCardProps {
       contact: EventContact
     }>
   }
+  projectId: string
   onEdit?: (eventId: string) => void
   onDelete?: (eventId: string) => void
 }
@@ -51,8 +54,14 @@ interface EventCardProps {
  * @param onEdit - Callback when edit button clicked
  * @param onDelete - Callback when delete button clicked
  */
-export function EventCard({ event, onEdit: _onEdit, onDelete: _onDelete }: EventCardProps) {
+export function EventCard({
+  event,
+  projectId,
+  onEdit: _onEdit,
+  onDelete: _onDelete,
+}: EventCardProps) {
   const [isExpanded, setIsExpanded] = React.useState(false)
+  const [isDocumentsOpen, setIsDocumentsOpen] = React.useState(false)
 
   // Format date and time
   const eventDate = new Date(event.date)
@@ -147,6 +156,32 @@ export function EventCard({ event, onEdit: _onEdit, onDelete: _onDelete }: Event
             Created by {event.createdBy.firstName} {event.createdBy.lastName}
           </div>
         )}
+
+        {/* Related Documents */}
+        <div className="pt-2 border-t">
+          <div className="flex items-center justify-between mb-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-auto p-0 hover:bg-transparent"
+              onClick={() => setIsDocumentsOpen(!isDocumentsOpen)}
+            >
+              <FileText className="h-4 w-4 mr-2" />
+              <span className="text-sm font-medium">Documents</span>
+              {isDocumentsOpen ? (
+                <ChevronUp className="h-4 w-4 ml-1" />
+              ) : (
+                <ChevronDown className="h-4 w-4 ml-1" />
+              )}
+            </Button>
+            <DocumentLinkSelector entityType="event" entityId={event.id} projectId={projectId} />
+          </div>
+          {isDocumentsOpen && (
+            <div className="pt-2">
+              <RelatedDocuments entityType="event" entityId={event.id} />
+            </div>
+          )}
+        </div>
       </CardContent>
     </Card>
   )

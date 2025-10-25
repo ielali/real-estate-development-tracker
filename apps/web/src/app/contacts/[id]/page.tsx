@@ -26,11 +26,23 @@ import {
 } from "@/components/ui/alert-dialog"
 import { ContactForm } from "@/components/contacts/ContactForm"
 import { ContactSpending } from "@/components/contacts/ContactSpending"
+import { RelatedDocuments } from "@/components/documents/RelatedDocuments"
+import { DocumentLinkSelector } from "@/components/documents/DocumentLinkSelector"
 import { EmptyState } from "@/components/ui/empty-state"
 import { ErrorState } from "@/components/ui/error-state"
 import { Spinner } from "@/components/ui/spinner"
 import { getCategoryById } from "@/server/db/types"
-import { Mail, Phone, Globe, Building2, FileText, Pencil, Trash2, ArrowLeft } from "lucide-react"
+import {
+  Mail,
+  Phone,
+  Globe,
+  Building2,
+  FileText,
+  Pencil,
+  Trash2,
+  ArrowLeft,
+  Link as LinkIcon,
+} from "lucide-react"
 import { toast } from "sonner"
 import { formatCurrency } from "@/lib/utils/currency"
 
@@ -84,6 +96,10 @@ export default function ContactDetailPage({ params }: ContactDetailPageProps): J
     if (contactId) {
       deleteMutation.mutate(contactId)
     }
+  }
+
+  const handleDocumentsUpdate = () => {
+    void refetch()
   }
 
   // Loading state (including params loading)
@@ -253,6 +269,38 @@ export default function ContactDetailPage({ params }: ContactDetailPageProps): J
         <div className="space-y-6 lg:col-span-2">
           {/* Contact Spending Summary */}
           <ContactSpending contactId={contactId} />
+
+          {/* Related Documents */}
+          {data.projects.length > 0 && (
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Related Documents</CardTitle>
+                    <CardDescription>Documents linked to this contact</CardDescription>
+                  </div>
+                  <DocumentLinkSelector
+                    entityType="contact"
+                    entityId={contactId}
+                    projectId={data.projects[0].project.id}
+                    onUpdate={handleDocumentsUpdate}
+                  >
+                    <Button variant="outline" size="sm">
+                      <LinkIcon className="mr-2 h-4 w-4" />
+                      Link Documents
+                    </Button>
+                  </DocumentLinkSelector>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <RelatedDocuments
+                  entityType="contact"
+                  entityId={contactId}
+                  onUpdate={handleDocumentsUpdate}
+                />
+              </CardContent>
+            </Card>
+          )}
 
           {/* Related projects */}
           <Card>

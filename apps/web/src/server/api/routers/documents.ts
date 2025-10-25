@@ -6,8 +6,15 @@ import { createTRPCRouter, protectedProcedure } from "../trpc"
 import { documents } from "@/server/db/schema/documents"
 import { projects } from "@/server/db/schema/projects"
 import { auditLog } from "@/server/db/schema/auditLog"
+import { costs } from "@/server/db/schema/costs"
+import { events } from "@/server/db/schema/events"
+import { costDocuments } from "@/server/db/schema/costDocuments"
+import { contactDocuments } from "@/server/db/schema/contactDocuments"
+import { eventDocuments } from "@/server/db/schema/eventDocuments"
+import { projectContact } from "@/server/db/schema/projectContact"
 import { documentService, bufferToArrayBuffer } from "@/server/services/document.service"
 import { validateDocumentCategory } from "@/server/db/validate-document-category"
+import { verifyProjectAccess } from "../helpers/verifyProjectAccess"
 
 /**
  * Zod schema for file upload validation
@@ -420,5 +427,304 @@ export const documentsRouter = createTRPCRouter({
         data: thumbnailData,
         mimeType: "image/jpeg", // Thumbnails are always JPEG
       }
+    }),
+
+  /**
+   * Link documents to an entity (cost, event, or contact)
+   *
+   * Creates junction records linking multiple documents to a single entity.
+   * Validates entity existence, project access, and document ownership.
+   * Handles duplicate links gracefully via database unique constraints.
+   *
+   * @throws {TRPCError} UNAUTHORIZED - User not authenticated
+   * @throws {TRPCError} NOT_FOUND - Entity not found
+   * @throws {TRPCError} FORBIDDEN - User does not have project access
+   * @throws {TRPCError} BAD_REQUEST - Document not found in project
+   * @returns {Object} Success status and number of links created
+   */
+  linkToEntity: protectedProcedure
+    .input(
+      z.object({
+        entityType: z.enum(["cost", "event", "contact"]),
+        entityId: z.string().uuid(),
+        documentIds: z.array(z.string().uuid()).min(1).max(50),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { entityType, entityId, documentIds } = input
+      const userId = ctx.session.user.id
+
+      // 1. Verify entity exists and get project ID
+      let projectId: string
+      switch (entityType) {
+        case "cost": {
+          const [cost] = await ctx.db
+            .select()
+            .from(costs)
+            .where(and(eq(costs.id, entityId), isNull(costs.deletedAt)))
+            .limit(1)
+          if (!cost) {
+            throw new TRPCError({ code: "NOT_FOUND", message: "Cost not found" })
+          }
+          projectId = cost.projectId
+          break
+        }
+        case "event": {
+          const [event] = await ctx.db
+            .select()
+            .from(events)
+            .where(and(eq(events.id, entityId), isNull(events.deletedAt)))
+            .limit(1)
+          if (!event) {
+            throw new TRPCError({ code: "NOT_FOUND", message: "Event not found" })
+          }
+          projectId = event.projectId
+          break
+        }
+        case "contact": {
+          // Contacts are global - verify via ProjectContact junction
+          const [pc] = await ctx.db
+            .select()
+            .from(projectContact)
+            .where(and(eq(projectContact.contactId, entityId), isNull(projectContact.deletedAt)))
+            .limit(1)
+          if (!pc) {
+            throw new TRPCError({ code: "NOT_FOUND", message: "Contact not found" })
+          }
+          projectId = pc.projectId
+          break
+        }
+      }
+
+      // 2. Verify project access
+      await verifyProjectAccess(ctx.db, projectId, userId)
+
+      // 3. Verify all documents belong to same project
+      for (const docId of documentIds) {
+        const [doc] = await ctx.db
+          .select()
+          .from(documents)
+          .where(
+            and(
+              eq(documents.id, docId),
+              eq(documents.projectId, projectId),
+              isNull(documents.deletedAt)
+            )
+          )
+          .limit(1)
+
+        if (!doc) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `Document ${docId} not found in project`,
+          })
+        }
+      }
+
+      // 4. Create junction records
+      const junctionTable =
+        entityType === "cost"
+          ? costDocuments
+          : entityType === "event"
+            ? eventDocuments
+            : contactDocuments
+
+      const foreignKeyField =
+        entityType === "cost" ? "costId" : entityType === "event" ? "eventId" : "contactId"
+
+      const values = documentIds.map((documentId) => ({
+        id: crypto.randomUUID(),
+        [foreignKeyField]: entityId,
+        documentId: documentId,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        deletedAt: null,
+      }))
+
+      const links = await ctx.db
+        .insert(junctionTable)
+        .values(values)
+        .onConflictDoNothing()
+        .returning()
+
+      // 5. Create audit log
+      await ctx.db.insert(auditLog).values({
+        userId: userId,
+        action: "linked",
+        entityType: entityType,
+        entityId: entityId,
+        metadata: JSON.stringify({
+          displayName: `Linked ${documentIds.length} document(s) to ${entityType}`,
+          documentCount: documentIds.length,
+        }),
+      })
+
+      return { success: true, linksCreated: links.length }
+    }),
+
+  /**
+   * Unlink documents from an entity
+   *
+   * Soft deletes junction records for specified document-entity links.
+   * Validates entity existence and project access.
+   *
+   * @throws {TRPCError} UNAUTHORIZED - User not authenticated
+   * @throws {TRPCError} NOT_FOUND - Entity not found
+   * @throws {TRPCError} FORBIDDEN - User does not have project access
+   * @returns {Object} Success status
+   */
+  unlinkFromEntity: protectedProcedure
+    .input(
+      z.object({
+        entityType: z.enum(["cost", "event", "contact"]),
+        entityId: z.string().uuid(),
+        documentIds: z.array(z.string().uuid()).min(1),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { entityType, entityId, documentIds } = input
+      const userId = ctx.session.user.id
+
+      // 1. Verify entity exists and get project ID
+      let projectId: string
+      switch (entityType) {
+        case "cost": {
+          const [cost] = await ctx.db
+            .select()
+            .from(costs)
+            .where(and(eq(costs.id, entityId), isNull(costs.deletedAt)))
+            .limit(1)
+          if (!cost) {
+            throw new TRPCError({ code: "NOT_FOUND", message: "Cost not found" })
+          }
+          projectId = cost.projectId
+          break
+        }
+        case "event": {
+          const [event] = await ctx.db
+            .select()
+            .from(events)
+            .where(and(eq(events.id, entityId), isNull(events.deletedAt)))
+            .limit(1)
+          if (!event) {
+            throw new TRPCError({ code: "NOT_FOUND", message: "Event not found" })
+          }
+          projectId = event.projectId
+          break
+        }
+        case "contact": {
+          const [pc] = await ctx.db
+            .select()
+            .from(projectContact)
+            .where(and(eq(projectContact.contactId, entityId), isNull(projectContact.deletedAt)))
+            .limit(1)
+          if (!pc) {
+            throw new TRPCError({ code: "NOT_FOUND", message: "Contact not found" })
+          }
+          projectId = pc.projectId
+          break
+        }
+      }
+
+      // 2. Verify project access
+      await verifyProjectAccess(ctx.db, projectId, userId)
+
+      // 3. Soft delete junction records
+      // We need to update each junction record individually due to Drizzle's limitations with dynamic columns
+      for (const documentId of documentIds) {
+        if (entityType === "cost") {
+          await ctx.db
+            .update(costDocuments)
+            .set({ deletedAt: new Date() })
+            .where(
+              and(
+                eq(costDocuments.costId, entityId),
+                eq(costDocuments.documentId, documentId),
+                isNull(costDocuments.deletedAt)
+              )
+            )
+        } else if (entityType === "event") {
+          await ctx.db
+            .update(eventDocuments)
+            .set({ deletedAt: new Date() })
+            .where(
+              and(
+                eq(eventDocuments.eventId, entityId),
+                eq(eventDocuments.documentId, documentId),
+                isNull(eventDocuments.deletedAt)
+              )
+            )
+        } else {
+          await ctx.db
+            .update(contactDocuments)
+            .set({ deletedAt: new Date() })
+            .where(
+              and(
+                eq(contactDocuments.contactId, entityId),
+                eq(contactDocuments.documentId, documentId),
+                isNull(contactDocuments.deletedAt)
+              )
+            )
+        }
+      }
+
+      // 4. Create audit log
+      await ctx.db.insert(auditLog).values({
+        userId: userId,
+        action: "unlinked",
+        entityType: entityType,
+        entityId: entityId,
+        metadata: JSON.stringify({
+          displayName: `Unlinked ${documentIds.length} document(s) from ${entityType}`,
+          documentCount: documentIds.length,
+        }),
+      })
+
+      return { success: true }
+    }),
+
+  /**
+   * List orphaned documents (documents with no entity links)
+   *
+   * Finds documents that are not linked to any costs, events, or contacts.
+   * Useful for cleanup operations to identify unused documents.
+   *
+   * @throws {TRPCError} UNAUTHORIZED - User not authenticated
+   * @throws {TRPCError} FORBIDDEN - User does not have project access
+   * @returns {Array} Array of orphaned document records
+   */
+  listOrphaned: protectedProcedure
+    .input(z.string().uuid())
+    .query(async ({ ctx, input: projectId }) => {
+      const userId = ctx.session.user.id
+
+      // Verify project access
+      await verifyProjectAccess(ctx.db, projectId, userId)
+
+      // Find all documents for project
+      const allDocs = await ctx.db.query.documents.findMany({
+        where: and(eq(documents.projectId, projectId), isNull(documents.deletedAt)),
+        with: {
+          costDocuments: {
+            where: isNull(costDocuments.deletedAt),
+          },
+          eventDocuments: {
+            where: isNull(eventDocuments.deletedAt),
+          },
+          contactDocuments: {
+            where: isNull(contactDocuments.deletedAt),
+          },
+        },
+      })
+
+      // Filter to only orphaned documents (no active links)
+      const orphaned = allDocs.filter(
+        (doc) =>
+          doc.costDocuments.length === 0 &&
+          doc.eventDocuments.length === 0 &&
+          doc.contactDocuments.length === 0
+      )
+
+      return orphaned
     }),
 })

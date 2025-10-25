@@ -14,6 +14,7 @@
     "db:migrate": "tsx src/server/db/migrate.ts",
     "db:seed": "tsx src/server/db/seed.ts",
     "db:reset": "tsx src/server/db/reset.ts",
+    "db:rebuild": "tsx src/server/db/rebuild.ts",
     "db:backup": "tsx src/server/db/backup.ts",
     "db:test-documents": "tsx src/server/db/test-document-insert.ts",
     "test": "NODE_OPTIONS='--experimental-vm-modules' vitest",

@@ -5,6 +5,8 @@ import crypto from "crypto"
 import { createTRPCRouter, protectedProcedure } from "../trpc"
 import { events } from "@/server/db/schema/events"
 import { eventContacts } from "@/server/db/schema/eventContacts"
+import { eventDocuments } from "@/server/db/schema/eventDocuments"
+import { documents } from "@/server/db/schema/documents"
 import { projects } from "@/server/db/schema/projects"
 import { auditLog } from "@/server/db/schema/auditLog"
 import { verifyProjectAccess } from "../helpers/verifyProjectAccess"
@@ -353,4 +355,49 @@ export const eventsRouter = createTRPCRouter({
 
     return { success: true }
   }),
+
+  /**
+   * Get all documents linked to a specific event
+   *
+   * Returns documents that have been associated with this event
+   * (e.g., permits, approvals, meeting notes). Verifies user has access to the event's project.
+   *
+   * @throws {TRPCError} UNAUTHORIZED - User not authenticated
+   * @throws {TRPCError} FORBIDDEN - User does not have permission to access this event
+   * @throws {TRPCError} NOT_FOUND - Event not found
+   * @returns {Array} Array of linked document records
+   */
+  getDocuments: protectedProcedure
+    .input(z.string().uuid())
+    .query(async ({ ctx, input: eventId }) => {
+      const userId = ctx.session.user.id
+
+      // Find event and verify access
+      const [event] = await ctx.db.select().from(events).where(eq(events.id, eventId)).limit(1)
+
+      if (!event) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Event not found" })
+      }
+
+      await verifyProjectAccess(ctx.db, event.projectId, userId)
+
+      // Get linked documents via junction table
+      const links = await ctx.db
+        .select({
+          document: documents,
+          linkCreatedAt: eventDocuments.createdAt,
+        })
+        .from(eventDocuments)
+        .innerJoin(documents, eq(eventDocuments.documentId, documents.id))
+        .where(
+          and(
+            eq(eventDocuments.eventId, eventId),
+            isNull(eventDocuments.deletedAt),
+            isNull(documents.deletedAt)
+          )
+        )
+        .orderBy(desc(eventDocuments.createdAt))
+
+      return links.map((link) => link.document)
+    }),
 })

@@ -78,6 +78,9 @@ function createCleanupFunction(db: ReturnType<typeof drizzle<typeof schema>>) {
     await db.execute(sql`
       TRUNCATE TABLE
         audit_log,
+        cost_documents,
+        contact_documents,
+        event_documents,
         project_contact,
         project_access,
         events,

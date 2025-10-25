@@ -105,7 +105,7 @@ export function Timeline({ projectId, filters }: TimelineProps) {
           {/* Events List */}
           <div className="space-y-4">
             {events.map((event) => (
-              <EventCard key={event.id} event={event} />
+              <EventCard key={event.id} event={event} projectId={projectId} />
             ))}
           </div>
         </div>

@@ -30,6 +30,18 @@ Comprehensive testing documentation:
 
 **Use this guide:** When writing tests or debugging test failures.
 
+### [Database Management Guide](./database.md)
+
+Database operations and migration management:
+
+- Database scripts overview (reset vs rebuild)
+- Migration creation and best practices
+- Troubleshooting migration issues
+- Database connection details
+- Emergency procedures
+
+**Use this guide:** When working with database schema, migrations, or data management.
+
 ### [Deployment Guide](./deployment.md)
 
 Deployment workflow and procedures:
