@@ -109,3 +109,105 @@ export const cleanupAllTestDatabases = async () => {
     globalDb = null
   }
 }
+
+/**
+ * Create a test tRPC context with a mocked user and session
+ *
+ * Story 4.2: Enhanced to support role-based testing
+ *
+ * @param options - Configuration options
+ * @param options.role - User role ("admin" | "partner"), defaults to "admin"
+ * @param options.user - Optional custom user object, or null for unauthenticated tests
+ * @returns tRPC context for testing
+ *
+ * @example
+ * ```typescript
+ * // Admin context
+ * const ctx = await createTestContext({ role: "admin" })
+ *
+ * // Partner context
+ * const ctx = await createTestContext({ role: "partner" })
+ *
+ * // Unauthenticated context
+ * const ctx = await createTestContext({ user: null })
+ * ```
+ */
+export async function createTestContext(
+  options: {
+    role?: "admin" | "partner"
+    user?: { id: string; email: string; role: "admin" | "partner" } | null
+  } = {}
+) {
+  const { db } = await createTestDb()
+
+  // Handle unauthenticated case
+  if (options.user === null) {
+    return {
+      db,
+      session: null,
+      user: null,
+      headers: new Headers(),
+    }
+  }
+
+  // Use provided user or create default test user
+  const testUser = options.user || {
+    id: crypto.randomUUID(),
+    email: `test-${Date.now()}@example.com`,
+    role: options.role || "admin",
+  }
+
+  // Insert test user into database if not exists
+  const { users } = await import("@/server/db/schema")
+  await db
+    .insert(users)
+    .values({
+      id: testUser.id,
+      email: testUser.email,
+      name: "Test User",
+      firstName: "Test",
+      lastName: "User",
+      role: testUser.role,
+      emailVerified: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    })
+    .onConflictDoNothing()
+
+  return {
+    db,
+    session: {
+      session: {
+        id: crypto.randomUUID(),
+        userId: testUser.id,
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        token: `test-token-${crypto.randomUUID()}`,
+        ipAddress: "127.0.0.1",
+        userAgent: "test",
+      },
+      user: {
+        id: testUser.id,
+        email: testUser.email,
+        role: testUser.role,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        emailVerified: true,
+        name: "Test User",
+        image: null,
+      },
+    },
+    user: {
+      id: testUser.id,
+      email: testUser.email,
+      role: testUser.role,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      emailVerified: true,
+      name: "Test User",
+      image: null,
+    },
+    headers: new Headers(),
+  }
+}

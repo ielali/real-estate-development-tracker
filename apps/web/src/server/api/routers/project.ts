@@ -1,10 +1,14 @@
 import { z } from "zod"
 import { TRPCError } from "@trpc/server"
-import { eq, and, isNull, or, isNotNull } from "drizzle-orm"
+import { eq } from "drizzle-orm"
 import { createTRPCRouter, protectedProcedure } from "../trpc"
 import { projects } from "@/server/db/schema/projects"
 import { addresses } from "@/server/db/schema/addresses"
-import { projectAccess } from "@/server/db/schema/projectAccess"
+import {
+  getAccessibleProjects,
+  verifyProjectAccess,
+  assertProjectOwner,
+} from "../helpers/authorization"
 
 /**
  * Zod schema for Australian states
@@ -153,113 +157,96 @@ export const projectRouter = createTRPCRouter({
   }),
 
   /**
-   * Lists all projects owned by the authenticated user
+   * Lists all projects accessible by the authenticated user
    *
-   * Returns projects with associated address data, excluding soft-deleted
-   * projects. Results are ordered by creation date (oldest first).
+   * Returns projects with associated address data and permission metadata.
+   * Includes:
+   * - Projects owned by the user (access: "owner", permission: "write")
+   * - Projects shared via accepted partner invitations (access: "partner", permission: "read" | "write")
+   *
+   * Excludes soft-deleted projects. Results are ordered by creation date (oldest first).
+   *
+   * Story 4.2: Uses getAccessibleProjects() helper for consistent RBAC.
    *
    * @throws {TRPCError} UNAUTHORIZED - User not authenticated
-   * @returns {Array<Project & { address: Address | null }>} User's projects with addresses
+   * @returns {Array<Project & { address: Address | null, userPermission: string, access: string }>}
    *
    * @example
    * const projects = await trpc.project.list.useQuery();
-   * // Returns: [{ id, name, address, ... }, ...]
+   * // Returns: [
+   * //   { id, name, address, userPermission: "write", access: "owner", ... },
+   * //   { id, name, address, userPermission: "read", access: "partner", ... }
+   * // ]
    */
   list: protectedProcedure.query(async ({ ctx }) => {
-    const userId = ctx.session.user.id
+    // Use centralized helper to get all accessible projects with permission metadata
+    const accessibleProjects = await getAccessibleProjects(ctx)
 
-    const userProjects = await ctx.db
-      .select({
-        project: projects,
-        address: addresses,
-      })
-      .from(projects)
-      .leftJoin(addresses, eq(projects.addressId, addresses.id))
-      .leftJoin(
-        projectAccess,
-        and(
-          eq(projectAccess.projectId, projects.id),
-          eq(projectAccess.userId, userId),
-          isNotNull(projectAccess.acceptedAt),
-          isNull(projectAccess.deletedAt)
-        )
-      )
-      .where(
-        and(
-          or(
-            eq(projects.ownerId, userId), // User owns the project
-            isNotNull(projectAccess.id) // OR user has accepted partner access
-          ),
-          isNull(projects.deletedAt)
-        )
-      )
-      .orderBy(projects.createdAt)
+    // Fetch addresses for all accessible projects
+    const projectIds = accessibleProjects.map((item) => item.project.id)
 
-    return userProjects.map(({ project, address }) => ({
-      ...project,
-      address: address ?? null,
+    if (projectIds.length === 0) {
+      return []
+    }
+
+    // Get addresses in a single query
+    const addressResults = await ctx.db.query.addresses.findMany({
+      where: (addresses, { inArray }) =>
+        inArray(
+          addresses.id,
+          accessibleProjects
+            .map((item) => item.project.addressId)
+            .filter((id): id is string => id !== null)
+        ),
+    })
+
+    // Create address lookup map
+    const addressMap = new Map(addressResults.map((addr) => [addr.id, addr]))
+
+    // Combine project data with addresses and permission metadata
+    return accessibleProjects.map((item) => ({
+      ...item.project,
+      address: item.project.addressId ? (addressMap.get(item.project.addressId) ?? null) : null,
+      userPermission: item.permission, // "read" | "write"
+      access: item.access, // "owner" | "partner"
     }))
   }),
 
   /**
    * Retrieves a single project by ID with access verification
    *
-   * Returns project with associated address. Enforces access control by
-   * verifying the authenticated user owns the project OR has accepted partner access.
-   * Excludes soft-deleted projects.
+   * Returns project with associated address and permission metadata.
+   * Enforces access control using centralized authorization helper.
+   *
+   * Story 4.2: Uses verifyProjectAccess() for consistent RBAC and audit logging.
    *
    * @throws {TRPCError} UNAUTHORIZED - User not authenticated
    * @throws {TRPCError} FORBIDDEN - User does not have access to this project
-   * @returns {Project & { address: Address | null }} Project with address data
+   * @returns {Project & { address: Address | null, userPermission: string, access: string }}
    *
    * @example
    * const project = await trpc.project.getById.useQuery({ id: "uuid-here" });
+   * // Returns: { id, name, address, userPermission: "write", access: "owner", ... }
    */
   getById: protectedProcedure
     .input(z.object({ id: z.string().uuid() }))
     .query(async ({ ctx, input }) => {
-      const userId = ctx.session.user.id
+      // Verify access and get permission metadata (also logs access attempt)
+      const { project, access, permission } = await verifyProjectAccess(ctx, input.id, "read")
 
-      const result = await ctx.db
-        .select({
-          project: projects,
-          address: addresses,
-        })
-        .from(projects)
-        .leftJoin(addresses, eq(projects.addressId, addresses.id))
-        .leftJoin(
-          projectAccess,
-          and(
-            eq(projectAccess.projectId, projects.id),
-            eq(projectAccess.userId, userId),
-            isNotNull(projectAccess.acceptedAt),
-            isNull(projectAccess.deletedAt)
-          )
-        )
-        .where(
-          and(
-            eq(projects.id, input.id),
-            or(
-              eq(projects.ownerId, userId), // User owns the project
-              isNotNull(projectAccess.id) // OR user has accepted partner access
-            ),
-            isNull(projects.deletedAt)
-          )
-        )
-        .limit(1)
-
-      const projectData = result[0]
-
-      if (!projectData) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Project not found or you do not have permission to access it",
+      // Fetch address if project has one
+      let address = null
+      if (project.addressId) {
+        address = await ctx.db.query.addresses.findFirst({
+          where: eq(addresses.id, project.addressId),
         })
       }
 
       return {
-        ...projectData.project,
-        address: projectData.address ?? null,
+        ...project,
+        address: address ?? null,
+        userPermission: permission, // "read" | "write"
+        access, // "owner" | "partner"
       }
     }),
 
@@ -267,11 +254,13 @@ export const projectRouter = createTRPCRouter({
    * Updates an existing project with ownership verification
    *
    * Allows updating project fields including name, description, address,
-   * type, status, dates, and budget. Verifies user owns the project before
-   * allowing updates. Address updates modify the associated address record.
+   * type, status, dates, and budget.
+   *
+   * Story 4.2: Only project owners can update projects. Partners cannot modify projects,
+   * even with write permission. Uses authorization helpers for consistent RBAC.
    *
    * @throws {TRPCError} UNAUTHORIZED - User not authenticated
-   * @throws {TRPCError} FORBIDDEN - User does not own this project
+   * @throws {TRPCError} FORBIDDEN - User does not own this project (partners cannot update)
    * @returns {Project} The updated project
    *
    * @example
@@ -282,26 +271,14 @@ export const projectRouter = createTRPCRouter({
    * });
    */
   update: protectedProcedure.input(updateProjectSchema).mutation(async ({ ctx, input }) => {
-    const userId = ctx.session.user.id
+    // Verify access and ensure user is owner (not just a partner)
+    const accessInfo = await verifyProjectAccess(ctx, input.id, "read")
+    assertProjectOwner(accessInfo, "update project")
 
-    // Verify ownership
-    const existingProject = await ctx.db
-      .select()
-      .from(projects)
-      .where(
-        and(eq(projects.id, input.id), eq(projects.ownerId, userId), isNull(projects.deletedAt))
-      )
-      .limit(1)
-
-    if (!existingProject[0]) {
-      throw new TRPCError({
-        code: "FORBIDDEN",
-        message: "Project not found or you do not have permission to update it",
-      })
-    }
+    const existingProject = accessInfo.project
 
     // Update address if provided
-    let addressId = existingProject[0].addressId
+    let addressId = existingProject.addressId
     if (input.address && addressId) {
       const formattedAddress =
         input.address.formatted ??
@@ -380,11 +357,13 @@ export const projectRouter = createTRPCRouter({
    *
    * Marks the project as deleted without removing data from database.
    * Allows for data recovery and maintains referential integrity.
-   * Verifies user owns the project before deletion.
+   *
+   * Story 4.2: Only project owners can delete projects. Partners cannot delete projects,
+   * even with write permission. Uses authorization helpers for consistent RBAC.
    *
    * @throws {TRPCError} UNAUTHORIZED - User not authenticated
-   * @throws {TRPCError} FORBIDDEN - User does not own this project
-   * @returns {Project} The soft-deleted project with deletedAt timestamp
+   * @throws {TRPCError} FORBIDDEN - User does not own this project (partners cannot delete)
+   * @returns {void}
    *
    * @example
    * await trpc.project.softDelete.mutate({ id: "uuid-here" });
@@ -392,23 +371,9 @@ export const projectRouter = createTRPCRouter({
   softDelete: protectedProcedure
     .input(z.object({ id: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {
-      const userId = ctx.session.user.id
-
-      // Verify ownership
-      const existingProject = await ctx.db
-        .select()
-        .from(projects)
-        .where(
-          and(eq(projects.id, input.id), eq(projects.ownerId, userId), isNull(projects.deletedAt))
-        )
-        .limit(1)
-
-      if (!existingProject[0]) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Project not found or you do not have permission to delete it",
-        })
-      }
+      // Verify access and ensure user is owner (not just a partner)
+      const accessInfo = await verifyProjectAccess(ctx, input.id, "read")
+      assertProjectOwner(accessInfo, "delete project")
 
       // Soft delete
       await ctx.db

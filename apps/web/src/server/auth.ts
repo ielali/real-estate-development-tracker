@@ -14,6 +14,24 @@ export const auth = betterAuth({
       verification: verifications,
     },
   }),
+  user: {
+    additionalFields: {
+      role: {
+        type: "string",
+        required: true,
+        defaultValue: "partner",
+        input: false, // Not user-editable through auth endpoints
+      },
+      firstName: {
+        type: "string",
+        required: false,
+      },
+      lastName: {
+        type: "string",
+        required: false,
+      },
+    },
+  },
   emailAndPassword: {
     enabled: true,
     autoSignIn: false,
