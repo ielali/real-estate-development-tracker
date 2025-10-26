@@ -167,99 +167,105 @@ export function InvitePartnerDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle>Invite Partner</DialogTitle>
-          <DialogDescription>
-            Invite someone to collaborate on this project. They will receive an email with
-            instructions to accept the invitation.
-          </DialogDescription>
-        </DialogHeader>
+      {open && (
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Invite Partner</DialogTitle>
+            <DialogDescription>
+              Invite someone to collaborate on this project. They will receive an email with
+              instructions to accept the invitation.
+            </DialogDescription>
+          </DialogHeader>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email Address</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="email"
-                      placeholder="partner@example.com"
-                      {...field}
-                      disabled={inviteMutation.isPending || resendMutation.isPending}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="permission"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Access Level</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                    disabled={inviteMutation.isPending || resendMutation.isPending}
-                  >
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email Address</FormLabel>
                     <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select access level" />
-                      </SelectTrigger>
+                      <Input
+                        type="email"
+                        placeholder="partner@example.com"
+                        {...field}
+                        disabled={inviteMutation.isPending || resendMutation.isPending}
+                      />
                     </FormControl>
-                    <SelectContent>
-                      <SelectItem value="read">Read - View only access</SelectItem>
-                      <SelectItem value="write">Write - Full editing access</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormDescription>
-                    Read access allows viewing only. Write access allows full editing.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <DialogFooter className="gap-2 sm:gap-0">
-              {showResendOption && pendingAccessId ? (
-                <>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleCancel}
-                    disabled={resendMutation.isPending}
-                  >
-                    Cancel
-                  </Button>
-                  <Button type="button" onClick={handleResend} disabled={resendMutation.isPending}>
-                    {resendMutation.isPending ? "Resending..." : "Resend Invitation"}
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleCancel}
-                    disabled={inviteMutation.isPending}
-                  >
-                    Cancel
-                  </Button>
-                  <Button type="submit" disabled={inviteMutation.isPending}>
-                    {inviteMutation.isPending ? "Sending..." : "Send Invitation"}
-                  </Button>
-                </>
-              )}
-            </DialogFooter>
-          </form>
-        </Form>
-      </DialogContent>
+              <FormField
+                control={form.control}
+                name="permission"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Access Level</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      disabled={inviteMutation.isPending || resendMutation.isPending}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select access level" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="read">Read - View only access</SelectItem>
+                        <SelectItem value="write">Write - Full editing access</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormDescription>
+                      Read access allows viewing only. Write access allows full editing.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <DialogFooter className="gap-2 sm:gap-0">
+                {showResendOption && pendingAccessId ? (
+                  <>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleCancel}
+                      disabled={resendMutation.isPending}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={handleResend}
+                      disabled={resendMutation.isPending}
+                    >
+                      {resendMutation.isPending ? "Resending..." : "Resend Invitation"}
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleCancel}
+                      disabled={inviteMutation.isPending}
+                    >
+                      Cancel
+                    </Button>
+                    <Button type="submit" disabled={inviteMutation.isPending}>
+                      {inviteMutation.isPending ? "Sending..." : "Send Invitation"}
+                    </Button>
+                  </>
+                )}
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      )}
     </Dialog>
   )
 }
