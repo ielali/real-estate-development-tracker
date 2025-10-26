@@ -1,10 +1,11 @@
 import { TRPCError } from "@trpc/server"
-import { eq, and, isNull, or, ilike, sql, desc } from "drizzle-orm"
+import { eq, and, isNull, or, ilike, sql, desc, isNotNull } from "drizzle-orm"
 import { createTRPCRouter, protectedProcedure } from "../trpc"
 import { contacts } from "@/server/db/schema/contacts"
 import { categories } from "@/server/db/schema/categories"
 import { projectContact } from "@/server/db/schema/projectContact"
 import { projects } from "@/server/db/schema/projects"
+import { projectAccess } from "@/server/db/schema/projectAccess"
 import { costs } from "@/server/db/schema/costs"
 import { addresses } from "@/server/db/schema/addresses"
 import { contactDocuments } from "@/server/db/schema/contactDocuments"
@@ -16,6 +17,7 @@ import {
 } from "@/lib/validations/contact"
 import { z } from "zod"
 import { getCategoryById } from "@/server/db/types"
+import { verifyProjectAccess } from "../helpers/verifyProjectAccess"
 
 /**
  * Contact router with CRUD operations for contact management
@@ -392,25 +394,8 @@ export const contactRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const userId = ctx.session.user.id
 
-      // Verify user owns the project
-      const project = await ctx.db
-        .select()
-        .from(projects)
-        .where(
-          and(
-            eq(projects.id, input.projectId),
-            eq(projects.ownerId, userId),
-            isNull(projects.deletedAt)
-          )
-        )
-        .limit(1)
-
-      if (!project[0]) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Project not found or you do not have permission to access it",
-        })
-      }
+      // Verify user has access to the project (owner or partner)
+      await verifyProjectAccess(ctx.db, input.projectId, userId)
 
       // Get contacts for this project with category info
       const projectContacts = await ctx.db
@@ -451,25 +436,8 @@ export const contactRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user.id
 
-      // Verify user owns the project
-      const project = await ctx.db
-        .select()
-        .from(projects)
-        .where(
-          and(
-            eq(projects.id, input.projectId),
-            eq(projects.ownerId, userId),
-            isNull(projects.deletedAt)
-          )
-        )
-        .limit(1)
-
-      if (!project[0]) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Project not found or you do not have permission to access it",
-        })
-      }
+      // Verify user has access to the project (owner or partner)
+      await verifyProjectAccess(ctx.db, input.projectId, userId)
 
       // Verify contact exists and is not deleted
       const contact = await ctx.db
@@ -528,15 +496,27 @@ export const contactRouter = createTRPCRouter({
     .query(async ({ ctx, input: contactId }) => {
       const userId = ctx.session.user.id
 
-      // Verify contact exists and user has access (via ProjectContact)
+      // Verify contact exists and user has access (via ProjectContact and project ownership/partner access)
       const [pc] = await ctx.db
         .select()
         .from(projectContact)
         .innerJoin(projects, eq(projectContact.projectId, projects.id))
+        .leftJoin(
+          projectAccess,
+          and(
+            eq(projectAccess.projectId, projects.id),
+            eq(projectAccess.userId, userId),
+            isNotNull(projectAccess.acceptedAt),
+            isNull(projectAccess.deletedAt)
+          )
+        )
         .where(
           and(
             eq(projectContact.contactId, contactId),
-            eq(projects.ownerId, userId),
+            or(
+              eq(projects.ownerId, userId), // User owns the project
+              isNotNull(projectAccess.id) // OR user has accepted partner access
+            ),
             isNull(projectContact.deletedAt),
             isNull(projects.deletedAt)
           )

@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server"
-import { eq, and, isNull, gte, lte, inArray, ilike, or, desc, asc } from "drizzle-orm"
+import { eq, and, isNull, gte, lte, inArray, ilike, or, desc, asc, isNotNull } from "drizzle-orm"
 import { createTRPCRouter, protectedProcedure } from "../trpc"
 import { costs } from "@/server/db/schema/costs"
 import { projects } from "@/server/db/schema/projects"
@@ -7,6 +7,7 @@ import { categories } from "@/server/db/schema/categories"
 import { contacts } from "@/server/db/schema/contacts"
 import { costDocuments } from "@/server/db/schema/costDocuments"
 import { documents } from "@/server/db/schema/documents"
+import { projectAccess } from "@/server/db/schema/projectAccess"
 import {
   createCostSchema,
   updateCostSchema,
@@ -15,26 +16,43 @@ import {
   deleteCostSchema,
 } from "@/lib/validations/cost"
 import type { Database } from "@/server/db"
+import { getCategoryById } from "@/server/db/types"
 import { z } from "zod"
 
 /**
- * Helper function to verify project ownership
- * Throws FORBIDDEN error if user doesn't own the project
+ * Helper function to verify project ownership or partner access
+ * Throws FORBIDDEN error if user doesn't own the project or have accepted partner access
  */
 async function verifyProjectOwnership(
   db: Database,
   projectId: string,
   userId: string
 ): Promise<void> {
-  const project = await db
-    .select()
+  const result = await db
+    .select({ project: projects })
     .from(projects)
+    .leftJoin(
+      projectAccess,
+      and(
+        eq(projectAccess.projectId, projects.id),
+        eq(projectAccess.userId, userId),
+        isNotNull(projectAccess.acceptedAt),
+        isNull(projectAccess.deletedAt)
+      )
+    )
     .where(
-      and(eq(projects.id, projectId), eq(projects.ownerId, userId), isNull(projects.deletedAt))
+      and(
+        eq(projects.id, projectId),
+        or(
+          eq(projects.ownerId, userId), // User owns the project
+          isNotNull(projectAccess.id) // OR user has accepted partner access
+        ),
+        isNull(projects.deletedAt)
+      )
     )
     .limit(1)
 
-  if (!project[0]) {
+  if (!result[0]) {
     throw new TRPCError({
       code: "FORBIDDEN",
       message: "Project not found or you do not have permission to access it",
@@ -43,8 +61,8 @@ async function verifyProjectOwnership(
 }
 
 /**
- * Helper function to verify cost ownership through project
- * Throws FORBIDDEN error if user doesn't own the project containing this cost
+ * Helper function to verify cost ownership through project or partner access
+ * Throws FORBIDDEN error if user doesn't own the project or have accepted partner access
  */
 async function verifyCostOwnership(db: Database, costId: string, userId: string): Promise<void> {
   const result = await db
@@ -54,12 +72,31 @@ async function verifyCostOwnership(db: Database, costId: string, userId: string)
     })
     .from(costs)
     .innerJoin(projects, eq(costs.projectId, projects.id))
-    .where(and(eq(costs.id, costId), isNull(costs.deletedAt), isNull(projects.deletedAt)))
+    .leftJoin(
+      projectAccess,
+      and(
+        eq(projectAccess.projectId, projects.id),
+        eq(projectAccess.userId, userId),
+        isNotNull(projectAccess.acceptedAt),
+        isNull(projectAccess.deletedAt)
+      )
+    )
+    .where(
+      and(
+        eq(costs.id, costId),
+        or(
+          eq(projects.ownerId, userId), // User owns the project
+          isNotNull(projectAccess.id) // OR user has accepted partner access
+        ),
+        isNull(costs.deletedAt),
+        isNull(projects.deletedAt)
+      )
+    )
     .limit(1)
 
   const costData = result[0]
 
-  if (!costData || costData.project.ownerId !== userId) {
+  if (!costData) {
     throw new TRPCError({
       code: "FORBIDDEN",
       message: "Cost not found or you do not have permission to access it",
@@ -198,16 +235,6 @@ export const costRouter = createTRPCRouter({
       }
     }
 
-    // Story 2.4: Dynamic sorting
-    const sortByColumn = {
-      date: costs.date,
-      amount: costs.amount,
-      contact: contacts.firstName,
-      category: categories.displayName,
-    }[input.sortBy]
-
-    const sortDirection = input.sortDirection === "asc" ? asc : desc
-
     // Fetch costs with category and contact information
     const projectCosts = await ctx.db
       .select({
@@ -219,13 +246,57 @@ export const costRouter = createTRPCRouter({
       .leftJoin(categories, eq(costs.categoryId, categories.id))
       .leftJoin(contacts, eq(costs.contactId, contacts.id))
       .where(and(...conditions))
-      .orderBy(sortDirection(sortByColumn))
+      .orderBy(
+        input.sortDirection === "asc"
+          ? asc(
+              input.sortBy === "date"
+                ? costs.date
+                : input.sortBy === "amount"
+                  ? costs.amount
+                  : input.sortBy === "contact"
+                    ? contacts.firstName
+                    : categories.displayName
+            )
+          : desc(
+              input.sortBy === "date"
+                ? costs.date
+                : input.sortBy === "amount"
+                  ? costs.amount
+                  : input.sortBy === "contact"
+                    ? contacts.firstName
+                    : categories.displayName
+            )
+      )
 
-    return projectCosts.map(({ cost, category, contact }) => ({
-      ...cost,
-      category: category ?? null,
-      contact: contact ?? null,
-    }))
+    // Map costs - use JOIN result, or fallback to predefined categories
+    return projectCosts.map(({ cost, category, contact }) => {
+      let resolvedCategory = null
+
+      if (category) {
+        // Found in database (custom category)
+        resolvedCategory = {
+          id: category.id,
+          displayName: category.displayName,
+          parentId: category.parentId,
+        }
+      } else if (cost.categoryId) {
+        // Not in database, check predefined categories
+        const predefined = getCategoryById(cost.categoryId)
+        if (predefined) {
+          resolvedCategory = {
+            id: predefined.id,
+            displayName: predefined.displayName,
+            parentId: predefined.parentId,
+          }
+        }
+      }
+
+      return {
+        ...cost,
+        category: resolvedCategory,
+        contact: contact ?? null,
+      }
+    })
   }),
 
   /**
@@ -239,18 +310,12 @@ export const costRouter = createTRPCRouter({
     // Verify cost ownership through project
     await verifyCostOwnership(ctx.db, input.id, userId)
 
-    // Fetch cost with category information
-    const result = await ctx.db
-      .select({
-        cost: costs,
-        category: categories,
-      })
+    // Fetch cost
+    const [costData] = await ctx.db
+      .select()
       .from(costs)
-      .leftJoin(categories, eq(costs.categoryId, categories.id))
       .where(and(eq(costs.id, input.id), isNull(costs.deletedAt)))
       .limit(1)
-
-    const costData = result[0]
 
     if (!costData) {
       throw new TRPCError({
@@ -259,9 +324,35 @@ export const costRouter = createTRPCRouter({
       })
     }
 
+    // Resolve category (check predefined first, then database)
+    let category = null
+    if (costData.categoryId) {
+      const predefined = getCategoryById(costData.categoryId)
+      if (predefined) {
+        category = {
+          id: predefined.id,
+          displayName: predefined.displayName,
+          parentId: predefined.parentId,
+        }
+      } else {
+        const [dbCat] = await ctx.db
+          .select()
+          .from(categories)
+          .where(eq(categories.id, costData.categoryId))
+          .limit(1)
+        if (dbCat) {
+          category = {
+            id: dbCat.id,
+            displayName: dbCat.displayName,
+            parentId: dbCat.parentId,
+          }
+        }
+      }
+    }
+
     return {
-      ...costData.cost,
-      category: costData.category ?? null,
+      ...costData,
+      category,
     }
   }),
 

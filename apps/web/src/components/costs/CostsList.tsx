@@ -62,14 +62,17 @@ export function CostsList({
   const [selectedContactId, setSelectedContactId] = useState<string | null>(null)
   const utils = api.useUtils()
 
-  // Fetch costs for this project with filters
-  const { data: costsData, isLoading: costsLoading } = api.costs.list.useQuery({
+  // Build query input (needed for cache key matching)
+  const queryInput = {
     projectId,
     ...filters,
     searchText: searchText || undefined,
     sortBy,
     sortDirection,
-  })
+  }
+
+  // Fetch costs for this project with filters
+  const { data: costsData, isLoading: costsLoading } = api.costs.list.useQuery(queryInput)
 
   // Calculate total costs
   const totalCosts = costsData?.reduce((sum, cost) => sum + cost.amount, 0) ?? 0
@@ -77,16 +80,16 @@ export function CostsList({
   const deleteCostMutation = api.costs.softDelete.useMutation({
     // Optimistic update: Remove cost from UI immediately
     onMutate: async (variables) => {
-      // Cancel outgoing refetches
-      await utils.costs.list.cancel({ projectId })
+      // Cancel outgoing refetches (use exact query key)
+      await utils.costs.list.cancel(queryInput)
 
-      // Snapshot the previous value
-      const previousCosts = utils.costs.list.getData({ projectId })
+      // Snapshot the previous value (use exact query key)
+      const previousCosts = utils.costs.list.getData(queryInput)
 
-      // Optimistically update to remove the cost
+      // Optimistically update to remove the cost (use exact query key)
       if (previousCosts) {
         utils.costs.list.setData(
-          { projectId },
+          queryInput,
           previousCosts.filter((cost) => cost.id !== variables.id)
         )
       }
@@ -96,12 +99,12 @@ export function CostsList({
     },
     onSuccess: () => {
       toast.success("Cost deleted successfully")
-      void utils.costs.list.invalidate({ projectId })
+      void utils.costs.list.invalidate(queryInput)
     },
     onError: (error, variables, context) => {
-      // Rollback to previous state on error
+      // Rollback to previous state on error (use exact query key)
       if (context?.previousCosts) {
-        utils.costs.list.setData({ projectId }, context.previousCosts)
+        utils.costs.list.setData(queryInput, context.previousCosts)
       }
       toast.error(error.message || "Failed to delete cost")
     },
@@ -121,7 +124,7 @@ export function CostsList({
       setSelectedCostIds(new Set())
       setBulkAssignDialogOpen(false)
       setSelectedContactId(null)
-      void utils.costs.list.invalidate({ projectId })
+      void utils.costs.list.invalidate(queryInput)
     },
     onError: (error) => {
       toast.error(error.message || "Failed to assign contact")
