@@ -1,15 +1,24 @@
 /**
- * Authorization Helper Functions for tRPC Procedures
+ * Authorization Helper Functions for tRPC Procedures (Story 4.2 - Role-Based Access Control)
  *
  * Centralized authorization logic to ensure consistent access control
  * across all API routes. These helpers prevent code duplication and
  * provide standardized error messages.
  *
+ * Role Definitions:
+ * - **admin**: System-wide role with full read/write access to owned projects, can invite partners
+ * - **partner**: System-wide role with project-specific access based on ProjectAccess.permission
+ *
+ * Permission Levels (project-specific):
+ * - **owner**: User owns the project (full access: read/write/delete/invite)
+ * - **write**: Partner can view and modify costs, documents, events
+ * - **read**: Partner can only view project data, no modifications allowed
+ *
  * @module authorization
  */
 
 import { TRPCError } from "@trpc/server"
-import { eq, and, isNull } from "drizzle-orm"
+import { eq, and, isNull, isNotNull } from "drizzle-orm"
 import { projects, projectAccess } from "@/server/db/schema"
 import type { createTRPCContext } from "../trpc"
 
@@ -103,59 +112,91 @@ export async function verifyProjectAccess(
     })
   }
 
-  // Check ownership first (owners have full access)
-  const ownedProject = await ctx.db.query.projects.findFirst({
-    where: and(
-      eq(projects.id, projectId),
-      eq(projects.ownerId, ctx.user.id),
-      isNull(projects.deletedAt)
-    ),
-  })
+  try {
+    // Check ownership first (owners have full access)
+    const ownedProject = await ctx.db.query.projects.findFirst({
+      where: and(
+        eq(projects.id, projectId),
+        eq(projects.ownerId, ctx.user.id),
+        isNull(projects.deletedAt)
+      ),
+    })
 
-  if (ownedProject) {
-    return {
-      project: ownedProject,
-      access: "owner",
-      permission: "write", // Owners always have write access
+    if (ownedProject) {
+      // Log successful owner access
+      await logAccessAttempt(ctx, projectId, true, "owner")
+
+      return {
+        project: ownedProject,
+        access: "owner",
+        permission: "write", // Owners always have write access
+      }
     }
-  }
 
-  // Check partner access
-  const partnerAccess = await ctx.db.query.projectAccess.findFirst({
-    where: and(
-      eq(projectAccess.projectId, projectId),
-      eq(projectAccess.userId, ctx.user.id),
-      isNull(projectAccess.deletedAt),
-      // If write permission required, filter to only write access
-      requiredPermission === "write" ? eq(projectAccess.permission, "write") : undefined
-    ),
-    with: {
-      project: true,
-    },
-  })
+    // Check partner access
+    const partnerAccess = await ctx.db.query.projectAccess.findFirst({
+      where: and(
+        eq(projectAccess.projectId, projectId),
+        eq(projectAccess.userId, ctx.user.id),
+        isNotNull(projectAccess.acceptedAt),
+        isNull(projectAccess.deletedAt),
+        // If write permission required, filter to only write access
+        requiredPermission === "write" ? eq(projectAccess.permission, "write") : undefined
+      ),
+      with: {
+        project: true,
+      },
+    })
 
-  if (!partnerAccess?.project) {
-    throw new TRPCError({
-      code: "FORBIDDEN",
-      message:
+    if (!partnerAccess?.project) {
+      // Log failed access attempt
+      const reason =
         requiredPermission === "write"
-          ? "Project not found or you do not have write access"
-          : "Project not found or you do not have access",
-    })
-  }
+          ? "Project not found or user does not have write access"
+          : "Project not found or user does not have access"
+      await logAccessAttempt(ctx, projectId, false, null, reason)
 
-  // Additional check: ensure project is not deleted
-  if (partnerAccess.project.deletedAt) {
-    throw new TRPCError({
-      code: "FORBIDDEN",
-      message: "This project has been deleted",
-    })
-  }
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message:
+          requiredPermission === "write"
+            ? "Project not found or you do not have write access"
+            : "Project not found or you do not have access",
+      })
+    }
 
-  return {
-    project: partnerAccess.project,
-    access: "partner",
-    permission: partnerAccess.permission as "read" | "write",
+    // Additional check: ensure project is not deleted
+    if (partnerAccess.project.deletedAt) {
+      await logAccessAttempt(ctx, projectId, false, null, "Project has been deleted")
+
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "This project has been deleted",
+      })
+    }
+
+    // Log successful partner access
+    await logAccessAttempt(ctx, projectId, true, partnerAccess.permission as "read" | "write")
+
+    return {
+      project: partnerAccess.project,
+      access: "partner",
+      permission: partnerAccess.permission as "read" | "write",
+    }
+  } catch (error) {
+    // If it's already a TRPCError, re-throw it
+    if (error instanceof TRPCError) {
+      throw error
+    }
+    // Log unexpected errors
+    await logAccessAttempt(
+      ctx,
+      projectId,
+      false,
+      null,
+      "Unexpected error during access verification"
+    )
+    throw error
   }
 }
 
@@ -327,4 +368,225 @@ export async function getProjectPermissionLevel(
   } catch (error) {
     return "none"
   }
+}
+
+// ============================================================================
+// Story 4.2: Role-Based Access Control - New Functions
+// ============================================================================
+
+/**
+ * Require user to have admin role
+ *
+ * Middleware helper to restrict operations to admin users only.
+ * Partners attempting admin-only operations will be blocked.
+ *
+ * @param ctx - tRPC context with user session
+ * @throws {TRPCError} UNAUTHORIZED if not logged in
+ * @throws {TRPCError} FORBIDDEN if user is not admin
+ *
+ * @example
+ * ```typescript
+ * // In tRPC procedure
+ * requireAdmin(ctx)
+ * // Now safe to perform admin-only operations
+ * ```
+ */
+export function requireAdmin(ctx: Context): void {
+  if (!ctx.user) {
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "You must be logged in to access this resource",
+    })
+  }
+
+  const userRole = ctx.user.role as "admin" | "partner"
+  if (userRole !== "admin") {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "This operation requires admin privileges",
+    })
+  }
+}
+
+/**
+ * Require user to have one of the specified roles
+ *
+ * Flexible role-checking middleware for operations that allow
+ * multiple roles (e.g., both admin and partner).
+ *
+ * @param ctx - tRPC context with user session
+ * @param allowedRoles - Array of roles that are permitted
+ * @throws {TRPCError} UNAUTHORIZED if not logged in
+ * @throws {TRPCError} FORBIDDEN if user doesn't have required role
+ *
+ * @example
+ * ```typescript
+ * // Allow both admins and partners
+ * requireRole(ctx, ['admin', 'partner'])
+ *
+ * // Admin-only operation
+ * requireRole(ctx, ['admin'])
+ * ```
+ */
+export function requireRole(ctx: Context, allowedRoles: Array<"admin" | "partner">): void {
+  if (!ctx.user) {
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "You must be logged in to access this resource",
+    })
+  }
+
+  const userRole = ctx.user.role as "admin" | "partner"
+  if (!allowedRoles.includes(userRole)) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: `This operation requires one of the following roles: ${allowedRoles.join(", ")}`,
+    })
+  }
+}
+
+/**
+ * Get all projects accessible to the current user
+ *
+ * Returns projects based on user's role and permissions:
+ * - Admins: All projects they own
+ * - Partners: Only projects they've been granted access to (with accepted invitations)
+ *
+ * Each project includes permission metadata indicating access level.
+ *
+ * @param ctx - tRPC context with database and user
+ * @returns Array of projects with access level and permission information
+ *
+ * @example
+ * ```typescript
+ * const projects = await getAccessibleProjects(ctx)
+ * // Returns: [
+ * //   { project: {...}, access: 'owner', permission: 'write' },
+ * //   { project: {...}, access: 'partner', permission: 'read' }
+ * // ]
+ * ```
+ */
+export async function getAccessibleProjects(ctx: Context): Promise<ProjectWithAccess[]> {
+  if (!ctx.user) {
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "You must be logged in to access this resource",
+    })
+  }
+
+  const userId = ctx.user.id
+
+  // Get owned projects
+  const ownedProjects = await ctx.db.query.projects.findMany({
+    where: and(eq(projects.ownerId, userId), isNull(projects.deletedAt)),
+  })
+
+  // Get partner projects (accepted invitations only)
+  const partnerAccessRecords = await ctx.db.query.projectAccess.findMany({
+    where: and(
+      eq(projectAccess.userId, userId),
+      isNotNull(projectAccess.acceptedAt),
+      isNull(projectAccess.deletedAt)
+    ),
+    with: {
+      project: true,
+    },
+  })
+
+  // Map owned projects
+  const ownedProjectsWithAccess: ProjectWithAccess[] = ownedProjects.map((project) => ({
+    project,
+    access: "owner" as const,
+    permission: "write" as const,
+  }))
+
+  // Map partner projects (filter out deleted projects)
+  const partnerProjectsWithAccess: ProjectWithAccess[] = partnerAccessRecords
+    .filter((record) => record.project && !record.project.deletedAt)
+    .map((record) => ({
+      project: record.project!,
+      access: "partner" as const,
+      permission: record.permission as "read" | "write",
+    }))
+
+  return [...ownedProjectsWithAccess, ...partnerProjectsWithAccess]
+}
+
+/**
+ * Filter entity query by accessible projects
+ *
+ * Returns WHERE clause that filters entities (costs, documents, events)
+ * to only those belonging to projects the user can access.
+ *
+ * @param ctx - tRPC context with database and user
+ * @param entityProjectIdColumn - The column representing projectId in the entity table
+ * @returns Drizzle WHERE condition for filtering by accessible projects
+ *
+ * @example
+ * ```typescript
+ * // Filter costs by accessible projects
+ * const accessibleProjectIds = await getAccessibleProjectIds(ctx)
+ * const userCosts = await ctx.db.query.costs.findMany({
+ *   where: and(
+ *     inArray(costs.projectId, accessibleProjectIds),
+ *     isNull(costs.deletedAt)
+ *   )
+ * })
+ * ```
+ */
+export async function getAccessibleProjectIds(ctx: Context): Promise<string[]> {
+  const accessibleProjects = await getAccessibleProjects(ctx)
+  return accessibleProjects.map((item) => item.project.id)
+}
+
+/**
+ * Log access attempt to audit log
+ *
+ * Records both successful and failed project access attempts for security
+ * auditing and transparency. Includes user role, permission level, and outcome.
+ *
+ * @param ctx - tRPC context with database and user
+ * @param projectId - UUID of the project being accessed
+ * @param success - Whether access was granted
+ * @param permission - Permission level if access granted ("owner" | "read" | "write")
+ * @param reason - Failure reason if access denied
+ *
+ * @example
+ * ```typescript
+ * // Log successful access
+ * await logAccessAttempt(ctx, projectId, true, "write")
+ *
+ * // Log failed access
+ * await logAccessAttempt(ctx, projectId, false, null, "User is not project owner or partner")
+ * ```
+ */
+export async function logAccessAttempt(
+  ctx: Context,
+  projectId: string,
+  success: boolean,
+  permission: "owner" | "read" | "write" | null = null,
+  reason?: string
+): Promise<void> {
+  if (!ctx.user) {
+    return // Cannot log without user context
+  }
+
+  const { auditLog } = await import("@/server/db/schema")
+
+  const metadata = {
+    success,
+    permission: permission || "none",
+    role: ctx.user.role,
+    reason: success ? undefined : reason,
+  }
+
+  await ctx.db.insert(auditLog).values({
+    id: crypto.randomUUID(),
+    userId: ctx.user.id,
+    action: "accessed",
+    entityType: "project",
+    entityId: projectId,
+    metadata: JSON.stringify(metadata),
+    timestamp: new Date(),
+  })
 }
