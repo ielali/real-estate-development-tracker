@@ -4,8 +4,8 @@
  */
 
 import React from "react"
-import { describe, it, expect, vi } from "vitest"
-import { render, screen } from "@testing-library/react"
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
+import { render, screen, cleanup } from "@testing-library/react"
 import { RoleGate } from "../RoleGate"
 
 // Mock useUserRole hook
@@ -18,6 +18,15 @@ import { useUserRole } from "@/hooks/useUserRole"
 describe("RoleGate", () => {
   const AdminContent = () => <div>Admin Content</div>
   const FallbackContent = () => <div>Access Denied</div>
+
+  // Reset mocks and cleanup DOM between tests to prevent pollution
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    cleanup()
+  })
 
   it("renders children when user has required admin role", () => {
     vi.mocked(useUserRole).mockReturnValue({

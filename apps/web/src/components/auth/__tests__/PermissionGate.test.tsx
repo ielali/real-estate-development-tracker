@@ -4,8 +4,8 @@
  */
 
 import React from "react"
-import { describe, it, expect, vi } from "vitest"
-import { render, screen } from "@testing-library/react"
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
+import { render, screen, cleanup } from "@testing-library/react"
 import { PermissionGate } from "../PermissionGate"
 
 // Mock useProjectPermission hook
@@ -20,6 +20,15 @@ describe("PermissionGate", () => {
   const EditButton = () => <button>Edit</button>
   const DeleteButton = () => <button>Delete</button>
   const ReadOnlyMessage = () => <div>View-only access</div>
+
+  // Reset mocks and cleanup DOM between tests to prevent pollution
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    cleanup()
+  })
 
   it("renders children when user has owner permission", () => {
     vi.mocked(useProjectPermission).mockReturnValue({
