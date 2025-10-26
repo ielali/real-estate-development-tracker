@@ -16,6 +16,16 @@ interface PasswordResetEmailData {
   token: string
 }
 
+interface InvitationEmailData {
+  email: string
+  projectName: string
+  inviterName: string
+  inviterEmail: string
+  permission: "read" | "write"
+  invitationToken: string
+  expiresAt: Date
+}
+
 export class EmailService {
   private isDevelopment = process.env.NODE_ENV === "development"
   private resend: Resend | null = null
@@ -92,6 +102,37 @@ export class EmailService {
 
     await this.sendEmail({
       to: user.email,
+      subject,
+      html,
+      text,
+    })
+  }
+
+  async sendInvitationEmail(data: InvitationEmailData): Promise<void> {
+    const subject = `You've been invited to ${data.projectName} - Real Estate Portfolio`
+
+    const invitationUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/invite/${data.invitationToken}`
+
+    const html = this.generateInvitationHTML({
+      projectName: data.projectName,
+      inviterName: data.inviterName,
+      inviterEmail: data.inviterEmail,
+      permission: data.permission,
+      invitationUrl,
+      expiresAt: data.expiresAt,
+    })
+
+    const text = this.generateInvitationText({
+      projectName: data.projectName,
+      inviterName: data.inviterName,
+      inviterEmail: data.inviterEmail,
+      permission: data.permission,
+      invitationUrl,
+      expiresAt: data.expiresAt,
+    })
+
+    await this.sendEmail({
+      to: data.email,
       subject,
       html,
       text,
@@ -235,6 +276,195 @@ SECURITY NOTICE: This link will expire in ${expirationTime}. If you didn't reque
 
 This email was sent from Real Estate Portfolio.
 If you have any questions, please contact our support team.
+    `.trim()
+  }
+
+  private generateInvitationHTML({
+    projectName,
+    inviterName,
+    inviterEmail,
+    permission,
+    invitationUrl,
+    expiresAt,
+  }: {
+    projectName: string
+    inviterName: string
+    inviterEmail: string
+    permission: "read" | "write"
+    invitationUrl: string
+    expiresAt: Date
+  }): string {
+    const permissionLabel = permission === "read" ? "READ" : "WRITE"
+    const permissionDescription =
+      permission === "read"
+        ? "You can view all project updates, costs, and documents."
+        : "You can view and edit project information, add costs, and upload documents."
+
+    const expiresIn = Math.ceil((expiresAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+    const expirationText = expiresIn === 1 ? "tomorrow" : `in ${expiresIn} days`
+
+    return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>You've been invited to ${projectName}</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f9fafb;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 32px 24px;
+            text-align: center;
+        }
+        .content {
+            padding: 32px 24px;
+        }
+        .button {
+            display: inline-block;
+            background: #3b82f6;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            margin: 24px 0;
+        }
+        .button:hover {
+            background: #2563eb;
+        }
+        .footer {
+            background: #f3f4f6;
+            padding: 24px;
+            text-align: center;
+            color: #6b7280;
+            font-size: 14px;
+        }
+        .info-box {
+            background: #eff6ff;
+            border: 1px solid #3b82f6;
+            border-radius: 6px;
+            padding: 16px;
+            margin: 24px 0;
+        }
+        .info-text {
+            color: #1e40af;
+            font-size: 14px;
+        }
+        .badge {
+            display: inline-block;
+            background: #10b981;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 style="margin: 0; font-size: 28px;">You've Been Invited!</h1>
+            <p style="margin: 8px 0 0 0; opacity: 0.9;">Real Estate Portfolio</p>
+        </div>
+
+        <div class="content">
+            <p>Hi!</p>
+
+            <p><strong>${inviterName}</strong> has invited you to collaborate on <strong>${projectName}</strong>.</p>
+
+            <div class="info-box">
+                <p class="info-text">
+                    <strong>Your Access Level:</strong> <span class="badge">${permissionLabel}</span><br><br>
+                    ${permissionDescription}
+                </p>
+            </div>
+
+            <p>Accept this invitation to get started with the project dashboard:</p>
+
+            <div style="text-align: center;">
+                <a href="${invitationUrl}" class="button">Accept Invitation</a>
+            </div>
+
+            <p>Or copy and paste this link in your browser:</p>
+            <p style="word-break: break-all; color: #6b7280; font-family: monospace; background: #f3f4f6; padding: 12px; border-radius: 4px;">
+                ${invitationUrl}
+            </p>
+
+            <p style="color: #6b7280; font-size: 14px;">
+                <strong>Important:</strong> This invitation expires ${expirationText}.
+                If you have questions, contact ${inviterName} at ${inviterEmail}.
+            </p>
+        </div>
+
+        <div class="footer">
+            <p>This email was sent from Real Estate Portfolio</p>
+            <p>You received this email because ${inviterName} invited you to collaborate on a project.</p>
+        </div>
+    </div>
+</body>
+</html>
+    `.trim()
+  }
+
+  private generateInvitationText({
+    projectName,
+    inviterName,
+    inviterEmail,
+    permission,
+    invitationUrl,
+    expiresAt,
+  }: {
+    projectName: string
+    inviterName: string
+    inviterEmail: string
+    permission: "read" | "write"
+    invitationUrl: string
+    expiresAt: Date
+  }): string {
+    const permissionLabel = permission === "read" ? "READ" : "WRITE"
+    const permissionDescription =
+      permission === "read"
+        ? "You can view all project updates, costs, and documents."
+        : "You can view and edit project information, add costs, and upload documents."
+
+    const expiresIn = Math.ceil((expiresAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+    const expirationText = expiresIn === 1 ? "tomorrow" : `in ${expiresIn} days`
+
+    return `
+Hi!
+
+${inviterName} has invited you to collaborate on ${projectName}.
+
+YOUR ACCESS LEVEL: ${permissionLabel}
+${permissionDescription}
+
+Accept this invitation to get started with the project dashboard:
+${invitationUrl}
+
+IMPORTANT: This invitation expires ${expirationText}.
+If you have questions, contact ${inviterName} at ${inviterEmail}.
+
+This email was sent from Real Estate Portfolio.
+You received this email because ${inviterName} invited you to collaborate on a project.
     `.trim()
   }
 }

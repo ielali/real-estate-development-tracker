@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server"
-import { eq, and, isNull } from "drizzle-orm"
+import { eq, and, isNull, isNotNull } from "drizzle-orm"
 import { projects } from "@/server/db/schema/projects"
 import { projectAccess } from "@/server/db/schema/projectAccess"
 import type { Database } from "@/server/db"
@@ -40,7 +40,7 @@ export async function verifyProjectAccess(
     return
   }
 
-  // Check if user has partner access
+  // Check if user has accepted partner access
   const access = await db
     .select()
     .from(projectAccess)
@@ -48,6 +48,7 @@ export async function verifyProjectAccess(
       and(
         eq(projectAccess.projectId, projectId),
         eq(projectAccess.userId, userId),
+        isNotNull(projectAccess.acceptedAt), // Only accepted invitations grant access
         isNull(projectAccess.deletedAt)
       )
     )

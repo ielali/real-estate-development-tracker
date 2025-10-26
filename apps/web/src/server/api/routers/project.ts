@@ -1,9 +1,10 @@
 import { z } from "zod"
 import { TRPCError } from "@trpc/server"
-import { eq, and, isNull } from "drizzle-orm"
+import { eq, and, isNull, or, isNotNull } from "drizzle-orm"
 import { createTRPCRouter, protectedProcedure } from "../trpc"
 import { projects } from "@/server/db/schema/projects"
 import { addresses } from "@/server/db/schema/addresses"
+import { projectAccess } from "@/server/db/schema/projectAccess"
 
 /**
  * Zod schema for Australian states
@@ -174,7 +175,24 @@ export const projectRouter = createTRPCRouter({
       })
       .from(projects)
       .leftJoin(addresses, eq(projects.addressId, addresses.id))
-      .where(and(eq(projects.ownerId, userId), isNull(projects.deletedAt)))
+      .leftJoin(
+        projectAccess,
+        and(
+          eq(projectAccess.projectId, projects.id),
+          eq(projectAccess.userId, userId),
+          isNotNull(projectAccess.acceptedAt),
+          isNull(projectAccess.deletedAt)
+        )
+      )
+      .where(
+        and(
+          or(
+            eq(projects.ownerId, userId), // User owns the project
+            isNotNull(projectAccess.id) // OR user has accepted partner access
+          ),
+          isNull(projects.deletedAt)
+        )
+      )
       .orderBy(projects.createdAt)
 
     return userProjects.map(({ project, address }) => ({
@@ -184,14 +202,14 @@ export const projectRouter = createTRPCRouter({
   }),
 
   /**
-   * Retrieves a single project by ID with ownership verification
+   * Retrieves a single project by ID with access verification
    *
    * Returns project with associated address. Enforces access control by
-   * verifying the authenticated user owns the project. Excludes soft-deleted
-   * projects.
+   * verifying the authenticated user owns the project OR has accepted partner access.
+   * Excludes soft-deleted projects.
    *
    * @throws {TRPCError} UNAUTHORIZED - User not authenticated
-   * @throws {TRPCError} FORBIDDEN - User does not own this project
+   * @throws {TRPCError} FORBIDDEN - User does not have access to this project
    * @returns {Project & { address: Address | null }} Project with address data
    *
    * @example
@@ -209,8 +227,24 @@ export const projectRouter = createTRPCRouter({
         })
         .from(projects)
         .leftJoin(addresses, eq(projects.addressId, addresses.id))
+        .leftJoin(
+          projectAccess,
+          and(
+            eq(projectAccess.projectId, projects.id),
+            eq(projectAccess.userId, userId),
+            isNotNull(projectAccess.acceptedAt),
+            isNull(projectAccess.deletedAt)
+          )
+        )
         .where(
-          and(eq(projects.id, input.id), eq(projects.ownerId, userId), isNull(projects.deletedAt))
+          and(
+            eq(projects.id, input.id),
+            or(
+              eq(projects.ownerId, userId), // User owns the project
+              isNotNull(projectAccess.id) // OR user has accepted partner access
+            ),
+            isNull(projects.deletedAt)
+          )
         )
         .limit(1)
 

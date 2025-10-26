@@ -1,9 +1,10 @@
 import { TRPCError } from "@trpc/server"
-import { eq, and, isNull, gte, lte, sql } from "drizzle-orm"
+import { eq, and, isNull, gte, lte, sql, or, isNotNull } from "drizzle-orm"
 import { createTRPCRouter, protectedProcedure } from "../trpc"
 import { categories } from "@/server/db/schema/categories"
 import { costs } from "@/server/db/schema/costs"
 import { projects } from "@/server/db/schema/projects"
+import { projectAccess } from "@/server/db/schema/projectAccess"
 import { getCategoriesByType, type Category, type CategoryType } from "@/server/db/types"
 import {
   createCategorySchema,
@@ -14,23 +15,39 @@ import {
 import type { Database } from "@/server/db"
 
 /**
- * Helper function to verify project ownership
- * Throws FORBIDDEN error if user doesn't own the project
+ * Helper function to verify project ownership or partner access
+ * Throws FORBIDDEN error if user doesn't own the project or have accepted partner access
  */
 async function verifyProjectOwnership(
   db: Database,
   projectId: string,
   userId: string
 ): Promise<void> {
-  const project = await db
-    .select()
+  const result = await db
+    .select({ project: projects })
     .from(projects)
+    .leftJoin(
+      projectAccess,
+      and(
+        eq(projectAccess.projectId, projects.id),
+        eq(projectAccess.userId, userId),
+        isNotNull(projectAccess.acceptedAt),
+        isNull(projectAccess.deletedAt)
+      )
+    )
     .where(
-      and(eq(projects.id, projectId), eq(projects.ownerId, userId), isNull(projects.deletedAt))
+      and(
+        eq(projects.id, projectId),
+        or(
+          eq(projects.ownerId, userId), // User owns the project
+          isNotNull(projectAccess.id) // OR user has accepted partner access
+        ),
+        isNull(projects.deletedAt)
+      )
     )
     .limit(1)
 
-  if (!project[0]) {
+  if (!result[0]) {
     throw new TRPCError({
       code: "FORBIDDEN",
       message: "Project not found or you do not have permission to access it",

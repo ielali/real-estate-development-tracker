@@ -32,7 +32,7 @@ import { SearchAndFilter } from "@/components/costs/SearchAndFilter"
 import { useCostFilters } from "@/hooks/useCostFilters"
 import { useFilterPersistence, loadSavedFilters } from "@/hooks/useFilterPersistence"
 import { Timeline, EventEntryForm, TimelineFilter } from "@/components/events"
-import { Plus } from "lucide-react"
+import { Plus, Users } from "lucide-react"
 
 // Lazy load the costs components
 const CostsList = lazy(() =>
@@ -265,6 +265,12 @@ export default function ProjectDetailPage() {
           <div className="flex gap-2">
             <Link href={`/projects/${project.id}/documents` as never}>
               <Button variant="outline">Documents</Button>
+            </Link>
+            <Link href={`/projects/${project.id}/partners` as never}>
+              <Button variant="outline">
+                <Users className="mr-2 h-4 w-4" />
+                Partners
+              </Button>
             </Link>
             <Link href={`/projects/${project.id}/edit` as never}>
               <Button variant="outline" disabled={deleteMutation.isPending}>

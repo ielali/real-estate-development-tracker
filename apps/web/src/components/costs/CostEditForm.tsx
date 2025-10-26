@@ -107,7 +107,7 @@ export function CostEditForm({ projectId, costId }: CostEditFormProps) {
     defaultValues: {
       amount: "",
       description: "",
-      categoryId: undefined,
+      categoryId: "",
       date: today,
     },
   })
@@ -115,14 +115,22 @@ export function CostEditForm({ projectId, costId }: CostEditFormProps) {
   // Update form when data loads
   React.useEffect(() => {
     if (costData) {
-      form.reset({
+      const formValues = {
         amount: formatCurrencyInput(centsToDollars(costData.amount)),
         description: costData.description,
         categoryId: costData.categoryId,
         date: new Date(costData.date).toISOString().split("T")[0],
-      })
+      }
+
+      form.reset(formValues)
+
+      // Force set the categoryId separately to ensure it's set
+      // This is needed because the Select component doesn't always update properly on reset
+      setTimeout(() => {
+        form.setValue("categoryId", costData.categoryId)
+      }, 0)
     }
-  }, [costData, form])
+  }, [costData])
 
   const updateCost = api.costs.update.useMutation({
     // Optimistic update: Update cost in UI immediately
@@ -246,7 +254,11 @@ export function CostEditForm({ projectId, costId }: CostEditFormProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Category</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value} disabled={isSubmitting}>
+                <Select
+                  onValueChange={field.onChange}
+                  value={field.value || undefined}
+                  disabled={isSubmitting}
+                >
                   <FormControl>
                     <SelectTrigger className="min-h-[44px]">
                       <SelectValue placeholder="Select category" />
