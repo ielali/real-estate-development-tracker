@@ -5,8 +5,8 @@
  */
 
 import React from "react"
-import { describe, test, expect, vi } from "vitest"
-import { render, screen, waitFor } from "@testing-library/react"
+import { describe, test, expect, vi, afterEach } from "vitest"
+import { render, screen, waitFor, cleanup } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { InvitePartnerDialog } from "../InvitePartnerDialog"
 
@@ -47,6 +47,10 @@ vi.mock("sonner", () => ({
 }))
 
 describe("InvitePartnerDialog", () => {
+  // Clean up DOM after each test to prevent portal pollution
+  afterEach(() => {
+    cleanup()
+  })
   test("renders dialog when open", () => {
     render(<InvitePartnerDialog projectId="test-project-id" open={true} onOpenChange={vi.fn()} />)
 
