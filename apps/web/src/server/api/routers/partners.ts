@@ -264,6 +264,7 @@ export const partnersRouter = createTRPCRouter({
       const invitation = await ctx.db
         .select({
           id: projectAccess.id,
+          projectId: projectAccess.projectId,
           invitedEmail: projectAccess.invitedEmail,
           permission: projectAccess.permission,
           invitedAt: projectAccess.invitedAt,
@@ -308,14 +309,136 @@ export const partnersRouter = createTRPCRouter({
         })
       }
 
+      // Check if user with this email already exists
+      let existingUser = null
+      if (invitation[0].invitedEmail) {
+        const userResult = await ctx.db
+          .select({
+            id: users.id,
+            email: users.email,
+            firstName: users.firstName,
+            lastName: users.lastName,
+          })
+          .from(users)
+          .where(eq(users.email, invitation[0].invitedEmail))
+          .limit(1)
+
+        existingUser = userResult[0] || null
+      }
+
       return {
         email: invitation[0].invitedEmail || "",
+        projectId: invitation[0].projectId,
         projectName: invitation[0].project?.name || "Unknown Project",
         inviterName: invitation[0].inviter
           ? `${invitation[0].inviter.firstName} ${invitation[0].inviter.lastName}`
           : "Someone",
         permission: invitation[0].permission as "read" | "write",
         expiresAt: invitation[0].expiresAt,
+        userExists: !!existingUser,
+        existingUserId: existingUser?.id || null,
+      }
+    }),
+
+  /**
+   * Auto-accept invitation for logged-in user
+   *
+   * Automatically links existing user account to invitation if their
+   * email matches the invited email. Used when a logged-in user
+   * visits an invitation link.
+   *
+   * @throws {TRPCError} UNAUTHORIZED - User not logged in
+   * @throws {TRPCError} NOT_FOUND - Invalid invitation token
+   * @throws {TRPCError} BAD_REQUEST - Email mismatch or invitation expired
+   */
+  autoAcceptInvitation: protectedProcedure
+    .input(z.object({ token: z.string().uuid() }))
+    .mutation(async ({ input, ctx }) => {
+      const { token } = input
+      const userId = ctx.user.id
+
+      // Find invitation by token
+      const invitation = await ctx.db
+        .select()
+        .from(projectAccess)
+        .where(and(eq(projectAccess.invitationToken, token), isNull(projectAccess.deletedAt)))
+        .limit(1)
+
+      if (!invitation[0]) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Invalid invitation link.",
+        })
+      }
+
+      // Check if expired
+      if (invitation[0].expiresAt && new Date() > invitation[0].expiresAt) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "This invitation has expired. Please request a new one.",
+        })
+      }
+
+      // Check if already accepted
+      if (invitation[0].acceptedAt) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "This invitation has already been accepted.",
+        })
+      }
+
+      // Verify that logged-in user's email matches the invited email
+      const user = await ctx.db.select().from(users).where(eq(users.id, userId)).limit(1)
+
+      if (!user[0] || user[0].email !== invitation[0].invitedEmail) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "This invitation was sent to a different email address. Please log out and use the correct account.",
+        })
+      }
+
+      const now = new Date()
+
+      // Update invitation with userId and acceptedAt
+      await ctx.db
+        .update(projectAccess)
+        .set({
+          userId,
+          acceptedAt: now,
+          invitationToken: null, // Clear token after use
+          updatedAt: now,
+        })
+        .where(eq(projectAccess.id, invitation[0].id))
+
+      // Mark user's email as verified
+      await ctx.db
+        .update(users)
+        .set({
+          emailVerified: true,
+        })
+        .where(eq(users.id, userId))
+
+      // Create audit log
+      await ctx.db.insert(auditLog).values({
+        id: randomUUID(),
+        projectId: invitation[0].projectId,
+        entityType: "project_access",
+        entityId: invitation[0].id,
+        action: "update",
+        userId,
+        metadata: JSON.stringify({
+          accepted: true,
+          autoAccepted: true,
+        }),
+        timestamp: now,
+        createdAt: now,
+      })
+
+      return {
+        success: true,
+        message: "Invitation accepted successfully.",
+        projectId: invitation[0].projectId,
       }
     }),
 
