@@ -4,6 +4,12 @@ const nextConfig = {
   transpilePackages: ["@realestate-portfolio/shared", "@realestate-portfolio/ui"],
   // Enable typed routes
   typedRoutes: true,
+  // Enhanced logging in development
+  logging: {
+    fetches: {
+      fullUrl: true,
+    },
+  },
 }
 
 // Enable bundle analyzer when ANALYZE=true

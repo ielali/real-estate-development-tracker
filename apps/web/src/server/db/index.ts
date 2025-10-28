@@ -1,7 +1,4 @@
-import { drizzle } from "drizzle-orm/neon-serverless"
-import { Pool, neonConfig } from "@neondatabase/serverless"
 import * as schema from "./schema"
-import ws from "ws"
 import dotenv from "dotenv"
 import * as path from "path"
 import { getDatabaseUrl } from "./get-database-url"
@@ -11,17 +8,44 @@ if (process.env.NODE_ENV !== "production") {
   dotenv.config({ path: path.join(process.cwd(), ".env") })
 }
 
-// Configure Neon for WebSocket support (needed for serverless environments)
-// This is required for Neon PostgreSQL connections in Node.js
-if (typeof WebSocket === "undefined") {
-  neonConfig.webSocketConstructor = ws
-}
-
-// Create database connection
+// Create database connection with driver abstraction
 const createDatabase = () => {
   const dbUrl = getDatabaseUrl()
-  const pool = new Pool({ connectionString: dbUrl })
-  return drizzle(pool, { schema })
+  const driver = process.env.DATABASE_DRIVER || "neon"
+
+  if (driver === "postgresql") {
+    // Use standard PostgreSQL driver for local development
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const postgresModule = require("postgres")
+    const postgres = postgresModule.default || postgresModule
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { drizzle } = require("drizzle-orm/postgres-js")
+
+    const client = postgres(dbUrl)
+    return drizzle(client, {
+      schema,
+      logger: process.env.NODE_ENV === "development",
+    })
+  } else {
+    // Use Neon serverless driver (default for production)
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { drizzle } = require("drizzle-orm/neon-serverless")
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { Pool, neonConfig } = require("@neondatabase/serverless")
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const ws = require("ws")
+
+    // Configure Neon for WebSocket support (needed for serverless environments)
+    if (typeof WebSocket === "undefined") {
+      neonConfig.webSocketConstructor = ws
+    }
+
+    const pool = new Pool({ connectionString: dbUrl })
+    return drizzle(pool, {
+      schema,
+      logger: process.env.NODE_ENV === "development",
+    })
+  }
 }
 
 export const db = createDatabase()
