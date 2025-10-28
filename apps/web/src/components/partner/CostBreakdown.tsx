@@ -20,7 +20,7 @@
 
 import { motion } from "framer-motion"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts"
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts"
 import { formatCurrency } from "@/lib/utils/currency"
 
 export interface CostBreakdownItem {
@@ -89,10 +89,10 @@ export function CostBreakdown({ data, totalSpent }: CostBreakdownProps) {
         </CardHeader>
 
         <CardContent>
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-8 xl:grid-cols-2">
             {/* Chart */}
             <div className="flex items-center justify-center">
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={280}>
                 <PieChart>
                   <Pie
                     data={chartData}
@@ -100,8 +100,8 @@ export function CostBreakdown({ data, totalSpent }: CostBreakdownProps) {
                     cy="50%"
                     labelLine={false}
                     label={({ percentage }) => `${percentage.toFixed(0)}%`}
-                    outerRadius={100}
-                    innerRadius={60}
+                    outerRadius={90}
+                    innerRadius={55}
                     fill="#8884d8"
                     dataKey="value"
                     animationBegin={0}
@@ -117,11 +117,6 @@ export function CostBreakdown({ data, totalSpent }: CostBreakdownProps) {
                       backgroundColor: "hsl(var(--card))",
                       border: "1px solid hsl(var(--border))",
                       borderRadius: "var(--radius)",
-                    }}
-                  />
-                  <Legend
-                    wrapperStyle={{
-                      fontSize: "14px",
                     }}
                   />
                 </PieChart>
