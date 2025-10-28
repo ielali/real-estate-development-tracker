@@ -18,6 +18,10 @@ export interface ContactListProps {
    * Callback when "Create Contact" button is clicked
    */
   onCreateClick?: () => void
+  /**
+   * Callback when "Edit Contact" is clicked for a contact
+   */
+  onEditClick?: (contactId: string) => void
 }
 
 /**
@@ -34,8 +38,13 @@ export interface ContactListProps {
  *
  * @param projectId - Optional project ID to filter contacts
  * @param onCreateClick - Callback when "Create Contact" button is clicked
+ * @param onEditClick - Callback when "Edit Contact" is clicked for a contact
  */
-export function ContactList({ projectId, onCreateClick }: ContactListProps): JSX.Element {
+export function ContactList({
+  projectId,
+  onCreateClick,
+  onEditClick,
+}: ContactListProps): JSX.Element {
   // Fetch contacts
   const { data, isLoading, isError, refetch } = api.contacts.list.useQuery({
     projectId: projectId,
@@ -63,7 +72,7 @@ export function ContactList({ projectId, onCreateClick }: ContactListProps): JSX
   const contacts = data || []
 
   // Transform data for DataTable
-  const tableData: Contact[] = contacts.map((item) => {
+  const tableData: Contact[] = contacts.map((item: (typeof data)[number]) => {
     const contact = item.contact
     const category = item.category
     const firstName = contact.firstName || ""
@@ -98,7 +107,12 @@ export function ContactList({ projectId, onCreateClick }: ContactListProps): JSX
 
   return (
     <div className="space-y-4">
-      <DataTable columns={columns} data={tableData} onCreateClick={onCreateClick} />
+      <DataTable
+        columns={columns}
+        data={tableData}
+        onCreateClick={onCreateClick}
+        onEditClick={onEditClick}
+      />
     </div>
   )
 }
