@@ -217,7 +217,7 @@ export const partnerDashboardRouter = createTRPCRouter({
       // Verify access (throws if no access)
       await verifyProjectAccess(ctx, input.projectId, "read")
 
-      // Fetch documents with category information
+      // Fetch documents with category information and uploader details
       const docs = await ctx.db
         .select({
           id: documents.id,
@@ -226,59 +226,35 @@ export const partnerDashboardRouter = createTRPCRouter({
           mimeType: documents.mimeType,
           blobUrl: documents.blobUrl,
           thumbnailUrl: documents.thumbnailUrl,
-          createdAt: documents.createdAt,
+          uploadedAt: documents.createdAt,
           categoryId: documents.categoryId,
           categoryName: categories.displayName,
+          uploadedById: documents.uploadedById,
+          uploaderFirstName: users.firstName,
+          uploaderLastName: users.lastName,
         })
         .from(documents)
         .innerJoin(categories, eq(documents.categoryId, categories.id))
+        .innerJoin(users, eq(documents.uploadedById, users.id))
         .where(and(eq(documents.projectId, input.projectId), isNull(documents.deletedAt)))
         .orderBy(desc(documents.createdAt))
 
-      // Group documents by category
-      const groupedByCategory: Record<
-        string,
-        Array<{
-          id: string
-          fileName: string
-          fileSize: number
-          mimeType: string
-          blobUrl: string
-          thumbnailUrl: string | null
-          createdAt: Date
-        }>
-      > = {}
-
-      docs.forEach(
-        (doc: {
-          id: string
-          fileName: string
-          fileSize: number
-          mimeType: string
-          blobUrl: string
-          thumbnailUrl: string | null
-          createdAt: Date
-          categoryName: string | null
-        }) => {
-          const categoryName = doc.categoryName || "Uncategorized"
-          if (!groupedByCategory[categoryName]) {
-            groupedByCategory[categoryName] = []
-          }
-          groupedByCategory[categoryName].push({
-            id: doc.id,
-            fileName: doc.fileName,
-            fileSize: doc.fileSize,
-            mimeType: doc.mimeType,
-            blobUrl: doc.blobUrl,
-            thumbnailUrl: doc.thumbnailUrl,
-            createdAt: doc.createdAt,
-          })
-        }
-      )
+      // Format documents with uploader name
+      const formattedDocs = docs.map((doc) => ({
+        id: doc.id,
+        fileName: doc.fileName,
+        fileSize: doc.fileSize,
+        mimeType: doc.mimeType,
+        blobUrl: doc.blobUrl,
+        thumbnailUrl: doc.thumbnailUrl,
+        categoryName: doc.categoryName || "Uncategorized",
+        uploadedBy: `${doc.uploaderFirstName} ${doc.uploaderLastName || ""}`.trim(),
+        uploadedAt: doc.uploadedAt,
+      }))
 
       return {
-        documents: groupedByCategory,
-        totalCount: docs.length,
+        documents: formattedDocs,
+        totalCount: formattedDocs.length,
       }
     }),
 })
