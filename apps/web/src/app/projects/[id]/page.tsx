@@ -33,6 +33,8 @@ import { useCostFilters } from "@/hooks/useCostFilters"
 import { useFilterPersistence, loadSavedFilters } from "@/hooks/useFilterPersistence"
 import { Timeline, EventEntryForm, TimelineFilter } from "@/components/events"
 import { Plus, Users } from "lucide-react"
+import { useUserRole } from "@/hooks/useUserRole"
+import { PartnerProjectDashboard } from "@/components/partner/PartnerProjectDashboard"
 
 // Lazy load the costs components
 const CostsList = lazy(() =>
@@ -79,6 +81,8 @@ export default function ProjectDetailPage() {
 
   const projectId = params.id as string
   const utils = api.useUtils()
+  const { role } = useUserRole()
+  const isPartner = role === "partner"
 
   // Load saved filters from sessionStorage on mount
   const savedFilters = loadSavedFilters(projectId)
@@ -266,54 +270,66 @@ export default function ProjectDetailPage() {
             <Link href={`/projects/${project.id}/documents` as never}>
               <Button variant="outline">Documents</Button>
             </Link>
-            <Link href={`/projects/${project.id}/partners` as never}>
-              <Button variant="outline">
-                <Users className="mr-2 h-4 w-4" />
-                Partners
-              </Button>
-            </Link>
-            <Link href={`/projects/${project.id}/edit` as never}>
-              <Button variant="outline" disabled={deleteMutation.isPending}>
-                Edit
-              </Button>
-            </Link>
-            <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-              <DialogTrigger asChild>
-                <Button variant="destructive" disabled={deleteMutation.isPending}>
-                  Delete
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Delete Project</DialogTitle>
-                  <DialogDescription>
-                    Are you sure you want to delete this project? This action cannot be undone.
-                  </DialogDescription>
-                </DialogHeader>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
-                    Cancel
+            {!isPartner && (
+              <>
+                <Link href={`/projects/${project.id}/partners` as never}>
+                  <Button variant="outline">
+                    <Users className="mr-2 h-4 w-4" />
+                    Partners
                   </Button>
-                  <Button
-                    variant="destructive"
-                    onClick={handleDelete}
-                    disabled={deleteMutation.isPending}
-                  >
-                    {deleteMutation.isPending ? "Deleting..." : "Delete"}
+                </Link>
+                <Link href={`/projects/${project.id}/edit` as never}>
+                  <Button variant="outline" disabled={deleteMutation.isPending}>
+                    Edit
                   </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+                </Link>
+                <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="destructive" disabled={deleteMutation.isPending}>
+                      Delete
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Delete Project</DialogTitle>
+                      <DialogDescription>
+                        Are you sure you want to delete this project? This action cannot be undone.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+                        Cancel
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        onClick={handleDelete}
+                        disabled={deleteMutation.isPending}
+                      >
+                        {deleteMutation.isPending ? "Deleting..." : "Delete"}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </>
+            )}
           </div>
         </div>
 
-        {/* Tabs for Project Details, Costs, and Events */}
-        <Tabs defaultValue="details" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+        {/* Tabs for Project Details, Costs, Events, and Dashboard (for partners) */}
+        <Tabs defaultValue={isPartner ? "dashboard" : "details"} className="w-full">
+          <TabsList className={`grid w-full ${isPartner ? "grid-cols-4" : "grid-cols-3"}`}>
+            {isPartner && <TabsTrigger value="dashboard">Dashboard</TabsTrigger>}
             <TabsTrigger value="details">Project Details</TabsTrigger>
             <TabsTrigger value="costs">Costs</TabsTrigger>
             <TabsTrigger value="events">Events</TabsTrigger>
           </TabsList>
+
+          {/* Dashboard Tab (Partners only) */}
+          {isPartner && (
+            <TabsContent value="dashboard" className="mt-6">
+              <PartnerProjectDashboard projectId={projectId} />
+            </TabsContent>
+          )}
 
           {/* Details Tab */}
           <TabsContent value="details" className="mt-6">
