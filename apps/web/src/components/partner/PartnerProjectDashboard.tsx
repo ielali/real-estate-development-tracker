@@ -58,12 +58,16 @@ export function PartnerProjectDashboard({ projectId }: PartnerProjectDashboardPr
     offset: 0,
   })
 
-  // Fetch document gallery
+  // Fetch document gallery with pagination
   const {
     data: documents,
     isLoading: documentsLoading,
     error: documentsError,
-  } = api.partnerDashboard.getDocumentGallery.useQuery({ projectId })
+  } = api.partnerDashboard.getDocumentGallery.useQuery({
+    projectId,
+    limit: 50, // Default page size
+    offset: 0,
+  })
 
   // Loading state
   if (summaryLoading) {
@@ -128,7 +132,7 @@ export function PartnerProjectDashboard({ projectId }: PartnerProjectDashboardPr
               </AlertDescription>
             </Alert>
           ) : costBreakdown ? (
-            <CostBreakdown data={costBreakdown.breakdown} totalSpent={costBreakdown.totalSpent} />
+            <CostBreakdown data={costBreakdown.breakdown} totalSpent={costBreakdown.grandTotal} />
           ) : null}
         </div>
 
@@ -145,7 +149,27 @@ export function PartnerProjectDashboard({ projectId }: PartnerProjectDashboardPr
               </AlertDescription>
             </Alert>
           ) : activity ? (
-            <ActivityTimeline activities={activity.activities} hasMore={false} />
+            <ActivityTimeline
+              activities={activity.activities.map(
+                (a: {
+                  id: string
+                  action: string
+                  entityType: string
+                  metadata: any
+                  createdAt: Date
+                  user: { id: string; name: string | null; email: string | null }
+                }) => ({
+                  id: a.id,
+                  userId: a.user.id,
+                  userName: a.user.name || a.user.email || "Unknown",
+                  action: a.action,
+                  entityType: a.entityType,
+                  metadata: a.metadata,
+                  timestamp: a.createdAt,
+                })
+              )}
+              hasMore={false}
+            />
           ) : null}
         </div>
       </div>

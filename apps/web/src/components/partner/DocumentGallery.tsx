@@ -43,8 +43,8 @@ export interface DocumentItem {
   fileName: string
   fileSize: number
   mimeType: string
-  blobUrl: string
-  thumbnailUrl: string | null
+  thumbnailUrl: string // Secure API route: /api/documents/[id]/thumbnail
+  viewUrl: string // Secure API route: /api/documents/[id]/view
   categoryName: string
   uploadedBy: string
   uploadedAt: Date
@@ -237,7 +237,7 @@ export function DocumentGallery({ documents }: DocumentGalleryProps) {
                 <div className="rounded-lg border bg-muted/50 min-h-[400px] flex items-center justify-center overflow-hidden">
                   {selectedDocument.mimeType.startsWith("image/") ? (
                     <img
-                      src={selectedDocument.blobUrl}
+                      src={selectedDocument.viewUrl}
                       alt={selectedDocument.fileName}
                       className="max-w-full max-h-[600px] object-contain"
                     />
@@ -280,13 +280,13 @@ export function DocumentGallery({ documents }: DocumentGalleryProps) {
                 {/* Actions */}
                 <div className="flex gap-2">
                   <Button asChild className="flex-1">
-                    <a href={selectedDocument.blobUrl} download={selectedDocument.fileName}>
+                    <a href={selectedDocument.viewUrl} download={selectedDocument.fileName}>
                       <Download className="mr-2 h-4 w-4" />
                       Download
                     </a>
                   </Button>
                   <Button asChild variant="outline" className="flex-1">
-                    <a href={selectedDocument.blobUrl} target="_blank" rel="noopener noreferrer">
+                    <a href={selectedDocument.viewUrl} target="_blank" rel="noopener noreferrer">
                       Open in New Tab
                     </a>
                   </Button>

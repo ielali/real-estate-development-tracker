@@ -14,6 +14,7 @@
 
 import { z } from "zod"
 import { eq, and, isNull, gte, desc, sql, count } from "drizzle-orm"
+import { TRPCError } from "@trpc/server"
 import { createTRPCRouter, protectedProcedure } from "../trpc"
 import { verifyProjectAccess } from "../helpers/authorization"
 import { costs } from "@/server/db/schema/costs"
@@ -21,6 +22,7 @@ import { documents } from "@/server/db/schema/documents"
 import { categories } from "@/server/db/schema/categories"
 import { auditLog } from "@/server/db/schema/auditLog"
 import { users } from "@/server/db/schema/users"
+import { projects } from "@/server/db/schema/projects"
 
 export const partnerDashboardRouter = createTRPCRouter({
   /**
@@ -38,7 +40,22 @@ export const partnerDashboardRouter = createTRPCRouter({
     .input(z.object({ projectId: z.string().uuid() }))
     .query(async ({ ctx, input }) => {
       // Verify access (throws if no access)
-      const { project } = await verifyProjectAccess(ctx, input.projectId, "read")
+      await verifyProjectAccess(ctx, input.projectId, "read")
+
+      // Fetch project with address relation
+      const project = await ctx.db.query.projects.findFirst({
+        where: eq(projects.id, input.projectId),
+        with: {
+          address: true,
+        },
+      })
+
+      if (!project) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Project not found",
+        })
+      }
 
       // Get total spent and cost breakdown by category
       const costBreakdown = await ctx.db
@@ -206,26 +223,39 @@ export const partnerDashboardRouter = createTRPCRouter({
    *
    * Returns documents grouped by category with:
    * - File metadata (name, size, upload date, category)
-   * - Signed URLs for secure document access
-   * - Thumbnail URLs for images
+   * - Secure API URLs for document access (no raw blob URLs)
+   * - Pagination support for large document sets
    *
    * Access: Read permission required
    */
   getDocumentGallery: protectedProcedure
-    .input(z.object({ projectId: z.string().uuid() }))
+    .input(
+      z.object({
+        projectId: z.string().uuid(),
+        limit: z.number().min(1).max(100).default(50),
+        offset: z.number().min(0).default(0),
+      })
+    )
     .query(async ({ ctx, input }) => {
       // Verify access (throws if no access)
       await verifyProjectAccess(ctx, input.projectId, "read")
 
-      // Fetch documents with category information and uploader details
+      // Get total count first
+      const totalCountResult = await ctx.db
+        .select({ count: sql<number>`count(*)` })
+        .from(documents)
+        .where(and(eq(documents.projectId, input.projectId), isNull(documents.deletedAt)))
+
+      const totalCount = Number(totalCountResult[0]?.count || 0)
+
+      // Fetch paginated documents with category information and uploader details
+      // Note: Blob URLs are not fetched for security - documents are served via API routes
       const docs = await ctx.db
         .select({
           id: documents.id,
           fileName: documents.fileName,
           fileSize: documents.fileSize,
           mimeType: documents.mimeType,
-          blobUrl: documents.blobUrl,
-          thumbnailUrl: documents.thumbnailUrl,
           uploadedAt: documents.createdAt,
           categoryId: documents.categoryId,
           categoryName: categories.displayName,
@@ -238,23 +268,43 @@ export const partnerDashboardRouter = createTRPCRouter({
         .innerJoin(users, eq(documents.uploadedById, users.id))
         .where(and(eq(documents.projectId, input.projectId), isNull(documents.deletedAt)))
         .orderBy(desc(documents.createdAt))
+        .limit(input.limit)
+        .offset(input.offset)
 
       // Format documents with uploader name
-      const formattedDocs = docs.map((doc) => ({
-        id: doc.id,
-        fileName: doc.fileName,
-        fileSize: doc.fileSize,
-        mimeType: doc.mimeType,
-        blobUrl: doc.blobUrl,
-        thumbnailUrl: doc.thumbnailUrl,
-        categoryName: doc.categoryName || "Uncategorized",
-        uploadedBy: `${doc.uploaderFirstName} ${doc.uploaderLastName || ""}`.trim(),
-        uploadedAt: doc.uploadedAt,
-      }))
+      // Note: blobUrl and thumbnailUrl are NOT returned for security
+      // Frontend should use /api/documents/[id]/view and /api/documents/[id]/thumbnail
+      const formattedDocs = docs.map(
+        (doc: {
+          id: string
+          fileName: string
+          fileSize: number
+          mimeType: string
+          uploadedAt: Date
+          categoryId: string
+          categoryName: string | null
+          uploadedById: string
+          uploaderFirstName: string
+          uploaderLastName: string | null
+        }) => ({
+          id: doc.id,
+          fileName: doc.fileName,
+          fileSize: doc.fileSize,
+          mimeType: doc.mimeType,
+          categoryName: doc.categoryName || "Uncategorized",
+          uploadedBy: `${doc.uploaderFirstName} ${doc.uploaderLastName || ""}`.trim(),
+          uploadedAt: doc.uploadedAt,
+          // Thumbnail URLs are provided via secure API route
+          thumbnailUrl: `/api/documents/${doc.id}/thumbnail`,
+          // Document view URL via secure API route
+          viewUrl: `/api/documents/${doc.id}/view`,
+        })
+      )
 
       return {
         documents: formattedDocs,
-        totalCount: formattedDocs.length,
+        totalCount,
+        hasMore: input.offset + input.limit < totalCount,
       }
     }),
 })

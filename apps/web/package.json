@@ -12,6 +12,7 @@
     "analyze": "ANALYZE=true next build",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/server/db/migrate.ts",
+    "db:migrate:all": "tsx src/server/db/migrate-all.ts",
     "db:seed": "tsx src/server/db/seed.ts",
     "db:reset": "tsx src/server/db/reset.ts",
     "db:rebuild": "tsx src/server/db/rebuild.ts",

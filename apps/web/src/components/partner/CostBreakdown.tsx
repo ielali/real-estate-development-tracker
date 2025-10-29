@@ -99,7 +99,7 @@ export function CostBreakdown({ data, totalSpent }: CostBreakdownProps) {
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={({ percentage }) => `${percentage.toFixed(0)}%`}
+                    label={(props: any) => `${props.percentage.toFixed(0)}%`}
                     outerRadius={90}
                     innerRadius={55}
                     fill="#8884d8"
