@@ -1,6 +1,12 @@
 import "@testing-library/jest-dom"
-import { afterAll } from "vitest"
+import { cleanup } from "@testing-library/react"
+import { afterAll, afterEach } from "vitest"
 import { cleanupAllTestDatabases } from "./test-db"
+
+// Cleanup DOM after each test to prevent pollution
+afterEach(() => {
+  cleanup()
+})
 
 // Mock ResizeObserver for jsdom
 global.ResizeObserver = class ResizeObserver {
