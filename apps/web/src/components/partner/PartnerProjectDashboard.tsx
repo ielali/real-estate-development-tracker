@@ -114,40 +114,36 @@ export function PartnerProjectDashboard({ projectId }: PartnerProjectDashboardPr
       />
 
       {/* Cost Breakdown and Activity Timeline */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Cost Breakdown - 2/3 width */}
-        <div className="lg:col-span-2">
-          {costsLoading ? (
-            <Skeleton className="h-[400px] w-full" />
-          ) : costsError ? (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Error</AlertTitle>
-              <AlertDescription>
-                {costsError.message || "Failed to load cost breakdown."}
-              </AlertDescription>
-            </Alert>
-          ) : costBreakdown ? (
-            <CostBreakdown data={costBreakdown.breakdown} totalSpent={costBreakdown.totalSpent} />
-          ) : null}
-        </div>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        {/* Cost Breakdown */}
+        {costsLoading ? (
+          <Skeleton className="h-[400px] w-full" />
+        ) : costsError ? (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>
+              {costsError.message || "Failed to load cost breakdown."}
+            </AlertDescription>
+          </Alert>
+        ) : costBreakdown ? (
+          <CostBreakdown data={costBreakdown.breakdown} totalSpent={costBreakdown.totalSpent} />
+        ) : null}
 
-        {/* Activity Timeline - 1/3 width */}
-        <div className="lg:col-span-1">
-          {activityLoading ? (
-            <Skeleton className="h-[400px] w-full" />
-          ) : activityError ? (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Error</AlertTitle>
-              <AlertDescription>
-                {activityError.message || "Failed to load activity timeline."}
-              </AlertDescription>
-            </Alert>
-          ) : activity ? (
-            <ActivityTimeline activities={activity.activities} hasMore={false} />
-          ) : null}
-        </div>
+        {/* Activity Timeline */}
+        {activityLoading ? (
+          <Skeleton className="h-[400px] w-full" />
+        ) : activityError ? (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>
+              {activityError.message || "Failed to load activity timeline."}
+            </AlertDescription>
+          </Alert>
+        ) : activity ? (
+          <ActivityTimeline activities={activity.activities} hasMore={false} />
+        ) : null}
       </div>
 
       {/* Document Gallery */}

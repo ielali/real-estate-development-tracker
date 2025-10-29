@@ -89,9 +89,9 @@ export function CostBreakdown({ data, totalSpent }: CostBreakdownProps) {
         </CardHeader>
 
         <CardContent>
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-            {/* Chart - 2/3 width */}
-            <div className="flex items-center justify-center lg:col-span-2">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+            {/* Chart */}
+            <div className="flex items-center justify-center">
               <ResponsiveContainer width="100%" height={280}>
                 <PieChart>
                   <Pie
@@ -123,8 +123,8 @@ export function CostBreakdown({ data, totalSpent }: CostBreakdownProps) {
               </ResponsiveContainer>
             </div>
 
-            {/* Table - 1/3 width */}
-            <div className="space-y-4 lg:col-span-1">
+            {/* Table */}
+            <div className="space-y-4">
               <div className="rounded-md border">
                 <div className="grid grid-cols-3 gap-4 border-b bg-muted/50 p-3 text-sm font-medium">
                   <div>Category</div>
