@@ -246,7 +246,7 @@ export default function ProjectDetailPage() {
   return (
     <>
       <Navbar />
-      <div className="container max-w-4xl py-10">
+      <div className="container max-w-7xl py-10">
         {/* Breadcrumb */}
         <div className="mb-6">
           <Link

@@ -89,7 +89,7 @@ export function CostBreakdown({ data, totalSpent }: CostBreakdownProps) {
         </CardHeader>
 
         <CardContent>
-          <div className="grid grid-cols-1 gap-8 xl:grid-cols-2">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
             {/* Chart */}
             <div className="flex items-center justify-center">
               <ResponsiveContainer width="100%" height={280}>
