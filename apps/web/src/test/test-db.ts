@@ -10,7 +10,6 @@ let globalPool: any = null
 let globalDb: any = null
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let globalClient: any = null
-let categoriesSeeded = false
 
 // Get test database URL from environment
 function getTestDbUrl(): string {
@@ -65,19 +64,16 @@ export const createTestDb = async () => {
     }
   }
 
-  // Seed categories if not already seeded
-  // Categories are static reference data that persist across tests
-  if (!categoriesSeeded) {
-    // Check if categories already exist in the database
-    const existingCategories = await globalDb
-      .select({ count: sql<number>`count(*)` })
-      .from(categories)
+  // Always ensure categories exist
+  // Categories are static reference data but may get wiped by TRUNCATE CASCADE
+  // Check on every test to ensure they're available
+  const existingCategories = await globalDb
+    .select({ count: sql<number>`count(*)` })
+    .from(categories)
 
-    if (Number(existingCategories[0]?.count) === 0) {
-      // No categories exist, insert them all at once
-      await globalDb.insert(categories).values(CATEGORIES)
-    }
-    categoriesSeeded = true
+  if (Number(existingCategories[0]?.count) === 0) {
+    // No categories exist, insert them all at once
+    await globalDb.insert(categories).values(CATEGORIES)
   }
 
   return {
