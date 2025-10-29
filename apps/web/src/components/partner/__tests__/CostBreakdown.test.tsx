@@ -14,16 +14,20 @@ import { CostBreakdown, type CostBreakdownItem } from "../CostBreakdown"
 // Mock framer-motion to avoid animation issues in tests
 vi.mock("framer-motion", () => ({
   motion: {
-    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+    div: ({ children, ...props }: React.PropsWithChildren<Record<string, unknown>>) => (
+      <div {...props}>{children}</div>
+    ),
   },
 }))
 
 // Mock Recharts to avoid rendering issues in tests
 vi.mock("recharts", () => ({
-  ResponsiveContainer: ({ children }: any) => (
+  ResponsiveContainer: ({ children }: React.PropsWithChildren) => (
     <div data-testid="responsive-container">{children}</div>
   ),
-  PieChart: ({ children }: any) => <div data-testid="pie-chart">{children}</div>,
+  PieChart: ({ children }: React.PropsWithChildren) => (
+    <div data-testid="pie-chart">{children}</div>
+  ),
   Pie: () => <div data-testid="pie" />,
   Cell: () => <div data-testid="cell" />,
   Tooltip: () => <div data-testid="tooltip" />,

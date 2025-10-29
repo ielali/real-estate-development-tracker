@@ -155,7 +155,7 @@ export function PartnerProjectDashboard({ projectId }: PartnerProjectDashboardPr
                   id: string
                   action: string
                   entityType: string
-                  metadata: any
+                  metadata: Record<string, unknown> | null
                   createdAt: Date
                   user: { id: string; name: string | null; email: string | null }
                 }) => ({
