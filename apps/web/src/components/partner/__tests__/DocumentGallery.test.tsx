@@ -7,6 +7,7 @@
  * documents, filters by category, and handles empty states.
  */
 
+import React from "react"
 import { render, screen, fireEvent, within } from "@testing-library/react"
 import { describe, it, expect, vi } from "vitest"
 import { DocumentGallery, type DocumentItem } from "../DocumentGallery"

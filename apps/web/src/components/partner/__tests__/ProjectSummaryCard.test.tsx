@@ -7,6 +7,7 @@
  * project summary metrics, status badges, and dates.
  */
 
+import React from "react"
 import { render, screen } from "@testing-library/react"
 import { describe, it, expect } from "vitest"
 import { ProjectSummaryCard, type ProjectSummaryCardProps } from "../ProjectSummaryCard"
@@ -112,7 +113,7 @@ describe("ProjectSummaryCard", () => {
   describe("Status Badge", () => {
     it("should display active status badge", () => {
       render(<ProjectSummaryCard {...mockProps} />)
-      expect(screen.getByText("active")).toBeInTheDocument()
+      expect(screen.getByText("Active")).toBeInTheDocument()
     })
 
     it("should display on-hold status badge", () => {
@@ -124,7 +125,7 @@ describe("ProjectSummaryCard", () => {
         },
       }
       render(<ProjectSummaryCard {...propsWithOnHoldStatus} />)
-      expect(screen.getByText("on-hold")).toBeInTheDocument()
+      expect(screen.getByText("On Hold")).toBeInTheDocument()
     })
 
     it("should display completed status badge", () => {
@@ -136,7 +137,7 @@ describe("ProjectSummaryCard", () => {
         },
       }
       render(<ProjectSummaryCard {...propsWithCompletedStatus} />)
-      expect(screen.getByText("completed")).toBeInTheDocument()
+      expect(screen.getByText("Completed")).toBeInTheDocument()
     })
   })
 

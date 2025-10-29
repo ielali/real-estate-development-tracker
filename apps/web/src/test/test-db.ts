@@ -185,9 +185,14 @@ export async function createTestContext(
 
   // Insert test user into database if not exists
   const { users } = await import("@/server/db/schema")
-  await db
-    .insert(users)
-    .values({
+
+  // First, check if user already exists
+  const { eq } = await import("drizzle-orm")
+  const existingUser = await db.select().from(users).where(eq(users.id, testUser.id))
+
+  // Only insert if user doesn't exist
+  if (existingUser.length === 0) {
+    await db.insert(users).values({
       id: testUser.id,
       email: testUser.email,
       name: "Test User",
@@ -198,7 +203,7 @@ export async function createTestContext(
       createdAt: new Date(),
       updatedAt: new Date(),
     })
-    .onConflictDoNothing()
+  }
 
   return {
     db,
