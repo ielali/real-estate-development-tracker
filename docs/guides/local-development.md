@@ -188,6 +188,102 @@ NEXT_PUBLIC_GOOGLE_MAPS_API_KEY="AIzaSyXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
 
 ## Database Setup
 
+### Database Options
+
+You have two options for local development:
+
+1. **Neon PostgreSQL** (Recommended) - Serverless PostgreSQL, matches production
+2. **Local PostgreSQL** (Alternative) - Traditional PostgreSQL running locally
+
+#### Option A: Neon PostgreSQL (Recommended)
+
+**Advantages:**
+
+- Identical to production environment
+- No local installation required
+- Automatic backups and scaling
+- Connection pooling built-in
+
+**Setup:**
+
+1. Create a Neon account at [console.neon.tech](https://console.neon.tech/)
+2. Create a new project
+3. Copy connection string to `.env.local`:
+   ```bash
+   NETLIFY_DATABASE_URL="postgresql://user:password@ep-xxxx.neon.tech/dbname?sslmode=require"
+   ```
+4. Skip to "Run Migrations" section below
+
+#### Option B: Local PostgreSQL (Alternative)
+
+**Advantages:**
+
+- Works offline
+- Faster response times (no network latency)
+- Full control over database
+
+**Prerequisites:**
+
+- PostgreSQL 14 or higher installed locally
+
+**Setup:**
+
+1. **Install PostgreSQL:**
+
+   **macOS (Homebrew):**
+
+   ```bash
+   brew install postgresql@16
+   brew services start postgresql@16
+   ```
+
+   **Linux (Ubuntu/Debian):**
+
+   ```bash
+   sudo apt update
+   sudo apt install postgresql postgresql-contrib
+   sudo systemctl start postgresql
+   ```
+
+   **Windows:**
+   Download from [postgresql.org/download/windows](https://www.postgresql.org/download/windows/)
+
+2. **Create Database and User:**
+
+   ```bash
+   # Access PostgreSQL
+   psql postgres
+
+   # Create database
+   CREATE DATABASE realestate_dev;
+
+   # Create user
+   CREATE USER realestate_user WITH PASSWORD 'your_secure_password';
+
+   # Grant privileges
+   GRANT ALL PRIVILEGES ON DATABASE realestate_dev TO realestate_user;
+
+   # Exit
+   \q
+   ```
+
+3. **Configure Connection String:**
+
+   Update `.env.local`:
+
+   ```bash
+   NETLIFY_DATABASE_URL="postgresql://realestate_user:your_secure_password@localhost:5432/realestate_dev"
+   ```
+
+4. **Verify Connection:**
+
+   ```bash
+   # Test connection
+   psql "postgresql://realestate_user:your_secure_password@localhost:5432/realestate_dev"
+   ```
+
+**Note:** When deploying to production, you'll still use Neon PostgreSQL. Ensure you test with Neon before deploying critical features.
+
 ### 1. Run Migrations
 
 Apply database schema:
@@ -199,7 +295,7 @@ bun run db:migrate
 npm run db:migrate
 ```
 
-This creates all necessary tables in your Neon database.
+This creates all necessary tables in your database (Neon or local PostgreSQL).
 
 ### 2. Seed Database (Optional)
 

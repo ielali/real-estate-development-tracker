@@ -164,7 +164,7 @@ describe("DocumentLinkSelector Component - Structure Tests", () => {
     const linkedDocuments = [{ id: "1" }, { id: "2" }]
     const selectedDocs = new Set(["2", "3", "4"])
 
-    const linkedIds = new Set(linkedDocuments.map((doc) => doc.id))
+    const linkedIds = new Set(linkedDocuments.map((doc: any) => doc.id))
     const documentsToLink = Array.from(selectedDocs).filter((id) => !linkedIds.has(id))
 
     expect(documentsToLink).toEqual(["3", "4"])
@@ -175,7 +175,7 @@ describe("DocumentLinkSelector Component - Structure Tests", () => {
     const linkedDocuments = [{ id: "1" }, { id: "2" }]
     const selectedDocs = new Set(["1", "2"])
 
-    const linkedIds = new Set(linkedDocuments.map((doc) => doc.id))
+    const linkedIds = new Set(linkedDocuments.map((doc: any) => doc.id))
     const documentsToLink = Array.from(selectedDocs).filter((id) => !linkedIds.has(id))
 
     expect(documentsToLink).toEqual([])

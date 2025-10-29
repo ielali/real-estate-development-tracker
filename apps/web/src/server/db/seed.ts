@@ -51,7 +51,7 @@ async function seed() {
         role: "admin",
       })
       .returning()
-      .then((rows) => rows[0])
+      .then((rows: (typeof users.$inferSelect)[]) => rows[0])
 
     const partnerUser1 = await db
       .insert(users)
@@ -64,7 +64,7 @@ async function seed() {
         role: "partner",
       })
       .returning()
-      .then((rows) => rows[0])
+      .then((rows: (typeof users.$inferSelect)[]) => rows[0])
 
     const partnerUser2 = await db
       .insert(users)
@@ -77,7 +77,7 @@ async function seed() {
         role: "partner",
       })
       .returning()
-      .then((rows) => rows[0])
+      .then((rows: (typeof users.$inferSelect)[]) => rows[0])
 
     console.log("Creating addresses...")
     const toorakAddress = await db
@@ -101,7 +101,7 @@ async function seed() {
         }),
       })
       .returning()
-      .then((rows) => rows[0])
+      .then((rows: (typeof addresses.$inferSelect)[]) => rows[0])
 
     console.log("Creating projects...")
     const activeRenovation = await db
@@ -118,7 +118,7 @@ async function seed() {
         totalBudget: 85000000,
       })
       .returning()
-      .then((rows) => rows[0])
+      .then((rows: (typeof projects.$inferSelect)[]) => rows[0])
 
     const bondiAddress = await db
       .insert(addresses)
@@ -141,7 +141,7 @@ async function seed() {
         }),
       })
       .returning()
-      .then((rows) => rows[0])
+      .then((rows: (typeof addresses.$inferSelect)[]) => rows[0])
 
     const southYarraAddress = await db
       .insert(addresses)
@@ -164,7 +164,7 @@ async function seed() {
         }),
       })
       .returning()
-      .then((rows) => rows[0])
+      .then((rows: (typeof addresses.$inferSelect)[]) => rows[0])
 
     const onHoldNewBuild = await db
       .insert(projects)
@@ -179,7 +179,7 @@ async function seed() {
         totalBudget: 180000000,
       })
       .returning()
-      .then((rows) => rows[0])
+      .then((rows: (typeof projects.$inferSelect)[]) => rows[0])
 
     const completedDevelopment = await db
       .insert(projects)
@@ -195,7 +195,7 @@ async function seed() {
         totalBudget: 450000000,
       })
       .returning()
-      .then((rows) => rows[0])
+      .then((rows: (typeof projects.$inferSelect)[]) => rows[0])
 
     console.log("Creating sample contact addresses...")
     const businessAddress1 = await db
@@ -219,7 +219,7 @@ async function seed() {
         }),
       })
       .returning()
-      .then((rows) => rows[0])
+      .then((rows: (typeof addresses.$inferSelect)[]) => rows[0])
 
     const businessAddress2 = await db
       .insert(addresses)
@@ -242,7 +242,7 @@ async function seed() {
         }),
       })
       .returning()
-      .then((rows) => rows[0])
+      .then((rows: (typeof addresses.$inferSelect)[]) => rows[0])
 
     console.log("Creating contacts...")
     const contactsData = [

@@ -270,7 +270,7 @@ export function SearchAndFilter({
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="__all__">All contacts</SelectItem>
-                      {contacts.map((contact) => (
+                      {contacts.map((contact: any) => (
                         <SelectItem key={contact.id} value={contact.id}>
                           {contact.firstName}
                           {contact.lastName ? ` ${contact.lastName}` : ""}

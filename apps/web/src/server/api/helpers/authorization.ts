@@ -494,16 +494,18 @@ export async function getAccessibleProjects(ctx: Context): Promise<ProjectWithAc
   })
 
   // Map owned projects
-  const ownedProjectsWithAccess: ProjectWithAccess[] = ownedProjects.map((project) => ({
-    project,
-    access: "owner" as const,
-    permission: "write" as const,
-  }))
+  const ownedProjectsWithAccess: ProjectWithAccess[] = ownedProjects.map(
+    (project: typeof projects.$inferSelect) => ({
+      project,
+      access: "owner" as const,
+      permission: "write" as const,
+    })
+  )
 
   // Map partner projects (filter out deleted projects)
   const partnerProjectsWithAccess: ProjectWithAccess[] = partnerAccessRecords
-    .filter((record) => record.project && !record.project.deletedAt)
-    .map((record) => ({
+    .filter((record: any) => record.project && !record.project.deletedAt)
+    .map((record: any) => ({
       project: record.project!,
       access: "partner" as const,
       permission: record.permission as "read" | "write",

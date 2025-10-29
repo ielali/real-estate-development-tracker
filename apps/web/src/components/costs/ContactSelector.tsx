@@ -79,7 +79,7 @@ export function ContactSelector({
     if (!searchTerm) return contacts
 
     const term = searchTerm.toLowerCase()
-    return contacts.filter((contact) => {
+    return contacts.filter((contact: any) => {
       const fullName = `${contact.firstName} ${contact.lastName ?? ""}`.toLowerCase()
       const company = contact.company?.toLowerCase() ?? ""
       return fullName.includes(term) || company.includes(term)
@@ -87,7 +87,7 @@ export function ContactSelector({
   }, [projectContacts, searchTerm])
 
   // Get selected contact for display
-  const selectedContact = projectContacts?.find((c) => c.id === value)
+  const selectedContact = projectContacts?.find((c: any) => c.id === value)
 
   return (
     <div className="space-y-2">
@@ -155,7 +155,7 @@ export function ContactSelector({
           {filteredContacts.length > 0 ? (
             <SelectGroup>
               <SelectLabel>Contacts</SelectLabel>
-              {filteredContacts.map((contact) => (
+              {filteredContacts.map((contact: any) => (
                 <SelectItem key={contact.id} value={contact.id}>
                   <div className="flex items-center gap-2">
                     <span>

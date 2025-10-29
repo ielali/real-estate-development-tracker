@@ -159,7 +159,7 @@ export function OrphanedDocuments({ projectId }: OrphanedDocumentsProps) {
   // Handle select all / deselect all
   const handleSelectAll = (checked: boolean) => {
     if (checked && orphanedDocs) {
-      setSelectedIds(new Set(orphanedDocs.map((doc) => doc.id)))
+      setSelectedIds(new Set(orphanedDocs.map((doc: any) => doc.id)))
     } else {
       setSelectedIds(new Set())
     }
@@ -323,7 +323,7 @@ export function OrphanedDocuments({ projectId }: OrphanedDocumentsProps) {
 
       {/* Document grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {orphanedDocs.map((doc) => (
+        {orphanedDocs.map((doc: any) => (
           <Card
             key={doc.id}
             className={`relative transition-all ${
@@ -440,7 +440,7 @@ export function OrphanedDocuments({ projectId }: OrphanedDocumentsProps) {
                   {entities.length === 0 ? (
                     <div className="p-2 text-sm text-muted-foreground">No {entityType}s found</div>
                   ) : (
-                    entities.map((entity) => {
+                    entities.map((entity: any) => {
                       // Get id and display text based on entity type
                       let entityId = ""
                       let displayText = ""

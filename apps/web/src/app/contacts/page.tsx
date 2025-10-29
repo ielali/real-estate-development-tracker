@@ -12,6 +12,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { api } from "@/lib/trpc/client"
+import { Spinner } from "@/components/ui/spinner"
 
 /**
  * Contacts page - Main page for contact management
@@ -19,11 +21,21 @@ import {
  * Features:
  * - Contact list with search and filtering
  * - Create new contacts via modal dialog
+ * - Edit contacts via modal dialog
  * - Mobile-responsive layout
  * - Breadcrumb navigation
  */
 export default function ContactsPage(): JSX.Element {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
+  const [editContactId, setEditContactId] = useState<string | null>(null)
+
+  // Fetch contact details for editing
+  const { data: editContact, isLoading: isLoadingEditContact } = api.contacts.getById.useQuery(
+    editContactId!,
+    {
+      enabled: !!editContactId,
+    }
+  )
 
   const handleCreateClick = () => {
     setIsCreateDialogOpen(true)
@@ -35,6 +47,18 @@ export default function ContactsPage(): JSX.Element {
 
   const handleCreateCancel = () => {
     setIsCreateDialogOpen(false)
+  }
+
+  const handleEditClick = (contactId: string) => {
+    setEditContactId(contactId)
+  }
+
+  const handleEditSuccess = () => {
+    setEditContactId(null)
+  }
+
+  const handleEditCancel = () => {
+    setEditContactId(null)
   }
 
   return (
@@ -50,7 +74,7 @@ export default function ContactsPage(): JSX.Element {
         </div>
 
         {/* Contact list */}
-        <ContactList onCreateClick={handleCreateClick} />
+        <ContactList onCreateClick={handleCreateClick} onEditClick={handleEditClick} />
 
         {/* Create contact dialog */}
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
@@ -63,6 +87,44 @@ export default function ContactsPage(): JSX.Element {
               </DialogDescription>
             </DialogHeader>
             <ContactForm onSuccess={handleCreateSuccess} onCancel={handleCreateCancel} />
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit contact dialog */}
+        <Dialog open={!!editContactId} onOpenChange={(open) => !open && setEditContactId(null)}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Edit Contact</DialogTitle>
+              <DialogDescription>
+                Update contact information. All fields except first name and category are optional.
+              </DialogDescription>
+            </DialogHeader>
+            {isLoadingEditContact ? (
+              <div className="flex items-center justify-center py-12">
+                <Spinner />
+              </div>
+            ) : (
+              editContact && (
+                <ContactForm
+                  key={editContact.contact.id}
+                  contactId={editContact.contact.id}
+                  defaultValues={{
+                    firstName: editContact.contact.firstName,
+                    lastName: editContact.contact.lastName || undefined,
+                    company: editContact.contact.company || undefined,
+                    email: editContact.contact.email || undefined,
+                    phone: editContact.contact.phone || undefined,
+                    mobile: editContact.contact.mobile || undefined,
+                    website: editContact.contact.website || undefined,
+                    categoryId: editContact.contact.categoryId,
+                    notes: editContact.contact.notes || undefined,
+                    addressId: editContact.contact.addressId,
+                  }}
+                  onSuccess={handleEditSuccess}
+                  onCancel={handleEditCancel}
+                />
+              )
+            )}
           </DialogContent>
         </Dialog>
       </div>

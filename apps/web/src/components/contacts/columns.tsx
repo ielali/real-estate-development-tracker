@@ -151,8 +151,9 @@ export const columns: ColumnDef<Contact>[] = [
   },
   {
     id: "actions",
-    cell: ({ row }) => {
+    cell: ({ row, table }) => {
       const contact = row.original
+      const meta = table.options.meta as { onEditClick?: (id: string) => void }
 
       return (
         <DropdownMenu>
@@ -167,7 +168,15 @@ export const columns: ColumnDef<Contact>[] = [
             <DropdownMenuItem onClick={() => (window.location.href = `/contacts/${contact.id}`)}>
               View contact
             </DropdownMenuItem>
-            <DropdownMenuItem>Edit contact</DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => {
+                if (meta?.onEditClick) {
+                  meta.onEditClick(contact.id)
+                }
+              }}
+            >
+              Edit contact
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       )

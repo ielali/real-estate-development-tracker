@@ -54,7 +54,11 @@ export function ContactGroupedCosts({ projectId }: ContactGroupedCostsProps) {
     if (openGroups.size === data.length) {
       setOpenGroups(new Set())
     } else {
-      setOpenGroups(new Set(data.map((group) => group.contactId ?? "unassigned")))
+      setOpenGroups(
+        new Set<string>(
+          data.map((group: { contactId: string | null }) => group.contactId ?? "unassigned")
+        )
+      )
     }
   }
 
@@ -105,86 +109,108 @@ export function ContactGroupedCosts({ projectId }: ContactGroupedCostsProps) {
 
       {/* Contact groups */}
       <div className="space-y-3">
-        {data.map((group) => {
-          const contactId = group.contactId ?? "unassigned"
-          const isOpen = openGroups.has(contactId)
-          const category = group.contactCategory ? getCategoryById(group.contactCategory) : null
+        {(data as any[]).map(
+          (group: {
+            contactId: string | null
+            contactName: string
+            contactCategory: string | null
+            costs: Array<{
+              id: string
+              description: string
+              date: Date
+              amount: number
+              category: { displayName: string } | null
+            }>
+            total: number
+          }) => {
+            const contactId = group.contactId ?? "unassigned"
+            const isOpen = openGroups.has(contactId)
+            const category = group.contactCategory ? getCategoryById(group.contactCategory) : null
 
-          return (
-            <Card key={contactId}>
-              <CardHeader
-                className="cursor-pointer hover:bg-accent/50"
-                onClick={() => toggleGroup(contactId)}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    {group.contactId ? (
-                      <User className="h-5 w-5 text-muted-foreground" />
-                    ) : (
-                      <AlertCircle className="h-5 w-5 text-orange-500" />
-                    )}
-                    <div>
-                      <CardTitle className="text-base">
-                        {group.contactName}
-                        {!group.contactId && (
-                          <Badge variant="outline" className="ml-2 text-xs text-orange-600">
-                            Unassigned
-                          </Badge>
-                        )}
-                      </CardTitle>
-                      <CardDescription className="mt-1 flex items-center gap-2">
-                        {category && (
-                          <Badge variant="secondary" className="text-xs">
-                            {category.displayName}
-                          </Badge>
-                        )}
-                        <span>
-                          {group.costs.length} cost{group.costs.length !== 1 ? "s" : ""}
-                        </span>
-                      </CardDescription>
+            return (
+              <Card key={contactId}>
+                <CardHeader
+                  className="cursor-pointer hover:bg-accent/50"
+                  onClick={() => toggleGroup(contactId)}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      {group.contactId ? (
+                        <User className="h-5 w-5 text-muted-foreground" />
+                      ) : (
+                        <AlertCircle className="h-5 w-5 text-orange-500" />
+                      )}
+                      <div>
+                        <CardTitle className="text-base">
+                          {group.contactName}
+                          {!group.contactId && (
+                            <Badge variant="outline" className="ml-2 text-xs text-orange-600">
+                              Unassigned
+                            </Badge>
+                          )}
+                        </CardTitle>
+                        <CardDescription className="mt-1 flex items-center gap-2">
+                          {category && (
+                            <Badge variant="secondary" className="text-xs">
+                              {category.displayName}
+                            </Badge>
+                          )}
+                          <span>
+                            {group.costs.length} cost{group.costs.length !== 1 ? "s" : ""}
+                          </span>
+                        </CardDescription>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="default" className="text-sm font-semibold">
+                        {formatCurrency(group.total)}
+                      </Badge>
+                      {isOpen ? (
+                        <ChevronUp className="h-5 w-5 text-muted-foreground" />
+                      ) : (
+                        <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                      )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="default" className="text-sm font-semibold">
-                      {formatCurrency(group.total)}
-                    </Badge>
-                    {isOpen ? (
-                      <ChevronUp className="h-5 w-5 text-muted-foreground" />
-                    ) : (
-                      <ChevronDown className="h-5 w-5 text-muted-foreground" />
-                    )}
-                  </div>
-                </div>
-              </CardHeader>
+                </CardHeader>
 
-              {isOpen && (
-                <CardContent>
-                  <div className="space-y-2">
-                    {group.costs.map((cost) => (
-                      <div
-                        key={cost.id}
-                        className="flex items-center justify-between rounded-lg border p-3 text-sm"
-                      >
-                        <div className="flex-1">
-                          <p className="font-medium">{cost.description}</p>
-                          <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
-                            {cost.category && (
-                              <Badge variant="outline" className="text-xs">
-                                {cost.category.displayName}
-                              </Badge>
-                            )}
-                            <span>{new Date(cost.date).toLocaleDateString()}</span>
+                {isOpen && (
+                  <CardContent>
+                    <div className="space-y-2">
+                      {group.costs.map(
+                        (cost: {
+                          id: string
+                          description: string
+                          date: Date
+                          amount: number
+                          category: { displayName: string } | null
+                        }) => (
+                          <div
+                            key={cost.id}
+                            className="flex items-center justify-between rounded-lg border p-3 text-sm"
+                          >
+                            <div className="flex-1">
+                              <p className="font-medium">{cost.description}</p>
+                              <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+                                {cost.category && (
+                                  <Badge variant="outline" className="text-xs">
+                                    {cost.category.displayName}
+                                  </Badge>
+                                )}
+                                <span>{new Date(cost.date).toLocaleDateString()}</span>
+                              </div>
+                            </div>
+                            <p className="font-semibold">{formatCurrency(cost.amount)}</p>
                           </div>
-                        </div>
-                        <p className="font-semibold">{formatCurrency(cost.amount)}</p>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              )}
-            </Card>
-          )
-        })}
+                        )
+                      )}
+                    </div>
+                  </CardContent>
+                )}
+              </Card>
+            )
+          }
+        )}
       </div>
     </div>
   )

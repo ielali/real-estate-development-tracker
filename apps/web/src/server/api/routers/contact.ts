@@ -148,9 +148,9 @@ export const contactRouter = createTRPCRouter({
             and(eq(categories.parentId, input.parentCategoryId), eq(categories.type, "contact"))
           )
 
-        const categoryIds = childCategories.map((c) => c.id)
+        const categoryIds = childCategories.map((c: { id: string }) => c.id)
         if (categoryIds.length > 0) {
-          conditions.push(or(...categoryIds.map((id) => eq(contacts.categoryId, id)))!)
+          conditions.push(or(...categoryIds.map((id: string) => eq(contacts.categoryId, id)))!)
         } else {
           // No child categories found - return empty result by adding impossible condition
           conditions.push(sql`false`)
@@ -414,10 +414,18 @@ export const contactRouter = createTRPCRouter({
           )
         )
 
-      return projectContacts.map(({ contact, category }) => ({
-        ...contact,
-        category: category ?? null,
-      }))
+      return projectContacts.map(
+        ({
+          contact,
+          category,
+        }: {
+          contact: typeof contacts.$inferSelect
+          category: typeof categories.$inferSelect | null
+        }) => ({
+          ...contact,
+          category: category ?? null,
+        })
+      )
     }),
 
   /**
@@ -547,6 +555,6 @@ export const contactRouter = createTRPCRouter({
         )
         .orderBy(desc(contactDocuments.createdAt))
 
-      return links.map((link) => link.document)
+      return links.map((link: { document: typeof documents.$inferSelect }) => link.document)
     }),
 })

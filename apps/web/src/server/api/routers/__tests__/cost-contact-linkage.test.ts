@@ -78,7 +78,7 @@ describe("Cost-Contact Linkage", () => {
         { id: "3", contactId: "contact-2" },
         { id: "4", contactId: null },
       ]
-      const orphaned = costs.filter((c) => c.contactId === null)
+      const orphaned = costs.filter((c: any) => c.contactId === null)
       expect(orphaned).toHaveLength(2)
       expect(orphaned.map((c) => c.id)).toEqual(["2", "4"])
     })

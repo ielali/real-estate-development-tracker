@@ -145,7 +145,7 @@ export function CostEditForm({ projectId, costId }: CostEditFormProps) {
       if (previousCosts) {
         utils.costs.list.setData(
           { projectId },
-          previousCosts.map((cost) =>
+          previousCosts.map((cost: any) =>
             cost.id === updatedCost.id ? { ...cost, ...updatedCost, updatedAt: new Date() } : cost
           )
         )

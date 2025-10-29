@@ -6,9 +6,9 @@
  * Tests for role-based middleware, permission-aware queries, and audit logging.
  */
 
-import { describe, it, expect } from "vitest"
+import { describe, it, expect, beforeEach, afterEach } from "vitest"
 import { appRouter } from "../root"
-import { createTestContext } from "@/test/test-db"
+import { createTestContext, createTestDb } from "@/test/test-db"
 import { TRPCError } from "@trpc/server"
 import {
   requireAdmin,
@@ -21,6 +21,19 @@ import { projectAccess, auditLog } from "@/server/db/schema"
 import { eq, desc } from "drizzle-orm"
 
 describe("Authorization RBAC - Story 4.2", () => {
+  let cleanup: () => Promise<void>
+
+  beforeEach(async () => {
+    const testDb = await createTestDb()
+    cleanup = testDb.cleanup
+  })
+
+  afterEach(async () => {
+    if (cleanup) {
+      await cleanup()
+    }
+  })
+
   describe("requireAdmin middleware", () => {
     it("allows admin users", async () => {
       const ctx = await createTestContext({ role: "admin" })

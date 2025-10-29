@@ -1,21 +1,15 @@
-import { drizzle } from "drizzle-orm/neon-serverless"
-import { Pool, neonConfig } from "@neondatabase/serverless"
 import * as schema from "../server/db/schema"
 import { categories } from "../server/db/schema/categories"
 import { CATEGORIES } from "../server/db/types"
 import { sql } from "drizzle-orm"
-import ws from "ws"
 import { getDatabaseUrl } from "@/server/db/get-database-url"
 
-// Configure Neon WebSocket for Node.js environment
-// This is required for Neon PostgreSQL connections in Node.js
-if (typeof WebSocket === "undefined") {
-  neonConfig.webSocketConstructor = ws
-}
-
-let globalPool: Pool | null = null
-let globalDb: ReturnType<typeof drizzle<typeof schema>> | null = null
-let categoriesSeeded = false
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let globalPool: any = null
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let globalDb: any = null
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let globalClient: any = null
 
 // Get test database URL from environment
 function getTestDbUrl(): string {
@@ -23,10 +17,10 @@ function getTestDbUrl(): string {
 }
 
 /**
- * Create a test database connection to remote Neon PostgreSQL.
+ * Create a test database connection with driver abstraction.
  *
  * IMPORTANT: This assumes:
- * 1. Remote Neon database exists and is migrated
+ * 1. Database exists and is migrated
  * 2. Database starts with NO data (empty tables)
  * 3. Each test should clean up its own data in afterEach
  *
@@ -37,26 +31,49 @@ function getTestDbUrl(): string {
  */
 export const createTestDb = async () => {
   const dbUrl = getTestDbUrl()
+  const driver = process.env.DATABASE_DRIVER || "neon"
 
   // Create new connection if needed
-  if (!globalPool || !globalDb) {
-    globalPool = new Pool({ connectionString: dbUrl })
-    globalDb = drizzle(globalPool, { schema })
+  if (!globalPool && !globalClient && !globalDb) {
+    if (driver === "postgresql") {
+      // Use standard PostgreSQL driver for local testing
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const postgresModule = require("postgres")
+      const postgres = postgresModule.default || postgresModule
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { drizzle } = require("drizzle-orm/postgres-js")
+
+      globalClient = postgres(dbUrl)
+      globalDb = drizzle(globalClient, { schema })
+    } else {
+      // Use Neon serverless driver
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { drizzle } = require("drizzle-orm/neon-serverless")
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { Pool, neonConfig } = require("@neondatabase/serverless")
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const ws = require("ws")
+
+      // Configure Neon WebSocket for Node.js environment
+      if (typeof WebSocket === "undefined") {
+        neonConfig.webSocketConstructor = ws
+      }
+
+      globalPool = new Pool({ connectionString: dbUrl })
+      globalDb = drizzle(globalPool, { schema })
+    }
   }
 
-  // Seed categories if not already seeded
-  // Categories are static reference data that persist across tests
-  if (!categoriesSeeded) {
-    // Check if categories already exist in the database
-    const existingCategories = await globalDb
-      .select({ count: sql<number>`count(*)` })
-      .from(categories)
+  // Always ensure categories exist
+  // Categories are static reference data but may get wiped by TRUNCATE CASCADE
+  // Check on every test to ensure they're available
+  const existingCategories = await globalDb
+    .select({ count: sql<number>`count(*)` })
+    .from(categories)
 
-    if (Number(existingCategories[0]?.count) === 0) {
-      // No categories exist, insert them all at once
-      await globalDb.insert(categories).values(CATEGORIES)
-    }
-    categoriesSeeded = true
+  if (Number(existingCategories[0]?.count) === 0) {
+    // No categories exist, insert them all at once
+    await globalDb.insert(categories).values(CATEGORIES)
   }
 
   return {
@@ -70,7 +87,8 @@ export const createTestDb = async () => {
  * Uses TRUNCATE CASCADE for reliable cleanup that handles FK constraints automatically.
  * NOTE: Categories table is NOT truncated because it contains static reference data.
  */
-function createCleanupFunction(db: ReturnType<typeof drizzle<typeof schema>>) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function createCleanupFunction(db: any) {
   return async () => {
     // TRUNCATE CASCADE automatically handles foreign key dependencies
     // Much more reliable than manual DELETE ordering
@@ -106,8 +124,12 @@ export const cleanupAllTestDatabases = async () => {
   if (globalPool) {
     await globalPool.end()
     globalPool = null
-    globalDb = null
   }
+  if (globalClient) {
+    await globalClient.end()
+    globalClient = null
+  }
+  globalDb = null
 }
 
 /**
@@ -159,9 +181,14 @@ export async function createTestContext(
 
   // Insert test user into database if not exists
   const { users } = await import("@/server/db/schema")
-  await db
-    .insert(users)
-    .values({
+
+  // First, check if user already exists
+  const { eq } = await import("drizzle-orm")
+  const existingUser = await db.select().from(users).where(eq(users.id, testUser.id))
+
+  // Only insert if user doesn't exist
+  if (existingUser.length === 0) {
+    await db.insert(users).values({
       id: testUser.id,
       email: testUser.email,
       name: "Test User",
@@ -172,7 +199,7 @@ export async function createTestContext(
       createdAt: new Date(),
       updatedAt: new Date(),
     })
-    .onConflictDoNothing()
+  }
 
   return {
     db,

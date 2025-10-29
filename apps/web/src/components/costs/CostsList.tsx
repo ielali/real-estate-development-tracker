@@ -75,7 +75,7 @@ export function CostsList({
   const { data: costsData, isLoading: costsLoading } = api.costs.list.useQuery(queryInput)
 
   // Calculate total costs
-  const totalCosts = costsData?.reduce((sum, cost) => sum + cost.amount, 0) ?? 0
+  const totalCosts = costsData?.reduce((sum: number, cost: any) => sum + cost.amount, 0) ?? 0
 
   const deleteCostMutation = api.costs.softDelete.useMutation({
     // Optimistic update: Remove cost from UI immediately
@@ -90,7 +90,7 @@ export function CostsList({
       if (previousCosts) {
         utils.costs.list.setData(
           queryInput,
-          previousCosts.filter((cost) => cost.id !== variables.id)
+          previousCosts.filter((cost: any) => cost.id !== variables.id)
         )
       }
 
@@ -159,7 +159,7 @@ export function CostsList({
     if (selectedCostIds.size === costsData.length) {
       setSelectedCostIds(new Set())
     } else {
-      setSelectedCostIds(new Set(costsData.map((c) => c.id)))
+      setSelectedCostIds(new Set(costsData.map((c: any) => c.id)))
     }
   }
 
@@ -224,7 +224,7 @@ export function CostsList({
       {/* Costs List */}
       {costsData && costsData.length > 0 && (
         <div className="space-y-3">
-          {costsData.map((cost) => (
+          {costsData.map((cost: any) => (
             <div key={cost.id} className="flex items-center gap-3 py-3 border-b last:border-b-0">
               <Checkbox
                 id={`cost-${cost.id}`}
