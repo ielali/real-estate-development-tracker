@@ -4,7 +4,7 @@ import { db } from "@/server/db"
 import { documents } from "@/server/db/schema"
 import { eq, and, isNull } from "drizzle-orm"
 import { documentService } from "@/server/services/document.service"
-import { verifyProjectAccess } from "@/server/api/authorization"
+import { verifyProjectAccess } from "@/server/api/helpers/authorization"
 
 /**
  * GET /api/documents/[id]/view
@@ -45,7 +45,11 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     // Verify project access (read permission required)
     try {
-      await verifyProjectAccess({ db, session, user: session.user }, document.projectId, "read")
+      await verifyProjectAccess(
+        { headers: request.headers, db, session, user: session.user },
+        document.projectId,
+        "read"
+      )
     } catch (error) {
       return NextResponse.json({ error: "Access denied" }, { status: 403 })
     }
