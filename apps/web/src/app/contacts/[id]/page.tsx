@@ -130,7 +130,10 @@ export default function ContactDetailPage({ params }: ContactDetailPageProps): J
   const parentCategory = category?.parentId ? getCategoryById(category.parentId) : null
 
   // Calculate total spending
-  const totalSpending = data.costs.reduce((sum, row) => sum + (row.cost.amount || 0), 0)
+  const totalSpending = data.costs.reduce(
+    (sum: number, row: any) => sum + (row.cost.amount || 0),
+    0
+  )
 
   return (
     <div className="container mx-auto py-6 px-4 sm:px-6 lg:px-8">
@@ -316,7 +319,7 @@ export default function ContactDetailPage({ params }: ContactDetailPageProps): J
                 />
               ) : (
                 <div className="space-y-3">
-                  {data.projects.map((row) => (
+                  {data.projects.map((row: any) => (
                     <div
                       key={row.projectContact.id}
                       className="flex items-center justify-between rounded-lg border p-3 hover:bg-accent"
@@ -360,7 +363,7 @@ export default function ContactDetailPage({ params }: ContactDetailPageProps): J
                 />
               ) : (
                 <div className="space-y-3">
-                  {data.costs.map((row) => (
+                  {data.costs.map((row: any) => (
                     <div
                       key={row.cost.id}
                       className="flex items-center justify-between rounded-lg border p-3"

@@ -76,7 +76,7 @@ describe("Database Operations", () => {
           role: "partner",
         })
         .returning()
-        .then((rows) => rows[0])
+        .then((rows: any[]) => rows[0])
 
       expect(user).toBeDefined()
       expect(user.id).toBeDefined()
@@ -97,14 +97,14 @@ describe("Database Operations", () => {
           lastName: "Name",
         })
         .returning()
-        .then((rows) => rows[0])
+        .then((rows: any[]) => rows[0])
 
       const updated = await db
         .update(users)
         .set({ firstName: "Updated" })
         .where(eq(users.id, user.id))
         .returning()
-        .then((rows) => rows[0])
+        .then((rows: any[]) => rows[0])
 
       expect(updated.firstName).toBe("Updated")
       expect(updated.lastName).toBe("Name")
@@ -146,7 +146,7 @@ describe("Database Operations", () => {
           role: "admin",
         })
         .returning()
-        .then((rows) => rows[0])
+        .then((rows: any[]) => rows[0])
     })
 
     it("should create a project with owner and proper address", async () => {
@@ -174,7 +174,7 @@ describe("Database Operations", () => {
           formattedAddress: formatAddress(addressData),
         })
         .returning()
-        .then((rows) => rows[0])
+        .then((rows: any[]) => rows[0])
 
       // Then create the project with address reference
       const project = await db
@@ -189,7 +189,7 @@ describe("Database Operations", () => {
           totalBudget: 1000000,
         })
         .returning()
-        .then((rows) => rows[0])
+        .then((rows: any[]) => rows[0])
 
       expect(project).toBeDefined()
       expect(project.name).toBe("Test Project")
@@ -245,7 +245,7 @@ describe("Database Operations", () => {
           lastName: "Creator",
         })
         .returning()
-        .then((rows) => rows[0])
+        .then((rows: any[]) => rows[0])
 
       testProject = await db
         .insert(projects)
@@ -255,7 +255,7 @@ describe("Database Operations", () => {
           ownerId: testUser.id,
         })
         .returning()
-        .then((rows) => rows[0])
+        .then((rows: any[]) => rows[0])
     })
 
     it("should create a cost entry", async () => {
@@ -270,7 +270,7 @@ describe("Database Operations", () => {
           createdById: testUser.id,
         })
         .returning()
-        .then((rows) => rows[0])
+        .then((rows: any[]) => rows[0])
 
       expect(cost).toBeDefined()
       expect(cost.amount).toBe(50000)
@@ -287,7 +287,7 @@ describe("Database Operations", () => {
           categoryId: "general_contractor",
         })
         .returning()
-        .then((rows) => rows[0])
+        .then((rows: any[]) => rows[0])
 
       const cost = await db
         .insert(costs)
@@ -301,7 +301,7 @@ describe("Database Operations", () => {
           createdById: testUser.id,
         })
         .returning()
-        .then((rows) => rows[0])
+        .then((rows: any[]) => rows[0])
 
       expect(cost.contactId).toBe(contact.id)
     })
@@ -319,14 +319,14 @@ describe("Database Operations", () => {
           lastName: "Test",
         })
         .returning()
-        .then((rows) => rows[0])
+        .then((rows: any[]) => rows[0])
 
       const deletedUser = await db
         .update(users)
         .set({ deletedAt: new Date() })
         .where(eq(users.id, user.id))
         .returning()
-        .then((rows) => rows[0])
+        .then((rows: any[]) => rows[0])
 
       expect(deletedUser.deletedAt).toBeInstanceOf(Date)
     })
@@ -416,7 +416,7 @@ describe("Database Operations", () => {
           categoryId: "electrician",
         })
         .returning()
-        .then((rows) => rows[0])
+        .then((rows: any[]) => rows[0])
 
       expect(validContact).toBeDefined()
       expect(isValidCategoryForType(validContact.categoryId, "contact")).toBe(true)

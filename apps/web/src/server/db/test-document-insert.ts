@@ -25,7 +25,7 @@ async function testDocumentInsert() {
     }
 
     console.log(`   ✓ Found ${docCategories.length} document categories`)
-    docCategories.forEach((cat) => {
+    docCategories.forEach((cat: any) => {
       console.log(`     - ${cat.id}: ${cat.displayName}`)
     })
 
@@ -101,7 +101,7 @@ async function testDocumentInsert() {
 
     console.log(`   ✓ Successfully inserted ${insertedDocs.length} test documents`)
 
-    insertedDocs.forEach((doc, index) => {
+    insertedDocs.forEach((doc: any, index: number) => {
       console.log(`\n   Document ${index + 1}:`)
       console.log(`     ID: ${doc.id}`)
       console.log(`     File: ${doc.fileName}`)
@@ -134,7 +134,7 @@ async function testDocumentInsert() {
       .limit(3)
 
     console.log(`   ✓ Retrieved ${docsWithProject.length} documents with project info:`)
-    docsWithProject.forEach((doc) => {
+    docsWithProject.forEach((doc: any) => {
       console.log(`     - ${doc.fileName} → Project: ${doc.projectName}`)
     })
 

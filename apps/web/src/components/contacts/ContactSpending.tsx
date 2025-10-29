@@ -114,9 +114,9 @@ export function ContactSpending({ contactId }: ContactSpendingProps) {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {data.projectBreakdown
-                .sort((a, b) => b.total - a.total)
-                .map((project) => (
+              {(data.projectBreakdown as any[])
+                .sort((a: { total: number }, b: { total: number }) => b.total - a.total)
+                .map((project: { projectId: string; projectName: string; total: number }) => (
                   <div
                     key={project.projectId}
                     className="flex items-center justify-between rounded-lg border p-3"
@@ -142,9 +142,9 @@ export function ContactSpending({ contactId }: ContactSpendingProps) {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {data.categoryBreakdown
-                .sort((a, b) => b.total - a.total)
-                .map((category) => (
+              {(data.categoryBreakdown as any[])
+                .sort((a: { total: number }, b: { total: number }) => b.total - a.total)
+                .map((category: { categoryId: string; categoryName: string; total: number }) => (
                   <div
                     key={category.categoryId}
                     className="flex items-center justify-between rounded-lg border p-3"

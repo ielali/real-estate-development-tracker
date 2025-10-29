@@ -63,7 +63,7 @@ describe("Partner Dashboard Router", () => {
         .insert(projects)
         .values({
           name: "Test Project",
-          ownerId: ctx.user.id,
+          ownerId: ctx.user!.id,
           addressId: address!.id,
           projectType: "renovation",
           status: "active",
@@ -85,7 +85,7 @@ describe("Partner Dashboard Router", () => {
           description: "Test Cost 1",
           categoryId,
           date: new Date(),
-          createdById: ctx.user.id,
+          createdById: ctx.user!.id,
         },
         {
           projectId,
@@ -93,7 +93,7 @@ describe("Partner Dashboard Router", () => {
           description: "Test Cost 2",
           categoryId,
           date: new Date(),
-          createdById: ctx.user.id,
+          createdById: ctx.user!.id,
         },
       ])
 
@@ -137,7 +137,7 @@ describe("Partner Dashboard Router", () => {
         .insert(projects)
         .values({
           name: "Test Project",
-          ownerId: ownerCtx.user.id,
+          ownerId: ownerCtx.user!.id,
           addressId: address!.id,
           projectType: "renovation",
           status: "active",
@@ -176,7 +176,7 @@ describe("Partner Dashboard Router", () => {
         .insert(projects)
         .values({
           name: "Test Project",
-          ownerId: ownerCtx.user.id,
+          ownerId: ownerCtx.user!.id,
           addressId: address!.id,
           projectType: "renovation",
           status: "active",
@@ -187,7 +187,7 @@ describe("Partner Dashboard Router", () => {
       // Grant partner read access
       await ownerCtx.db.insert(projectAccess).values({
         projectId: project!.id,
-        userId: partnerCtx.user.id,
+        userId: partnerCtx.user!.id,
         permission: "read",
         acceptedAt: new Date(),
       })
@@ -233,7 +233,7 @@ describe("Partner Dashboard Router", () => {
         .insert(projects)
         .values({
           name: "Test Project",
-          ownerId: ctx.user.id,
+          ownerId: ctx.user!.id,
           addressId: address!.id,
           projectType: "renovation",
           status: "active",
@@ -256,7 +256,7 @@ describe("Partner Dashboard Router", () => {
           description: "Cost Category 1",
           categoryId: category1Id,
           date: new Date(),
-          createdById: ctx.user.id,
+          createdById: ctx.user!.id,
         },
         {
           projectId,
@@ -264,7 +264,7 @@ describe("Partner Dashboard Router", () => {
           description: "Cost Category 2",
           categoryId: category2Id,
           date: new Date(),
-          createdById: ctx.user.id,
+          createdById: ctx.user!.id,
         },
       ])
 
@@ -303,7 +303,7 @@ describe("Partner Dashboard Router", () => {
         .insert(projects)
         .values({
           name: "Test Project",
-          ownerId: ctx.user.id,
+          ownerId: ctx.user!.id,
           addressId: address!.id,
           projectType: "renovation",
           status: "active",
@@ -317,7 +317,7 @@ describe("Partner Dashboard Router", () => {
       for (let i = 0; i < 25; i++) {
         await ctx.db.insert(auditLog).values({
           projectId,
-          userId: ctx.user.id,
+          userId: ctx.user!.id,
           action: "CREATE",
           entityType: "cost",
           entityId: `test-id-${i}`,
@@ -369,7 +369,7 @@ describe("Partner Dashboard Router", () => {
         .insert(projects)
         .values({
           name: "Test Project",
-          ownerId: ctx.user.id,
+          ownerId: ctx.user!.id,
           addressId: address!.id,
           projectType: "renovation",
           status: "active",
@@ -393,7 +393,7 @@ describe("Partner Dashboard Router", () => {
           mimeType: "image/jpeg",
           blobUrl: "photo1-url",
           categoryId: category1Id,
-          uploadedById: ctx.user.id,
+          uploadedById: ctx.user!.id,
         },
         {
           projectId,
@@ -402,7 +402,7 @@ describe("Partner Dashboard Router", () => {
           mimeType: "image/jpeg",
           blobUrl: "photo2-url",
           categoryId: category1Id,
-          uploadedById: ctx.user.id,
+          uploadedById: ctx.user!.id,
         },
         {
           projectId,
@@ -411,7 +411,7 @@ describe("Partner Dashboard Router", () => {
           mimeType: "application/pdf",
           blobUrl: "receipt1-url",
           categoryId: category2Id,
-          uploadedById: ctx.user.id,
+          uploadedById: ctx.user!.id,
         },
       ])
 

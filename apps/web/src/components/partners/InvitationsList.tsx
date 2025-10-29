@@ -195,7 +195,7 @@ export function InvitationsList({ projectId }: InvitationsListProps): JSX.Elemen
             </TableRow>
           </TableHeader>
           <TableBody>
-            {invitations.map((invitation) => (
+            {invitations.map((invitation: any) => (
               <TableRow key={invitation.id}>
                 <TableCell>
                   {invitation.user ? (

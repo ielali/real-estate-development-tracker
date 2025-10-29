@@ -124,8 +124,8 @@ export default function ProjectDetailPage() {
     ? Array.from(
         new Map(
           costsData
-            .filter((c) => c.category)
-            .map((c) => [
+            .filter((c: any) => c.category)
+            .map((c: any) => [
               c.category!.id,
               { id: c.category!.id, displayName: c.category!.displayName },
             ])
@@ -137,8 +137,8 @@ export default function ProjectDetailPage() {
     ? Array.from(
         new Map(
           costsData
-            .filter((c) => c.contact)
-            .map((c) => [
+            .filter((c: any) => c.contact)
+            .map((c: any) => [
               c.contact!.id,
               {
                 id: c.contact!.id,
@@ -457,8 +457,8 @@ export default function ProjectDetailPage() {
                     onSearchChange={setSearchText}
                     onSortChange={handleSortChange}
                     onClearAll={handleClearAll}
-                    categories={categories ?? []}
-                    contacts={contacts ?? []}
+                    categories={(categories ?? []) as any[]}
+                    contacts={(contacts ?? []) as any[]}
                   />
                 )}
 

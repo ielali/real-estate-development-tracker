@@ -73,7 +73,7 @@ export const auditLogRouter = createTRPCRouter({
         .offset(offset)
 
       // Parse metadata and format results
-      const accessAttempts = logs.map((log) => {
+      const accessAttempts = logs.map((log: any) => {
         let metadata: {
           success?: boolean
           permission?: string

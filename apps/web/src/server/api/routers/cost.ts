@@ -269,34 +269,44 @@ export const costRouter = createTRPCRouter({
       )
 
     // Map costs - use JOIN result, or fallback to predefined categories
-    return projectCosts.map(({ cost, category, contact }) => {
-      let resolvedCategory = null
+    return projectCosts.map(
+      ({
+        cost,
+        category,
+        contact,
+      }: {
+        cost: typeof costs.$inferSelect
+        category: typeof categories.$inferSelect | null
+        contact: typeof contacts.$inferSelect | null
+      }) => {
+        let resolvedCategory = null
 
-      if (category) {
-        // Found in database (custom category)
-        resolvedCategory = {
-          id: category.id,
-          displayName: category.displayName,
-          parentId: category.parentId,
-        }
-      } else if (cost.categoryId) {
-        // Not in database, check predefined categories
-        const predefined = getCategoryById(cost.categoryId)
-        if (predefined) {
+        if (category) {
+          // Found in database (custom category)
           resolvedCategory = {
-            id: predefined.id,
-            displayName: predefined.displayName,
-            parentId: predefined.parentId,
+            id: category.id,
+            displayName: category.displayName,
+            parentId: category.parentId,
+          }
+        } else if (cost.categoryId) {
+          // Not in database, check predefined categories
+          const predefined = getCategoryById(cost.categoryId)
+          if (predefined) {
+            resolvedCategory = {
+              id: predefined.id,
+              displayName: predefined.displayName,
+              parentId: predefined.parentId,
+            }
           }
         }
-      }
 
-      return {
-        ...cost,
-        category: resolvedCategory,
-        contact: contact ?? null,
+        return {
+          ...cost,
+          category: resolvedCategory,
+          contact: contact ?? null,
+        }
       }
-    })
+    )
   }),
 
   /**
@@ -472,7 +482,10 @@ export const costRouter = createTRPCRouter({
       .where(and(...conditions))
 
     // Calculate total
-    const total = projectCosts.reduce((sum, cost) => sum + cost.amount, 0)
+    const total = projectCosts.reduce(
+      (sum: number, cost: { amount: number }) => sum + cost.amount,
+      0
+    )
 
     return { total }
   }),
@@ -506,7 +519,29 @@ export const costRouter = createTRPCRouter({
 
       // Group costs by contact
       const grouped = projectCosts.reduce(
-        (acc, { cost, contact, category }) => {
+        (
+          acc: Record<
+            string,
+            {
+              contactId: string | null
+              contactName: string
+              contactCategory: string | null
+              costs: Array<
+                typeof costs.$inferSelect & { category: typeof categories.$inferSelect | null }
+              >
+              total: number
+            }
+          >,
+          {
+            cost,
+            contact,
+            category,
+          }: {
+            cost: typeof costs.$inferSelect
+            contact: typeof contacts.$inferSelect | null
+            category: typeof categories.$inferSelect | null
+          }
+        ) => {
           const contactId = cost.contactId ?? "unassigned"
           const contactName = contact
             ? `${contact.firstName}${contact.lastName ? " " + contact.lastName : ""}`
@@ -545,7 +580,9 @@ export const costRouter = createTRPCRouter({
       )
 
       // Convert to array and sort by total (descending)
-      return Object.values(grouped).sort((a, b) => b.total - a.total)
+      return (Object.values(grouped) as any[]).sort(
+        (a: { total: number }, b: { total: number }) => b.total - a.total
+      )
     }),
 
   /**
@@ -578,11 +615,20 @@ export const costRouter = createTRPCRouter({
         )
 
       // Calculate totals
-      const totalSpending = contactCosts.reduce((sum, { cost }) => sum + cost.amount, 0)
+      const totalSpending = contactCosts.reduce(
+        (sum: number, { cost }: { cost: typeof costs.$inferSelect }) => sum + cost.amount,
+        0
+      )
 
       // Group by project
       const projectBreakdown = contactCosts.reduce(
-        (acc, { cost, project }) => {
+        (
+          acc: Record<string, { projectId: string; projectName: string; total: number }>,
+          {
+            cost,
+            project,
+          }: { cost: typeof costs.$inferSelect; project: typeof projects.$inferSelect }
+        ) => {
           if (!acc[project.id]) {
             acc[project.id] = {
               projectId: project.id,
@@ -598,7 +644,13 @@ export const costRouter = createTRPCRouter({
 
       // Group by category
       const categoryBreakdown = contactCosts.reduce(
-        (acc, { cost, category }) => {
+        (
+          acc: Record<string, { categoryId: string; categoryName: string; total: number }>,
+          {
+            cost,
+            category,
+          }: { cost: typeof costs.$inferSelect; category: typeof categories.$inferSelect | null }
+        ) => {
           if (!category) return acc
 
           if (!acc[category.id]) {
@@ -651,10 +703,18 @@ export const costRouter = createTRPCRouter({
         )
         .orderBy(costs.date)
 
-      return orphanedCosts.map(({ cost, category }) => ({
-        ...cost,
-        category: category ?? null,
-      }))
+      return orphanedCosts.map(
+        ({
+          cost,
+          category,
+        }: {
+          cost: typeof costs.$inferSelect
+          category: typeof categories.$inferSelect | null
+        }) => ({
+          ...cost,
+          category: category ?? null,
+        })
+      )
     }),
 
   /**
@@ -686,7 +746,9 @@ export const costRouter = createTRPCRouter({
         )
 
       // Verify all costs belong to user's projects
-      const unauthorizedCosts = costsToUpdate.filter((c) => c.project.ownerId !== userId)
+      const unauthorizedCosts = costsToUpdate.filter(
+        (c: { project: typeof projects.$inferSelect }) => c.project.ownerId !== userId
+      )
       if (unauthorizedCosts.length > 0) {
         throw new TRPCError({
           code: "FORBIDDEN",
@@ -750,6 +812,6 @@ export const costRouter = createTRPCRouter({
         )
         .orderBy(desc(costDocuments.createdAt))
 
-      return links.map((link) => link.document)
+      return links.map((link: { document: typeof documents.$inferSelect }) => link.document)
     }),
 })

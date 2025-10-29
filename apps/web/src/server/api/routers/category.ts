@@ -80,7 +80,7 @@ async function getAllCategories(
     )
 
   // Convert custom categories to Category interface format
-  const custom: Category[] = customCategories.map((cat) => ({
+  const custom: Category[] = customCategories.map((cat: any) => ({
     id: cat.id,
     type: cat.type as CategoryType,
     displayName: cat.displayName,
@@ -162,7 +162,7 @@ async function calculateSpendingBreakdown(
   > = {}
 
   // Process each cost
-  projectCosts.forEach(({ categoryId, amount }) => {
+  projectCosts.forEach(({ categoryId, amount }: { categoryId: string; amount: number }) => {
     const category = categoryMap.get(categoryId)
     if (!category) return
 

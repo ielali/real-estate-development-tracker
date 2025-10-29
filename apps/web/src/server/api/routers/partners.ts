@@ -355,7 +355,7 @@ export const partnersRouter = createTRPCRouter({
     .input(z.object({ token: z.string().uuid() }))
     .mutation(async ({ input, ctx }) => {
       const { token } = input
-      const userId = ctx.user.id
+      const userId = ctx.user!.id
 
       // Find invitation by token
       const invitation = await ctx.db
@@ -598,7 +598,7 @@ export const partnersRouter = createTRPCRouter({
 
       // Calculate status and days remaining
       const now = new Date()
-      const enrichedInvitations = invitations.map((inv) => {
+      const enrichedInvitations = invitations.map((inv: any) => {
         let status: "pending" | "accepted" | "expired"
         let daysRemaining: number | null = null
 

@@ -231,7 +231,7 @@ export default function InviteAcceptPage({
               </p>
             </div>
             <div className="flex gap-2">
-              <Button onClick={() => router.push("/logout")} variant="outline">
+              <Button onClick={() => router.push("/logout" as any)} variant="outline">
                 Log Out
               </Button>
               <Button onClick={() => router.push("/projects")}>Go to Dashboard</Button>

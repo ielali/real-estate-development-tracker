@@ -192,14 +192,14 @@ export const eventsRouter = createTRPCRouter({
     })
 
     // Filter out deleted contacts from eventContacts
-    const eventsWithActiveContacts = eventsList.map((event) => ({
+    const eventsWithActiveContacts = eventsList.map((event: any) => ({
       ...event,
-      eventContacts: event.eventContacts.filter((ec) => !ec.contact.deletedAt),
+      eventContacts: event.eventContacts.filter((ec: any) => !ec.contact.deletedAt),
     }))
 
     // Filter events that have the specified contact (if contactId provided)
     const filteredEvents = input.contactId
-      ? eventsWithActiveContacts.filter((event) => event.eventContacts.length > 0)
+      ? eventsWithActiveContacts.filter((event: any) => event.eventContacts.length > 0)
       : eventsWithActiveContacts
 
     // Determine next cursor for pagination
@@ -398,6 +398,6 @@ export const eventsRouter = createTRPCRouter({
         )
         .orderBy(desc(eventDocuments.createdAt))
 
-      return links.map((link) => link.document)
+      return links.map((link: any) => link.document)
     }),
 })

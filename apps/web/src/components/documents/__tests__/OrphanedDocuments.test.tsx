@@ -156,7 +156,7 @@ describe("OrphanedDocuments Business Logic", () => {
   describe("Selection Logic", () => {
     test("select all adds all document IDs to selection", () => {
       const mockDocs = [{ id: "doc-1" }, { id: "doc-2" }, { id: "doc-3" }]
-      const selectedIds = new Set(mockDocs.map((doc) => doc.id))
+      const selectedIds = new Set(mockDocs.map((doc: any) => doc.id))
 
       expect(selectedIds.size).toBe(3)
       expect(selectedIds.has("doc-1")).toBe(true)

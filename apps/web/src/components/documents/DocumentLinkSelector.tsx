@@ -163,7 +163,7 @@ export function DocumentLinkSelector({
   const filteredDocuments = useMemo(() => {
     if (!allDocuments?.documents) return []
 
-    return allDocuments.documents.filter((doc) => {
+    return allDocuments.documents.filter((doc: any) => {
       const matchesSearch = doc.fileName.toLowerCase().includes(search.toLowerCase())
       const matchesCategory = categoryFilter === "all" || doc.categoryId === categoryFilter
       return matchesSearch && matchesCategory
@@ -307,7 +307,7 @@ export function DocumentLinkSelector({
             </div>
           ) : (
             // Document list
-            filteredDocuments.map((doc) => {
+            filteredDocuments.map((doc: any) => {
               const isSelected = selectedDocs.has(doc.id)
               return (
                 <Card

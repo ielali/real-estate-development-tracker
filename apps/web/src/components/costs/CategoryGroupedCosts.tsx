@@ -50,11 +50,13 @@ export function CategoryGroupedCosts({ projectId }: CategoryGroupedCostsProps) {
 
   const toggleAll = () => {
     if (!costsData) return
-    const allCategories = [...new Set(costsData.map((cost) => cost.categoryId))]
+    const allCategories = [
+      ...new Set(costsData.map((cost: { categoryId: string }) => cost.categoryId)),
+    ]
     if (openGroups.size === allCategories.length) {
       setOpenGroups(new Set())
     } else {
-      setOpenGroups(new Set(allCategories))
+      setOpenGroups(new Set<string>(allCategories as string[]))
     }
   }
 
@@ -63,7 +65,19 @@ export function CategoryGroupedCosts({ projectId }: CategoryGroupedCostsProps) {
     if (!costsData) return []
 
     const groups = costsData.reduce(
-      (acc, cost) => {
+      (
+        acc: Record<
+          string,
+          {
+            categoryId: string
+            categoryName: string
+            parentCategoryId: string | null
+            costs: typeof costsData
+            total: number
+          }
+        >,
+        cost: (typeof costsData)[0]
+      ) => {
         const categoryId = cost.categoryId
         if (!acc[categoryId]) {
           acc[categoryId] = {
@@ -91,7 +105,9 @@ export function CategoryGroupedCosts({ projectId }: CategoryGroupedCostsProps) {
     )
 
     // Convert to array and sort by total (descending)
-    return Object.values(groups).sort((a, b) => b.total - a.total)
+    return (Object.values(groups) as any[]).sort(
+      (a: { total: number }, b: { total: number }) => b.total - a.total
+    )
   }, [costsData])
 
   if (isLoading) {
@@ -141,71 +157,81 @@ export function CategoryGroupedCosts({ projectId }: CategoryGroupedCostsProps) {
 
       {/* Category groups */}
       <div className="space-y-3">
-        {groupedCosts.map((group) => {
-          const isOpen = openGroups.has(group.categoryId)
-          const parentCategory = group.parentCategoryId
-            ? getCategoryById(group.parentCategoryId)
-            : null
+        {(groupedCosts as any[]).map(
+          (group: {
+            categoryId: string
+            categoryName: string
+            parentCategoryId: string | null
+            costs: Array<{ id: string; description: string; date: Date; amount: number }>
+            total: number
+          }) => {
+            const isOpen = openGroups.has(group.categoryId)
+            const parentCategory = group.parentCategoryId
+              ? getCategoryById(group.parentCategoryId)
+              : null
 
-          return (
-            <Card key={group.categoryId}>
-              <CardHeader
-                className="cursor-pointer hover:bg-accent/50"
-                onClick={() => toggleGroup(group.categoryId)}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Tag className="h-5 w-5 text-muted-foreground" />
-                    <div>
-                      <CardTitle className="text-base">{group.categoryName}</CardTitle>
-                      <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
-                        {parentCategory && (
-                          <Badge variant="secondary" className="text-xs">
-                            {parentCategory.displayName}
-                          </Badge>
-                        )}
-                        <span>
-                          {group.costs.length} cost{group.costs.length !== 1 ? "s" : ""}
-                        </span>
+            return (
+              <Card key={group.categoryId}>
+                <CardHeader
+                  className="cursor-pointer hover:bg-accent/50"
+                  onClick={() => toggleGroup(group.categoryId)}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Tag className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <CardTitle className="text-base">{group.categoryName}</CardTitle>
+                        <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
+                          {parentCategory && (
+                            <Badge variant="secondary" className="text-xs">
+                              {parentCategory.displayName}
+                            </Badge>
+                          )}
+                          <span>
+                            {group.costs.length} cost{group.costs.length !== 1 ? "s" : ""}
+                          </span>
+                        </div>
                       </div>
                     </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="default" className="text-sm font-semibold">
+                        {formatCurrency(group.total)}
+                      </Badge>
+                      {isOpen ? (
+                        <ChevronUp className="h-5 w-5 text-muted-foreground" />
+                      ) : (
+                        <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                      )}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="default" className="text-sm font-semibold">
-                      {formatCurrency(group.total)}
-                    </Badge>
-                    {isOpen ? (
-                      <ChevronUp className="h-5 w-5 text-muted-foreground" />
-                    ) : (
-                      <ChevronDown className="h-5 w-5 text-muted-foreground" />
-                    )}
-                  </div>
-                </div>
-              </CardHeader>
+                </CardHeader>
 
-              {isOpen && (
-                <CardContent>
-                  <div className="space-y-2">
-                    {group.costs.map((cost) => (
-                      <div
-                        key={cost.id}
-                        className="flex items-center justify-between rounded-lg border p-3 text-sm"
-                      >
-                        <div className="flex-1">
-                          <p className="font-medium">{cost.description}</p>
-                          <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
-                            <span>{new Date(cost.date).toLocaleDateString()}</span>
+                {isOpen && (
+                  <CardContent>
+                    <div className="space-y-2">
+                      {group.costs.map(
+                        (cost: { id: string; description: string; date: Date; amount: number }) => (
+                          <div
+                            key={cost.id}
+                            className="flex items-center justify-between rounded-lg border p-3 text-sm"
+                          >
+                            <div className="flex-1">
+                              <p className="font-medium">{cost.description}</p>
+                              <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+                                <span>{new Date(cost.date).toLocaleDateString()}</span>
+                              </div>
+                            </div>
+                            <p className="font-semibold">{formatCurrency(cost.amount)}</p>
                           </div>
-                        </div>
-                        <p className="font-semibold">{formatCurrency(cost.amount)}</p>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              )}
-            </Card>
-          )
-        })}
+                        )
+                      )}
+                    </div>
+                  </CardContent>
+                )}
+              </Card>
+            )
+          }
+        )}
       </div>
     </div>
   )

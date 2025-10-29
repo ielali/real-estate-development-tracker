@@ -86,7 +86,7 @@ describe("Cost Router", () => {
         lastName: "User",
       })
       .returning()
-      .then((rows) => rows[0])
+      .then((rows: any[]) => rows[0])
 
     const user2 = await testDbInstance.db
       .insert(users)
@@ -98,7 +98,7 @@ describe("Cost Router", () => {
         lastName: "User",
       })
       .returning()
-      .then((rows) => rows[0])
+      .then((rows: any[]) => rows[0])
 
     testUser = user1
     anotherUser = user2
@@ -117,7 +117,7 @@ describe("Cost Router", () => {
         formattedAddress: "123 Test Street, Sydney NSW 2000",
       })
       .returning()
-      .then((rows) => rows[0])
+      .then((rows: any[]) => rows[0])
 
     const address2 = await testDbInstance.db
       .insert(addresses)
@@ -132,7 +132,7 @@ describe("Cost Router", () => {
         formattedAddress: "456 Another Road, Melbourne VIC 3000",
       })
       .returning()
-      .then((rows) => rows[0])
+      .then((rows: any[]) => rows[0])
 
     // Create test projects
     const project1 = await testDbInstance.db
@@ -146,7 +146,7 @@ describe("Cost Router", () => {
         startDate: new Date("2024-01-01"),
       })
       .returning()
-      .then((rows) => rows[0])
+      .then((rows: any[]) => rows[0])
 
     const project2 = await testDbInstance.db
       .insert(projects)
@@ -159,7 +159,7 @@ describe("Cost Router", () => {
         startDate: new Date("2024-01-01"),
       })
       .returning()
-      .then((rows) => rows[0])
+      .then((rows: any[]) => rows[0])
 
     testProjectId = project1.id
     anotherUserProjectId = project2.id
