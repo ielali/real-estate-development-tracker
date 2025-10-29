@@ -9,6 +9,7 @@
 
 import React from "react"
 import { render, screen, fireEvent, within } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
 import { describe, it, expect, vi } from "vitest"
 import { DocumentGallery, type DocumentItem } from "../DocumentGallery"
 
@@ -121,11 +122,12 @@ describe("DocumentGallery", () => {
       expect(screen.getByRole("tab", { name: /Receipts \(1\)/i })).toBeInTheDocument()
     })
 
-    it("should filter documents when clicking Photos tab", () => {
+    it("should filter documents when clicking Photos tab", async () => {
+      const user = userEvent.setup()
       render(<DocumentGallery documents={mockDocuments} />)
 
       const photosTab = screen.getByRole("tab", { name: /Photos \(2\)/i })
-      fireEvent.click(photosTab)
+      await user.click(photosTab)
 
       // Should show only Photos category documents
       expect(screen.getByText("image1.jpg")).toBeInTheDocument()
@@ -133,11 +135,12 @@ describe("DocumentGallery", () => {
       expect(screen.queryByText("receipt1.pdf")).not.toBeInTheDocument()
     })
 
-    it("should filter documents when clicking Receipts tab", () => {
+    it("should filter documents when clicking Receipts tab", async () => {
+      const user = userEvent.setup()
       render(<DocumentGallery documents={mockDocuments} />)
 
       const receiptsTab = screen.getByRole("tab", { name: /Receipts \(1\)/i })
-      fireEvent.click(receiptsTab)
+      await user.click(receiptsTab)
 
       // Should show only Receipts category documents
       expect(screen.getByText("receipt1.pdf")).toBeInTheDocument()
