@@ -1,10 +1,10 @@
 "use client"
 
 import { useParams, useRouter } from "next/navigation"
-import Link from "next/link"
 import { api } from "@/lib/trpc/client"
 import { Navbar } from "@/components/layout/Navbar"
 import { ProjectEditForm } from "@/components/projects/ProjectEditForm"
+import { Breadcrumb, breadcrumbHelpers } from "@/components/ui/breadcrumb"
 
 /**
  * ProjectEditPage - Page for editing an existing project
@@ -54,9 +54,7 @@ export default function ProjectEditPage() {
       <div className="container max-w-2xl py-10">
         {/* Breadcrumb */}
         <div className="mb-6">
-          <Link href={`/projects/${project.id}` as never} className="text-blue-600 hover:underline">
-            ← Back to Project
-          </Link>
+          <Breadcrumb items={breadcrumbHelpers.editProject(project.name, project.id)} />
         </div>
 
         <div className="mb-8">

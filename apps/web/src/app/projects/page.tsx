@@ -8,6 +8,7 @@ import { ProjectCard } from "@/components/projects/ProjectCard"
 import { ProjectListSkeleton } from "@/components/skeletons/project-list-skeleton"
 import { EmptyState } from "@/components/ui/empty-state"
 import { ErrorState } from "@/components/ui/error-state"
+import { Breadcrumb, breadcrumbHelpers } from "@/components/ui/breadcrumb"
 
 /**
  * ProjectsListPage - Display all projects for the authenticated user
@@ -23,6 +24,9 @@ export default function ProjectsListPage() {
       <>
         <Navbar />
         <div className="container py-10">
+          <div className="mb-6">
+            <Breadcrumb items={breadcrumbHelpers.projects()} />
+          </div>
           <div className="mb-8">
             <h1 className="text-3xl font-bold">Projects</h1>
             <p className="text-gray-600 mt-2">Manage your real estate development projects</p>
@@ -38,6 +42,9 @@ export default function ProjectsListPage() {
       <>
         <Navbar />
         <div className="container py-10">
+          <div className="mb-6">
+            <Breadcrumb items={breadcrumbHelpers.projects()} />
+          </div>
           <div className="mb-8">
             <h1 className="text-3xl font-bold">Projects</h1>
           </div>
@@ -55,6 +62,9 @@ export default function ProjectsListPage() {
     <>
       <Navbar />
       <div className="container py-10">
+        <div className="mb-6">
+          <Breadcrumb items={breadcrumbHelpers.projects()} />
+        </div>
         <div className="mb-8">
           <h1 className="text-3xl font-bold">Projects</h1>
           <p className="text-gray-600 mt-2">Manage your real estate development projects</p>

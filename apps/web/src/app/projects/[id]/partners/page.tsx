@@ -2,12 +2,13 @@
 
 import { useState } from "react"
 import { use } from "react"
-import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Navbar } from "@/components/layout/Navbar"
 import { InvitePartnerDialog } from "@/components/partners/InvitePartnerDialog"
 import { InvitationsList } from "@/components/partners/InvitationsList"
 import { UserPlus } from "lucide-react"
+import { Breadcrumb } from "@/components/ui/breadcrumb"
+import { api } from "@/lib/trpc/client"
 
 /**
  * PartnersPage - Project partners management page
@@ -21,16 +22,25 @@ export default function PartnersPage({ params }: { params: Promise<{ id: string 
   const { id: projectId } = use(params)
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false)
 
+  // Fetch project for breadcrumb
+  const { data: project } = api.projects.getById.useQuery({ id: projectId })
+
+  const breadcrumbItems = [
+    { label: "Projects", href: "/projects" },
+    { label: project?.name || "...", href: `/projects/${projectId}` },
+    { label: "Partners" },
+  ]
+
   return (
     <>
       <Navbar />
       <div className="container mx-auto max-w-6xl space-y-6 p-4 md:p-8">
         {/* Breadcrumb */}
-        <div className="mb-6">
-          <Link href={`/projects/${projectId}` as never} className="text-blue-600 hover:underline">
-            ← Back to Project
-          </Link>
-        </div>
+        {project && (
+          <div className="mb-6">
+            <Breadcrumb items={breadcrumbItems} />
+          </div>
+        )}
 
         {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

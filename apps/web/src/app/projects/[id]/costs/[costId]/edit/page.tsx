@@ -1,14 +1,12 @@
+"use client"
+
 import { Suspense } from "react"
+import { useParams } from "next/navigation"
 import { CostEditForm } from "@/components/costs/CostEditForm"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Navbar } from "@/components/layout/Navbar"
-
-interface PageProps {
-  params: Promise<{
-    id: string
-    costId: string
-  }>
-}
+import { Breadcrumb } from "@/components/ui/breadcrumb"
+import { api } from "@/lib/trpc/client"
 
 /**
  * Cost Edit Page
@@ -18,13 +16,31 @@ interface PageProps {
  *
  * Route: /projects/[id]/costs/[costId]/edit
  */
-export default async function EditCostPage({ params }: PageProps) {
-  const { id: projectId, costId } = await params
+export default function EditCostPage() {
+  const params = useParams()
+  const projectId = params.id as string
+  const costId = params.costId as string
+
+  // Fetch project for breadcrumb
+  const { data: project } = api.projects.getById.useQuery({ id: projectId })
+
+  const breadcrumbItems = [
+    { label: "Projects", href: "/projects" },
+    { label: project?.name || "...", href: `/projects/${projectId}` },
+    { label: "Edit Cost" },
+  ]
 
   return (
     <>
       <Navbar />
       <div className="container max-w-2xl py-8">
+        {/* Breadcrumb */}
+        {project && (
+          <div className="mb-6">
+            <Breadcrumb items={breadcrumbItems} />
+          </div>
+        )}
+
         <Card>
           <CardHeader>
             <CardTitle>Edit Cost</CardTitle>
