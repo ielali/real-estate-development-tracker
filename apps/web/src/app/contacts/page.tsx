@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog"
 import { api } from "@/lib/trpc/client"
 import { Spinner } from "@/components/ui/spinner"
+import { Breadcrumb } from "@/components/ui/breadcrumb"
 
 /**
  * Contacts page - Main page for contact management
@@ -65,6 +66,11 @@ export default function ContactsPage(): JSX.Element {
     <main className="min-h-screen bg-background">
       <Navbar />
       <div className="container mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        {/* Breadcrumb */}
+        <div className="mb-6">
+          <Breadcrumb items={[{ label: "Contacts" }]} />
+        </div>
+
         {/* Page header */}
         <div className="mb-6">
           <h1 className="text-3xl font-bold tracking-tight">Contacts</h1>

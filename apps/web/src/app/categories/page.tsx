@@ -19,6 +19,7 @@ import { CategoryForm } from "@/components/categories/CategoryForm"
 import { CategoryArchiveDialog } from "@/components/categories/CategoryArchiveDialog"
 import { Plus, Archive, FileText } from "lucide-react"
 import type { Category, CategoryType } from "@/server/db/types"
+import { Breadcrumb } from "@/components/ui/breadcrumb"
 
 /**
  * CategoriesPage - Main category management page
@@ -64,6 +65,11 @@ export default function CategoriesPage() {
     <>
       <Navbar />
       <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        {/* Breadcrumb */}
+        <div className="mb-6">
+          <Breadcrumb items={[{ label: "Categories" }]} />
+        </div>
+
         {/* Page Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold tracking-tight">Category Management</h1>
