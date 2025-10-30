@@ -69,9 +69,36 @@ export function ContactSelector({
   disabled = false,
 }: ContactSelectorProps) {
   const [searchTerm, setSearchTerm] = React.useState("")
+  const [recentContactIds, setRecentContactIds] = React.useState<string[]>([])
+
+  const recentKey = `recent-contacts-${projectId}`
 
   // Get contacts associated with this project
   const { data: projectContacts, isLoading } = api.contacts.listByProject.useQuery({ projectId })
+
+  // Load recent contacts from localStorage
+  React.useEffect(() => {
+    try {
+      const stored = localStorage.getItem(recentKey)
+      if (stored) {
+        setRecentContactIds(JSON.parse(stored))
+      }
+    } catch (error) {
+      console.error("Failed to load recent contacts:", error)
+    }
+  }, [recentKey])
+
+  // Save contact as recently used when selected
+  const handleChange = (contactId: string | null) => {
+    onChange(contactId)
+
+    // Track recently used contacts (max 5)
+    if (contactId && contactId !== "unassigned") {
+      const updated = [contactId, ...recentContactIds.filter((id) => id !== contactId)].slice(0, 5)
+      setRecentContactIds(updated)
+      localStorage.setItem(recentKey, JSON.stringify(updated))
+    }
+  }
 
   // Filter contacts by search term
   const filteredContacts = React.useMemo(() => {
@@ -86,6 +113,23 @@ export function ContactSelector({
     })
   }, [projectContacts, searchTerm])
 
+  // Get recently used contacts that are in the filtered list
+  const recentContacts = React.useMemo(() => {
+    if (searchTerm) return [] // Don't show recent when searching
+    const contacts = projectContacts ?? []
+    return recentContactIds
+      .map((id) => contacts.find((c: any) => c.id === id))
+      .filter(Boolean)
+      .slice(0, 5) // Max 5 recent contacts
+  }, [recentContactIds, projectContacts, searchTerm])
+
+  // Get other contacts (excluding recent)
+  const otherContacts = React.useMemo(() => {
+    if (recentContacts.length === 0) return filteredContacts
+    const recentIds = new Set(recentContacts.map((c: any) => c.id))
+    return filteredContacts.filter((contact: any) => !recentIds.has(contact.id))
+  }, [filteredContacts, recentContacts])
+
   // Get selected contact for display
   const selectedContact = projectContacts?.find((c: any) => c.id === value)
 
@@ -93,7 +137,7 @@ export function ContactSelector({
     <div className="space-y-2">
       <Select
         value={value ?? "unassigned"}
-        onValueChange={(v) => onChange(v === "unassigned" ? null : v)}
+        onValueChange={(v) => handleChange(v === "unassigned" ? null : v)}
         disabled={disabled || isLoading}
       >
         <SelectTrigger className={`min-h-[44px] ${error ? "border-red-500" : ""}`}>
@@ -151,11 +195,35 @@ export function ContactSelector({
             </SelectGroup>
           )}
 
-          {/* Contact list */}
-          {filteredContacts.length > 0 ? (
+          {/* Recent contacts */}
+          {recentContacts.length > 0 && (
             <SelectGroup>
-              <SelectLabel>Contacts</SelectLabel>
-              {filteredContacts.map((contact: any) => (
+              <SelectLabel>Recently Used</SelectLabel>
+              {recentContacts.map((contact: any) => (
+                <SelectItem key={contact.id} value={contact.id}>
+                  <div className="flex items-center gap-2">
+                    <span>
+                      {contact.firstName} {contact.lastName}
+                    </span>
+                    {contact.company && (
+                      <span className="text-muted-foreground text-xs">({contact.company})</span>
+                    )}
+                    {contact.category && (
+                      <Badge variant="outline" className="text-xs">
+                        {contact.category.displayName}
+                      </Badge>
+                    )}
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          )}
+
+          {/* Other contacts */}
+          {otherContacts.length > 0 ? (
+            <SelectGroup>
+              <SelectLabel>{recentContacts.length > 0 ? "Other Contacts" : "Contacts"}</SelectLabel>
+              {otherContacts.map((contact: any) => (
                 <SelectItem key={contact.id} value={contact.id}>
                   <div className="flex items-center gap-2">
                     <span>
@@ -177,11 +245,11 @@ export function ContactSelector({
             <div className="px-2 py-4 text-center text-sm text-muted-foreground">
               No contacts found matching "{searchTerm}"
             </div>
-          ) : (
+          ) : recentContacts.length === 0 ? (
             <div className="px-2 py-4 text-center text-sm text-muted-foreground">
               No contacts linked to this project yet
             </div>
-          )}
+          ) : null}
         </SelectContent>
       </Select>
       {error && <p className="text-sm text-red-500">{error}</p>}
