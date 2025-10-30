@@ -1,10 +1,10 @@
 "use client"
 
 import { useParams, useRouter } from "next/navigation"
-import Link from "next/link"
 import { api } from "@/lib/trpc/client"
 import { Navbar } from "@/components/layout/Navbar"
 import { DocumentsSection } from "@/components/documents/DocumentsSection"
+import { Breadcrumb, breadcrumbHelpers } from "@/components/ui/breadcrumb"
 
 /**
  * ProjectDocumentsPage - Document management page for a project
@@ -58,9 +58,7 @@ export default function ProjectDocumentsPage() {
       <div className="container max-w-4xl py-10">
         {/* Breadcrumb */}
         <div className="mb-6">
-          <Link href={`/projects/${projectId}`} className="text-blue-600 hover:underline">
-            ← Back to {project.name}
-          </Link>
+          <Breadcrumb items={breadcrumbHelpers.projectDocuments(project.name, projectId)} />
         </div>
 
         {/* Header */}

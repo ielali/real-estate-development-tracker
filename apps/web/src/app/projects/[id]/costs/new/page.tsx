@@ -1,13 +1,12 @@
+"use client"
+
 import { Suspense } from "react"
+import { useParams } from "next/navigation"
 import { CostEntryForm } from "@/components/costs/CostEntryForm"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Navbar } from "@/components/layout/Navbar"
-
-interface PageProps {
-  params: Promise<{
-    id: string
-  }>
-}
+import { Breadcrumb } from "@/components/ui/breadcrumb"
+import { api } from "@/lib/trpc/client"
 
 /**
  * Cost Entry Page
@@ -17,13 +16,30 @@ interface PageProps {
  *
  * Route: /projects/[id]/costs/new
  */
-export default async function NewCostPage({ params }: PageProps) {
-  const { id: projectId } = await params
+export default function NewCostPage() {
+  const params = useParams()
+  const projectId = params.id as string
+
+  // Fetch project to get name for breadcrumb
+  const { data: project } = api.projects.getById.useQuery({ id: projectId })
+
+  const breadcrumbItems = [
+    { label: "Projects", href: "/projects" },
+    { label: project?.name || "...", href: `/projects/${projectId}` },
+    { label: "Add Cost" },
+  ]
 
   return (
     <>
       <Navbar />
       <div className="container max-w-2xl py-8">
+        {/* Breadcrumb */}
+        {project && (
+          <div className="mb-6">
+            <Breadcrumb items={breadcrumbItems} />
+          </div>
+        )}
+
         <Card>
           <CardHeader>
             <CardTitle>Add Cost</CardTitle>

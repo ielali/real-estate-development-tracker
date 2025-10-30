@@ -35,6 +35,7 @@ import { Timeline, EventEntryForm, TimelineFilter } from "@/components/events"
 import { Plus, Users } from "lucide-react"
 import { useUserRole } from "@/hooks/useUserRole"
 import { PartnerProjectDashboard } from "@/components/partner/PartnerProjectDashboard"
+import { Breadcrumb, breadcrumbHelpers } from "@/components/ui/breadcrumb"
 
 // Lazy load the costs components
 const CostsList = lazy(() =>
@@ -249,13 +250,7 @@ export default function ProjectDetailPage() {
       <div className="container max-w-7xl py-10">
         {/* Breadcrumb */}
         <div className="mb-6">
-          <Link
-            href="/projects"
-            as={"/projects" as never}
-            className="text-blue-600 hover:underline"
-          >
-            ← Back to Projects
-          </Link>
+          <Breadcrumb items={breadcrumbHelpers.project(project.name, project.id)} />
         </div>
 
         {/* Header */}
