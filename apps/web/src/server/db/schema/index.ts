@@ -16,6 +16,7 @@ export * from "./costDocuments"
 export * from "./contactDocuments"
 export * from "./auditLog"
 export * from "./categories"
+export * from "./costTemplates"
 
 import { relations } from "drizzle-orm"
 import { users } from "./users"
@@ -33,11 +34,13 @@ import { eventCosts } from "./eventCosts"
 import { costDocuments } from "./costDocuments"
 import { contactDocuments } from "./contactDocuments"
 import { categories } from "./categories"
+import { costTemplates } from "./costTemplates"
 
 export const usersRelations = relations(users, ({ many }) => ({
   ownedProjects: many(projects),
   projectAccess: many(projectAccess),
   createdCosts: many(costs),
+  costTemplates: many(costTemplates),
 }))
 
 export const addressesRelations = relations(addresses, ({ many }) => ({
@@ -59,6 +62,7 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
   events: many(events),
   projectAccess: many(projectAccess),
   projectContacts: many(projectContact),
+  costTemplates: many(costTemplates),
 }))
 
 export const costsRelations = relations(costs, ({ one, many }) => ({
@@ -213,5 +217,24 @@ export const contactDocumentsRelations = relations(contactDocuments, ({ one }) =
   document: one(documents, {
     fields: [contactDocuments.documentId],
     references: [documents.id],
+  }),
+}))
+
+export const costTemplatesRelations = relations(costTemplates, ({ one }) => ({
+  user: one(users, {
+    fields: [costTemplates.userId],
+    references: [users.id],
+  }),
+  project: one(projects, {
+    fields: [costTemplates.projectId],
+    references: [projects.id],
+  }),
+  category: one(categories, {
+    fields: [costTemplates.categoryId],
+    references: [categories.id],
+  }),
+  contact: one(contacts, {
+    fields: [costTemplates.contactId],
+    references: [contacts.id],
   }),
 }))

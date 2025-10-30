@@ -50,6 +50,13 @@
       "when": 1730160000000,
       "tag": "0006_add_project_tracking_to_audit_log",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1730299200000,
+      "tag": "0007_add_cost_templates",
+      "breakpoints": true
     }
   ]
 }
