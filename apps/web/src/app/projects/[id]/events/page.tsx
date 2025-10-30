@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dialog"
 import { Timeline, EventEntryForm, TimelineFilter } from "@/components/events"
 import { Breadcrumb, breadcrumbHelpers } from "@/components/ui/breadcrumb"
+import { EventQuickActions } from "@/components/navigation/quick-actions"
 
 /**
  * EventsPage - Display and manage project events
@@ -88,14 +89,11 @@ export default function EventsPage() {
             </p>
           </div>
 
-          {/* Desktop: Add Event Button */}
+          {/* Desktop: Event Quick Actions */}
+          <EventQuickActions projectId={projectId} onAddEvent={() => setDialogOpen(true)} />
+
+          {/* Event Dialog */}
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild className="hidden sm:flex">
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Event
-              </Button>
-            </DialogTrigger>
             <DialogContent className="max-w-2xl">
               <DialogHeader>
                 <DialogTitle>Create Event</DialogTitle>

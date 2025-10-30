@@ -36,6 +36,8 @@ import { Plus, Users } from "lucide-react"
 import { useUserRole } from "@/hooks/useUserRole"
 import { PartnerProjectDashboard } from "@/components/partner/PartnerProjectDashboard"
 import { Breadcrumb, breadcrumbHelpers } from "@/components/ui/breadcrumb"
+import { ProjectQuickActions } from "@/components/navigation/quick-actions"
+import { ProjectSwitcher } from "@/components/navigation/project-switcher"
 
 // Lazy load the costs components
 const CostsList = lazy(() =>
@@ -110,6 +112,9 @@ export default function ProjectDetailPage() {
   useFilterPersistence(projectId, filters, searchText, sortBy, sortDirection)
 
   const { data: project, isLoading, error } = api.projects.getById.useQuery({ id: projectId })
+
+  // Fetch all projects for ProjectSwitcher
+  const { data: allProjects = [] } = api.projects.list.useQuery()
 
   // Fetch costs with filters for result count
   const { data: costsData } = api.costs.list.useQuery({
@@ -248,9 +253,17 @@ export default function ProjectDetailPage() {
     <>
       <Navbar />
       <div className="container max-w-7xl py-10">
-        {/* Breadcrumb */}
-        <div className="mb-6">
+        {/* Breadcrumb and Project Switcher */}
+        <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <Breadcrumb items={breadcrumbHelpers.project(project.name, project.id)} />
+          <ProjectSwitcher
+            currentProjectId={project.id}
+            projects={allProjects.map((p) => ({
+              id: p.id,
+              name: p.name,
+              address: (p.address as any)?.formattedAddress,
+            }))}
+          />
         </div>
 
         {/* Header */}
@@ -262,6 +275,7 @@ export default function ProjectDetailPage() {
             </Badge>
           </div>
           <div className="flex gap-2">
+            <ProjectQuickActions projectId={project.id} />
             <Link href={`/projects/${project.id}/documents` as never}>
               <Button variant="outline">Documents</Button>
             </Link>
