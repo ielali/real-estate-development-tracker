@@ -24,6 +24,7 @@ import { ProjectSummaryCard } from "./ProjectSummaryCard"
 import { CostBreakdown } from "./CostBreakdown"
 import { ActivityTimeline } from "./ActivityTimeline"
 import { DocumentGallery } from "./DocumentGallery"
+import { DataVisualizationDashboard } from "./visualizations/DataVisualizationDashboard"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle } from "lucide-react"
@@ -173,6 +174,9 @@ export function PartnerProjectDashboard({ projectId }: PartnerProjectDashboardPr
           ) : null}
         </div>
       </div>
+
+      {/* Advanced Analytics & Visualizations (Story 4.4) */}
+      <DataVisualizationDashboard projectId={projectId} />
 
       {/* Document Gallery */}
       {documentsLoading ? (

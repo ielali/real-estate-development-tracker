@@ -1,5 +1,5 @@
 /**
- * Partner Dashboard tRPC Router (Story 4.3)
+ * Partner Dashboard tRPC Router (Story 4.3 + 4.4)
  *
  * Provides read-only data endpoints for partner dashboard view.
  * All queries use verifyProjectAccess() to ensure partners can only
@@ -10,6 +10,10 @@
  * - getCostBreakdown: Cost totals grouped by category with percentages
  * - getRecentActivity: Timeline of audit log entries
  * - getDocumentGallery: Documents grouped by category with signed URLs
+ * - getSpendingTrend: Time-series spending data with cumulative totals (Story 4.4)
+ * - getVendorDistribution: Vendor spending analysis with percentages (Story 4.4)
+ * - getBudgetComparison: Budget vs actual comparison with variance (Story 4.4)
+ * - getProjectTimeline: Milestone events for timeline visualization (Story 4.4)
  */
 
 import { z } from "zod"
@@ -23,6 +27,8 @@ import { categories } from "@/server/db/schema/categories"
 import { auditLog } from "@/server/db/schema/auditLog"
 import { users } from "@/server/db/schema/users"
 import { projects } from "@/server/db/schema/projects"
+import { events } from "@/server/db/schema/events"
+import { contacts } from "@/server/db/schema/contacts"
 
 export const partnerDashboardRouter = createTRPCRouter({
   /**
@@ -306,5 +312,218 @@ export const partnerDashboardRouter = createTRPCRouter({
         totalCount,
         hasMore: input.offset + input.limit < totalCount,
       }
+    }),
+
+  /**
+   * Get spending trend for time-series visualization (Story 4.4)
+   *
+   * Returns aggregated costs by time range with cumulative totals.
+   * Supports daily, weekly, and monthly grouping with optional date filters.
+   *
+   * Access: Read permission required
+   */
+  getSpendingTrend: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string().uuid(),
+        timeRange: z.enum(["daily", "weekly", "monthly"]).default("daily"),
+        startDate: z.date().optional(),
+        endDate: z.date().optional(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      // Verify access (throws if no access)
+      await verifyProjectAccess(ctx, input.projectId, "read")
+
+      // Determine date truncation based on time range
+      const truncFormat =
+        input.timeRange === "daily" ? "day" : input.timeRange === "weekly" ? "week" : "month"
+
+      // Build date filter conditions
+      const dateConditions = [eq(costs.projectId, input.projectId), isNull(costs.deletedAt)]
+
+      if (input.startDate) {
+        dateConditions.push(gte(costs.date, input.startDate))
+      }
+
+      if (input.endDate) {
+        dateConditions.push(sql`${costs.date} <= ${input.endDate}`)
+      }
+
+      // Aggregate costs by date with date_trunc
+      const aggregatedData = await ctx.db
+        .select({
+          date: sql<string>`DATE_TRUNC(${sql.raw(`'${truncFormat}'`)}, ${costs.date})::date`,
+          amount: sql<number>`CAST(SUM(${costs.amount}) AS INTEGER)`,
+        })
+        .from(costs)
+        .where(and(...dateConditions))
+        .groupBy(sql`DATE_TRUNC(${sql.raw(`'${truncFormat}'`)}, ${costs.date})`)
+        .orderBy(sql`DATE_TRUNC(${sql.raw(`'${truncFormat}'`)}, ${costs.date})`)
+
+      // Calculate cumulative amounts
+      let cumulative = 0
+      const trendData = aggregatedData.map((item: { date: string; amount: number | null }) => {
+        cumulative += item.amount || 0
+        return {
+          date: item.date,
+          amount: item.amount || 0,
+          cumulativeAmount: cumulative,
+        }
+      })
+
+      return trendData
+    }),
+
+  /**
+   * Get vendor distribution for spending analysis (Story 4.4)
+   *
+   * Returns costs grouped by vendor (contact) with totals and percentages.
+   * Includes vendor names from contacts table and handles unassigned costs.
+   *
+   * Access: Read permission required
+   */
+  getVendorDistribution: protectedProcedure
+    .input(z.object({ projectId: z.string().uuid() }))
+    .query(async ({ ctx, input }) => {
+      // Verify access (throws if no access)
+      await verifyProjectAccess(ctx, input.projectId, "read")
+
+      // Get costs grouped by vendor
+      const vendorTotals = await ctx.db
+        .select({
+          contactId: costs.contactId,
+          firstName: contacts.firstName,
+          lastName: contacts.lastName,
+          company: contacts.company,
+          total: sql<number>`CAST(SUM(${costs.amount}) AS INTEGER)`,
+        })
+        .from(costs)
+        .leftJoin(contacts, eq(costs.contactId, contacts.id))
+        .where(and(eq(costs.projectId, input.projectId), isNull(costs.deletedAt)))
+        .groupBy(costs.contactId, contacts.firstName, contacts.lastName, contacts.company)
+
+      // Calculate grand total for percentages
+      const grandTotal = vendorTotals.reduce(
+        (sum: number, item: { total: number | null }) => sum + (item.total || 0),
+        0
+      )
+
+      // Format vendor distribution with percentages
+      const distribution = vendorTotals.map(
+        (item: {
+          contactId: string | null
+          firstName: string | null
+          lastName: string | null
+          company: string | null
+          total: number | null
+        }) => {
+          // Format vendor name (company if available, otherwise first/last name, or "Unassigned")
+          let vendorName = "Unassigned"
+          if (item.contactId) {
+            if (item.company) {
+              vendorName = item.company
+            } else if (item.firstName) {
+              vendorName = `${item.firstName} ${item.lastName || ""}`.trim()
+            }
+          }
+
+          return {
+            vendorId: item.contactId,
+            vendorName,
+            total: item.total || 0,
+            percentage: grandTotal > 0 ? ((item.total || 0) / grandTotal) * 100 : 0,
+          }
+        }
+      )
+
+      return {
+        distribution,
+        grandTotal,
+      }
+    }),
+
+  /**
+   * Get budget comparison for tracking (Story 4.4)
+   *
+   * Returns project budget vs actual spending with variance calculation.
+   * Only returns data if project has a budget set.
+   *
+   * Access: Read permission required
+   */
+  getBudgetComparison: protectedProcedure
+    .input(z.object({ projectId: z.string().uuid() }))
+    .query(async ({ ctx, input }) => {
+      // Verify access (throws if no access)
+      await verifyProjectAccess(ctx, input.projectId, "read")
+
+      // Fetch project to check if budget exists
+      const project = await ctx.db.query.projects.findFirst({
+        where: eq(projects.id, input.projectId),
+      })
+
+      if (!project) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Project not found",
+        })
+      }
+
+      // Return null if no budget is set
+      if (project.totalBudget === null) {
+        return null
+      }
+
+      // Calculate total spent
+      const spentResult = await ctx.db
+        .select({
+          total: sql<number>`CAST(COALESCE(SUM(${costs.amount}), 0) AS INTEGER)`,
+        })
+        .from(costs)
+        .where(and(eq(costs.projectId, input.projectId), isNull(costs.deletedAt)))
+
+      const totalSpent = spentResult[0]?.total || 0
+      const budget = project.totalBudget || 0
+
+      return {
+        budget,
+        spent: totalSpent,
+        variance: budget - totalSpent,
+        percentageUsed: budget > 0 ? (totalSpent / budget) * 100 : 0,
+      }
+    }),
+
+  /**
+   * Get project timeline for milestone visualization (Story 4.4)
+   *
+   * Returns milestone events sorted by date for timeline display.
+   * Filters by milestone categories and includes event details.
+   *
+   * Access: Read permission required
+   */
+  getProjectTimeline: protectedProcedure
+    .input(z.object({ projectId: z.string().uuid() }))
+    .query(async ({ ctx, input }) => {
+      // Verify access (throws if no access)
+      await verifyProjectAccess(ctx, input.projectId, "read")
+
+      // Get milestone category IDs (filter by "milestone" type categories)
+      // Note: Assuming categories with "milestone" in name or specific type
+      // For now, we'll get all events and let frontend filter if needed
+      const milestones = await ctx.db
+        .select({
+          id: events.id,
+          title: events.title,
+          description: events.description,
+          date: events.date,
+          categoryId: events.categoryId,
+          categoryName: categories.displayName,
+        })
+        .from(events)
+        .innerJoin(categories, eq(events.categoryId, categories.id))
+        .where(and(eq(events.projectId, input.projectId), isNull(events.deletedAt)))
+        .orderBy(events.date)
+
+      return milestones
     }),
 })

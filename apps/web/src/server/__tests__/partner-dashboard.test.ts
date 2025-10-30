@@ -1,11 +1,15 @@
 /**
- * Partner Dashboard Router Tests (Story 4.3)
+ * Partner Dashboard Router Tests (Story 4.3 + 4.4)
  *
  * Tests for partner dashboard tRPC queries:
  * - getProjectSummary
  * - getCostBreakdown
  * - getRecentActivity
  * - getDocumentGallery
+ * - getSpendingTrend (Story 4.4)
+ * - getVendorDistribution (Story 4.4)
+ * - getBudgetComparison (Story 4.4)
+ * - getProjectTimeline (Story 4.4)
  *
  * Access Control Tests:
  * - Partners can only access assigned projects
@@ -23,6 +27,8 @@ import { documents } from "@/server/db/schema/documents"
 import { auditLog } from "@/server/db/schema/auditLog"
 import { projectAccess } from "@/server/db/schema/projectAccess"
 import { addresses } from "@/server/db/schema/addresses"
+import { contacts } from "@/server/db/schema/contacts"
+import { events } from "@/server/db/schema/events"
 
 describe("Partner Dashboard Router", () => {
   let cleanup: () => Promise<void>
@@ -420,6 +426,430 @@ describe("Partner Dashboard Router", () => {
 
       expect(result.totalCount).toBe(3)
       expect(Object.keys(result.documents).length).toBeGreaterThan(0)
+    })
+  })
+
+  describe("getSpendingTrend (Story 4.4)", () => {
+    test("returns daily spending trend with cumulative totals", async () => {
+      const ctx = await createTestContext({ role: "admin" })
+      const caller = appRouter.createCaller(ctx)
+
+      // Create address
+      const [address] = await ctx.db
+        .insert(addresses)
+        .values({
+          streetNumber: "123",
+          streetName: "Test",
+          streetType: "Street",
+          suburb: "Testville",
+          state: "VIC",
+          postcode: "3000",
+          country: "Australia",
+          formatted: "123 Test Street, Testville VIC 3000",
+        })
+        .returning()
+
+      // Create project
+      const [project] = await ctx.db
+        .insert(projects)
+        .values({
+          name: "Test Project",
+          ownerId: ctx.user!.id,
+          addressId: address!.id,
+          projectType: "renovation",
+          status: "active",
+          startDate: new Date(),
+        })
+        .returning()
+
+      const projectId = project!.id
+
+      // Get category
+      const allCategories = await ctx.db.select().from(categories).limit(1)
+      const categoryId = allCategories[0]!.id
+
+      // Add costs on different dates
+      const date1 = new Date("2025-01-01")
+      const date2 = new Date("2025-01-02")
+      const date3 = new Date("2025-01-03")
+
+      await ctx.db.insert(costs).values([
+        {
+          projectId,
+          amount: 50000, // $500.00
+          description: "Cost 1",
+          categoryId,
+          date: date1,
+          createdById: ctx.user!.id,
+        },
+        {
+          projectId,
+          amount: 75000, // $750.00
+          description: "Cost 2",
+          categoryId,
+          date: date2,
+          createdById: ctx.user!.id,
+        },
+        {
+          projectId,
+          amount: 25000, // $250.00
+          description: "Cost 3",
+          categoryId,
+          date: date3,
+          createdById: ctx.user!.id,
+        },
+      ])
+
+      // Test getSpendingTrend
+      const result = await caller.partnerDashboard.getSpendingTrend({
+        projectId,
+        timeRange: "daily",
+      })
+
+      expect(result).toHaveLength(3)
+      expect(result[0]).toMatchObject({
+        amount: 50000,
+        cumulativeAmount: 50000,
+      })
+      expect(result[1]).toMatchObject({
+        amount: 75000,
+        cumulativeAmount: 125000,
+      })
+      expect(result[2]).toMatchObject({
+        amount: 25000,
+        cumulativeAmount: 150000,
+      })
+    })
+
+    test("throws FORBIDDEN for partner without access", async () => {
+      const ownerCtx = await createTestContext({ role: "admin" })
+      const partnerCtx = await createTestContext({ role: "partner" })
+      const partnerCaller = appRouter.createCaller(partnerCtx)
+
+      // Create address
+      const [address] = await ownerCtx.db
+        .insert(addresses)
+        .values({
+          streetNumber: "123",
+          streetName: "Test",
+          streetType: "Street",
+          suburb: "Testville",
+          state: "VIC",
+          postcode: "3000",
+          country: "Australia",
+          formatted: "123 Test Street, Testville VIC 3000",
+        })
+        .returning()
+
+      // Create project owned by another user
+      const [project] = await ownerCtx.db
+        .insert(projects)
+        .values({
+          name: "Test Project",
+          ownerId: ownerCtx.user!.id,
+          addressId: address!.id,
+          projectType: "renovation",
+          status: "active",
+          startDate: new Date(),
+        })
+        .returning()
+
+      // Test without access
+      await expect(
+        partnerCaller.partnerDashboard.getSpendingTrend({
+          projectId: project!.id,
+          timeRange: "daily",
+        })
+      ).rejects.toThrow("Project not found or you do not have access")
+    })
+  })
+
+  describe("getVendorDistribution (Story 4.4)", () => {
+    test("returns vendor spending distribution with percentages", async () => {
+      const ctx = await createTestContext({ role: "admin" })
+      const caller = appRouter.createCaller(ctx)
+
+      // Create address
+      const [address] = await ctx.db
+        .insert(addresses)
+        .values({
+          streetNumber: "123",
+          streetName: "Test",
+          streetType: "Street",
+          suburb: "Testville",
+          state: "VIC",
+          postcode: "3000",
+          country: "Australia",
+          formatted: "123 Test Street, Testville VIC 3000",
+        })
+        .returning()
+
+      // Create project
+      const [project] = await ctx.db
+        .insert(projects)
+        .values({
+          name: "Test Project",
+          ownerId: ctx.user!.id,
+          addressId: address!.id,
+          projectType: "renovation",
+          status: "active",
+          startDate: new Date(),
+        })
+        .returning()
+
+      const projectId = project!.id
+
+      // Get category
+      const allCategories = await ctx.db.select().from(categories).limit(1)
+      const categoryId = allCategories[0]!.id
+
+      // Create vendor contact
+      const [contact] = await ctx.db
+        .insert(contacts)
+        .values({
+          firstName: "John",
+          lastName: "Vendor",
+          company: "Test Vendor Co",
+          categoryId,
+        })
+        .returning()
+
+      const contactId = contact!.id
+
+      // Add costs with vendor
+      await ctx.db.insert(costs).values([
+        {
+          projectId,
+          amount: 60000, // $600.00
+          description: "Cost with vendor",
+          categoryId,
+          date: new Date(),
+          contactId,
+          createdById: ctx.user!.id,
+        },
+        {
+          projectId,
+          amount: 40000, // $400.00
+          description: "Cost without vendor",
+          categoryId,
+          date: new Date(),
+          contactId: null,
+          createdById: ctx.user!.id,
+        },
+      ])
+
+      // Test getVendorDistribution
+      const result = await caller.partnerDashboard.getVendorDistribution({ projectId })
+
+      expect(result.grandTotal).toBe(100000)
+      expect(result.distribution).toHaveLength(2)
+
+      const vendorEntry = result.distribution.find(
+        (d: { vendorId: string | null }) => d.vendorId === contactId
+      )
+      expect(vendorEntry).toMatchObject({
+        vendorName: "Test Vendor Co",
+        total: 60000,
+        percentage: 60,
+      })
+
+      const unassignedEntry = result.distribution.find(
+        (d: { vendorId: string | null }) => d.vendorId === null
+      )
+      expect(unassignedEntry).toMatchObject({
+        vendorName: "Unassigned",
+        total: 40000,
+        percentage: 40,
+      })
+    })
+  })
+
+  describe("getBudgetComparison (Story 4.4)", () => {
+    test("returns budget comparison with variance", async () => {
+      const ctx = await createTestContext({ role: "admin" })
+      const caller = appRouter.createCaller(ctx)
+
+      // Create address
+      const [address] = await ctx.db
+        .insert(addresses)
+        .values({
+          streetNumber: "123",
+          streetName: "Test",
+          streetType: "Street",
+          suburb: "Testville",
+          state: "VIC",
+          postcode: "3000",
+          country: "Australia",
+          formatted: "123 Test Street, Testville VIC 3000",
+        })
+        .returning()
+
+      // Create project with budget
+      const [project] = await ctx.db
+        .insert(projects)
+        .values({
+          name: "Test Project",
+          ownerId: ctx.user!.id,
+          addressId: address!.id,
+          projectType: "renovation",
+          status: "active",
+          startDate: new Date(),
+          totalBudget: 200000, // $2000.00
+        })
+        .returning()
+
+      const projectId = project!.id
+
+      // Get category
+      const allCategories = await ctx.db.select().from(categories).limit(1)
+      const categoryId = allCategories[0]!.id
+
+      // Add costs
+      await ctx.db.insert(costs).values({
+        projectId,
+        amount: 150000, // $1500.00
+        description: "Test Cost",
+        categoryId,
+        date: new Date(),
+        createdById: ctx.user!.id,
+      })
+
+      // Test getBudgetComparison
+      const result = await caller.partnerDashboard.getBudgetComparison({ projectId })
+
+      expect(result).toMatchObject({
+        budget: 200000,
+        spent: 150000,
+        variance: 50000,
+        percentageUsed: 75,
+      })
+    })
+
+    test("returns null when no budget is set", async () => {
+      const ctx = await createTestContext({ role: "admin" })
+      const caller = appRouter.createCaller(ctx)
+
+      // Create address
+      const [address] = await ctx.db
+        .insert(addresses)
+        .values({
+          streetNumber: "123",
+          streetName: "Test",
+          streetType: "Street",
+          suburb: "Testville",
+          state: "VIC",
+          postcode: "3000",
+          country: "Australia",
+          formatted: "123 Test Street, Testville VIC 3000",
+        })
+        .returning()
+
+      // Create project WITHOUT budget
+      const [project] = await ctx.db
+        .insert(projects)
+        .values({
+          name: "Test Project",
+          ownerId: ctx.user!.id,
+          addressId: address!.id,
+          projectType: "renovation",
+          status: "active",
+          startDate: new Date(),
+          totalBudget: null,
+        })
+        .returning()
+
+      // Test getBudgetComparison
+      const result = await caller.partnerDashboard.getBudgetComparison({ projectId: project!.id })
+
+      expect(result).toBeNull()
+    })
+  })
+
+  describe("getProjectTimeline (Story 4.4)", () => {
+    test("returns milestone events sorted by date", async () => {
+      const ctx = await createTestContext({ role: "admin" })
+      const caller = appRouter.createCaller(ctx)
+
+      // Create address
+      const [address] = await ctx.db
+        .insert(addresses)
+        .values({
+          streetNumber: "123",
+          streetName: "Test",
+          streetType: "Street",
+          suburb: "Testville",
+          state: "VIC",
+          postcode: "3000",
+          country: "Australia",
+          formatted: "123 Test Street, Testville VIC 3000",
+        })
+        .returning()
+
+      // Create project
+      const [project] = await ctx.db
+        .insert(projects)
+        .values({
+          name: "Test Project",
+          ownerId: ctx.user!.id,
+          addressId: address!.id,
+          projectType: "renovation",
+          status: "active",
+          startDate: new Date(),
+        })
+        .returning()
+
+      const projectId = project!.id
+
+      // Get category
+      const allCategories = await ctx.db.select().from(categories).limit(1)
+      const categoryId = allCategories[0]!.id
+
+      // Add events
+      const date1 = new Date("2025-01-01")
+      const date2 = new Date("2025-02-01")
+      const date3 = new Date("2025-03-01")
+
+      await ctx.db.insert(events).values([
+        {
+          projectId,
+          title: "Project Start",
+          description: "Kick-off meeting",
+          date: date1,
+          categoryId,
+          createdById: ctx.user!.id,
+        },
+        {
+          projectId,
+          title: "Mid-point Review",
+          description: "Progress check",
+          date: date2,
+          categoryId,
+          createdById: ctx.user!.id,
+        },
+        {
+          projectId,
+          title: "Project Completion",
+          description: "Final inspection",
+          date: date3,
+          categoryId,
+          createdById: ctx.user!.id,
+        },
+      ])
+
+      // Test getProjectTimeline
+      const result = await caller.partnerDashboard.getProjectTimeline({ projectId })
+
+      expect(result).toHaveLength(3)
+      expect(result[0]).toMatchObject({
+        title: "Project Start",
+        description: "Kick-off meeting",
+      })
+      expect(result[1]).toMatchObject({
+        title: "Mid-point Review",
+      })
+      expect(result[2]).toMatchObject({
+        title: "Project Completion",
+      })
     })
   })
 })
