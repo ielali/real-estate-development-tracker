@@ -31,6 +31,7 @@ import { getCategoriesByType, getCategoryById } from "@/server/db/types"
 import { formatCurrencyInput, dollarsToCents } from "@/lib/utils/currency"
 import { ContactSelector } from "./ContactSelector"
 import { QuickContactCreate } from "./QuickContactCreate"
+import { CostTemplates } from "./CostTemplates"
 
 /**
  * Client-side form schema for cost entry
@@ -88,6 +89,9 @@ export function CostEntryForm({ projectId, onSuccess, defaultValues }: CostEntry
   const utils = api.useUtils()
   const [isQuickContactOpen, setIsQuickContactOpen] = React.useState(false)
 
+  // Auto-save draft key
+  const draftKey = `cost-draft-${projectId}`
+
   // Get cost categories for the dropdown - only children with parents
   const allCostCategories = getCategoriesByType("cost")
   const costCategories = allCostCategories.filter((cat) => cat.parentId !== null)
@@ -109,16 +113,54 @@ export function CostEntryForm({ projectId, onSuccess, defaultValues }: CostEntry
   // Get today's date in YYYY-MM-DD format for default value
   const today = new Date().toISOString().split("T")[0]
 
+  // Load draft from localStorage if no defaultValues provided
+  const loadDraft = (): Partial<FormValues> | null => {
+    if (defaultValues) return null
+    try {
+      const stored = localStorage.getItem(draftKey)
+      if (stored) {
+        const draft = JSON.parse(stored)
+        // Only use draft if it's from today (don't show old drafts)
+        if (draft.date === today || !draft.date) {
+          return draft
+        }
+      }
+    } catch (error) {
+      console.error("Failed to load draft:", error)
+    }
+    return null
+  }
+
+  const draft = loadDraft()
+
   const form = useForm<FormValues>({
     resolver: zodResolver(costEntryFormSchema),
     defaultValues: {
-      amount: defaultValues?.amount ?? "",
-      description: defaultValues?.description ?? "",
-      categoryId: defaultValues?.categoryId ?? undefined,
-      date: defaultValues?.date ?? today,
-      contactId: defaultValues?.contactId ?? null,
+      amount: defaultValues?.amount ?? draft?.amount ?? "",
+      description: defaultValues?.description ?? draft?.description ?? "",
+      categoryId: defaultValues?.categoryId ?? draft?.categoryId ?? undefined,
+      date: defaultValues?.date ?? draft?.date ?? today,
+      contactId: defaultValues?.contactId ?? draft?.contactId ?? null,
     },
   })
+
+  // Auto-save draft to localStorage on form changes (debounced)
+  const formValues = form.watch()
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      // Only save if there's actual content
+      if (formValues.description || formValues.amount || formValues.categoryId) {
+        localStorage.setItem(draftKey, JSON.stringify(formValues))
+      }
+    }, 1000) // Debounce for 1 second
+
+    return () => clearTimeout(timer)
+  }, [formValues, draftKey])
+
+  // Clear draft on successful submission
+  const clearDraft = () => {
+    localStorage.removeItem(draftKey)
+  }
 
   const createCost = api.costs.create.useMutation({
     // Optimistic update: Add cost to UI immediately
@@ -151,6 +193,7 @@ export function CostEntryForm({ projectId, onSuccess, defaultValues }: CostEntry
     },
     onSuccess: (data) => {
       toast.success("Cost added successfully")
+      clearDraft() // Clear auto-saved draft
       // Invalidate costs list to refetch with real data
       void utils.costs.list.invalidate()
       // Call success callback or navigate
@@ -196,9 +239,42 @@ export function CostEntryForm({ projectId, onSuccess, defaultValues }: CostEntry
 
   const isSubmitting = createCost.isPending
 
+  // Apply template to form
+  const handleApplyTemplate = (template: {
+    description: string
+    categoryId?: string
+    contactId?: string | null
+  }) => {
+    form.setValue("description", template.description)
+    if (template.categoryId) {
+      form.setValue("categoryId", template.categoryId)
+    }
+    if (template.contactId) {
+      form.setValue("contactId", template.contactId)
+    }
+  }
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        {/* Cost Templates */}
+        <div className="flex flex-wrap gap-2 pb-2 border-b">
+          <CostTemplates
+            projectId={projectId}
+            onApplyTemplate={handleApplyTemplate}
+            currentValues={{
+              description: form.watch("description"),
+              categoryId: form.watch("categoryId"),
+              contactId: form.watch("contactId"),
+            }}
+          />
+          {draft && (
+            <div className="text-xs text-muted-foreground flex items-center ml-auto">
+              Draft auto-saved
+            </div>
+          )}
+        </div>
+
         {/* Mobile-first: Stack all fields vertically */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {/* Amount field - Full width on mobile, half on tablet+ */}

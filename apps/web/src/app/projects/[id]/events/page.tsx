@@ -2,7 +2,6 @@
 
 import * as React from "react"
 import { useParams, useRouter } from "next/navigation"
-import Link from "next/link"
 import { Plus } from "lucide-react"
 import { api } from "@/lib/trpc/client"
 import { Navbar } from "@/components/layout/Navbar"
@@ -17,6 +16,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Timeline, EventEntryForm, TimelineFilter } from "@/components/events"
+import { Breadcrumb, breadcrumbHelpers } from "@/components/ui/breadcrumb"
+import { EventQuickActions } from "@/components/navigation/quick-actions"
 
 /**
  * EventsPage - Display and manage project events
@@ -76,9 +77,7 @@ export default function EventsPage() {
       <div className="container max-w-4xl py-10">
         {/* Breadcrumb */}
         <div className="mb-6">
-          <Link href={`/projects/${projectId}` as never} className="text-blue-600 hover:underline">
-            ← Back to {project.name}
-          </Link>
+          <Breadcrumb items={breadcrumbHelpers.projectEvents(project.name, projectId)} />
         </div>
 
         {/* Header */}
@@ -90,14 +89,11 @@ export default function EventsPage() {
             </p>
           </div>
 
-          {/* Desktop: Add Event Button */}
+          {/* Desktop: Event Quick Actions */}
+          <EventQuickActions projectId={projectId} onAddEvent={() => setDialogOpen(true)} />
+
+          {/* Event Dialog */}
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild className="hidden sm:flex">
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Event
-              </Button>
-            </DialogTrigger>
             <DialogContent className="max-w-2xl">
               <DialogHeader>
                 <DialogTitle>Create Event</DialogTitle>

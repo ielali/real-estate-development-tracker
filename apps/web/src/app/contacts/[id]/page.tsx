@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import { api } from "@/lib/trpc/client"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Breadcrumb } from "@/components/ui/breadcrumb"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Dialog,
@@ -40,7 +41,6 @@ import {
   FileText,
   Pencil,
   Trash2,
-  ArrowLeft,
   Link as LinkIcon,
 } from "lucide-react"
 import { toast } from "sonner"
@@ -137,18 +137,23 @@ export default function ContactDetailPage({ params }: ContactDetailPageProps): J
 
   return (
     <div className="container mx-auto py-6 px-4 sm:px-6 lg:px-8">
-      {/* Header with back button and actions */}
+      {/* Breadcrumb */}
+      <div className="mb-6">
+        <Breadcrumb
+          items={[
+            { label: "Contacts", href: "/contacts" },
+            { label: `${contact.firstName} ${contact.lastName}` },
+          ]}
+        />
+      </div>
+
+      {/* Header with actions */}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => router.push("/contacts" as never)}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">
-              {contact.firstName} {contact.lastName}
-            </h1>
-            {contact.company && <p className="mt-1 text-muted-foreground">{contact.company}</p>}
-          </div>
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">
+            {contact.firstName} {contact.lastName}
+          </h1>
+          {contact.company && <p className="mt-1 text-muted-foreground">{contact.company}</p>}
         </div>
 
         <div className="flex gap-2">

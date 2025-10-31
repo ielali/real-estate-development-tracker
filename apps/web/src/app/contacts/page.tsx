@@ -1,7 +1,8 @@
 "use client"
 
 import * as React from "react"
-import { useState } from "react"
+import { useState, useEffect, Suspense } from "react"
+import { useSearchParams } from "next/navigation"
 import { ContactList } from "@/components/contacts/ContactList"
 import { ContactForm } from "@/components/contacts/ContactForm"
 import { Navbar } from "@/components/layout/Navbar"
@@ -14,6 +15,26 @@ import {
 } from "@/components/ui/dialog"
 import { api } from "@/lib/trpc/client"
 import { Spinner } from "@/components/ui/spinner"
+import { Breadcrumb } from "@/components/ui/breadcrumb"
+
+/**
+ * Deep linking handler component - handles ?action=add URL parameter
+ * Must be in a separate component to be wrapped with Suspense
+ */
+function DeepLinkHandler({ onOpenCreate }: { onOpenCreate: () => void }) {
+  const searchParams = useSearchParams()
+
+  useEffect(() => {
+    if (searchParams.get("action") === "add") {
+      onOpenCreate()
+      // Clean up URL by removing the parameter
+      const newUrl = window.location.pathname
+      window.history.replaceState({}, "", newUrl)
+    }
+  }, [searchParams, onOpenCreate])
+
+  return null
+}
 
 /**
  * Contacts page - Main page for contact management
@@ -24,6 +45,7 @@ import { Spinner } from "@/components/ui/spinner"
  * - Edit contacts via modal dialog
  * - Mobile-responsive layout
  * - Breadcrumb navigation
+ * - Deep linking support via ?action=add URL parameter
  */
 export default function ContactsPage(): JSX.Element {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
@@ -63,8 +85,18 @@ export default function ContactsPage(): JSX.Element {
 
   return (
     <main className="min-h-screen bg-background">
+      {/* Deep linking handler - wrapped in Suspense for Next.js static generation */}
+      <Suspense fallback={null}>
+        <DeepLinkHandler onOpenCreate={handleCreateClick} />
+      </Suspense>
+
       <Navbar />
       <div className="container mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        {/* Breadcrumb */}
+        <div className="mb-6">
+          <Breadcrumb items={[{ label: "Contacts" }]} />
+        </div>
+
         {/* Page header */}
         <div className="mb-6">
           <h1 className="text-3xl font-bold tracking-tight">Contacts</h1>

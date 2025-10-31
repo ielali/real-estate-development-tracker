@@ -69,31 +69,103 @@ export function ContactSelector({
   disabled = false,
 }: ContactSelectorProps) {
   const [searchTerm, setSearchTerm] = React.useState("")
+  const [debouncedSearch, setDebouncedSearch] = React.useState("")
+  const [recentContactIds, setRecentContactIds] = React.useState<string[]>([])
 
-  // Get contacts associated with this project
-  const { data: projectContacts, isLoading } = api.contacts.listByProject.useQuery({ projectId })
+  const recentKey = `recent-contacts-${projectId}`
 
-  // Filter contacts by search term
-  const filteredContacts = React.useMemo(() => {
-    const contacts = projectContacts ?? []
-    if (!searchTerm) return contacts
+  // Debounce search term (300ms delay)
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm)
+    }, 300)
 
-    const term = searchTerm.toLowerCase()
-    return contacts.filter((contact: any) => {
-      const fullName = `${contact.firstName} ${contact.lastName ?? ""}`.toLowerCase()
-      const company = contact.company?.toLowerCase() ?? ""
-      return fullName.includes(term) || company.includes(term)
-    })
-  }, [projectContacts, searchTerm])
+    return () => clearTimeout(timer)
+  }, [searchTerm])
 
-  // Get selected contact for display
-  const selectedContact = projectContacts?.find((c: any) => c.id === value)
+  // Dynamic search: only fetch when user types (min 2 characters)
+  const shouldSearch = debouncedSearch.length >= 2
+  const {
+    data: searchResults,
+    isLoading: isSearching,
+    isFetching,
+  } = api.contacts.list.useQuery(
+    { search: debouncedSearch },
+    {
+      enabled: shouldSearch,
+    }
+  )
+
+  // Fetch recent contacts separately (by IDs)
+  const { data: recentContactsData, isLoading: isLoadingRecent } = api.contacts.list.useQuery(
+    {},
+    {
+      enabled: recentContactIds.length > 0 && !shouldSearch,
+      select: (data) => {
+        // Filter to only recent contact IDs
+        return data.filter((row: any) => recentContactIds.includes(row.contact.id))
+      },
+    }
+  )
+
+  // Load recent contact IDs from localStorage
+  React.useEffect(() => {
+    try {
+      const stored = localStorage.getItem(recentKey)
+      if (stored) {
+        setRecentContactIds(JSON.parse(stored))
+      }
+    } catch (error) {
+      console.error("Failed to load recent contacts:", error)
+    }
+  }, [recentKey])
+
+  // Save contact as recently used when selected
+  const handleChange = (contactId: string | null) => {
+    onChange(contactId)
+
+    // Track recently used contacts (max 5)
+    if (contactId && contactId !== "unassigned") {
+      const updated = [contactId, ...recentContactIds.filter((id) => id !== contactId)].slice(0, 5)
+      setRecentContactIds(updated)
+      localStorage.setItem(recentKey, JSON.stringify(updated))
+    }
+  }
+
+  // Display contacts based on search state
+  const displayContacts = shouldSearch ? (searchResults ?? []) : (recentContactsData ?? [])
+
+  // Get recently used contacts (only when not searching)
+  const recentContacts = React.useMemo(() => {
+    if (shouldSearch) return []
+    return (recentContactsData ?? []).slice(0, 5)
+  }, [recentContactsData, shouldSearch])
+
+  // Get other search results (excluding recent when showing recent)
+  const otherContacts = React.useMemo(() => {
+    if (shouldSearch) return searchResults ?? []
+    return []
+  }, [searchResults, shouldSearch])
+
+  // Fetch selected contact for display if we have a value
+  const { data: selectedContactData } = api.contacts.list.useQuery(
+    {},
+    {
+      enabled: !!value && !displayContacts.find((row: any) => row.contact.id === value),
+      select: (data) => data.find((row: any) => row.contact.id === value),
+    }
+  )
+
+  const selectedContact =
+    displayContacts.find((row: any) => row.contact.id === value) || selectedContactData
+
+  const isLoading = isSearching || isLoadingRecent || isFetching
 
   return (
     <div className="space-y-2">
       <Select
         value={value ?? "unassigned"}
-        onValueChange={(v) => onChange(v === "unassigned" ? null : v)}
+        onValueChange={(v) => handleChange(v === "unassigned" ? null : v)}
         disabled={disabled || isLoading}
       >
         <SelectTrigger className={`min-h-[44px] ${error ? "border-red-500" : ""}`}>
@@ -103,7 +175,7 @@ export function ContactSelector({
             ) : value && selectedContact ? (
               <div className="flex items-center gap-2">
                 <span>
-                  {selectedContact.firstName} {selectedContact.lastName}
+                  {selectedContact.contact.firstName} {selectedContact.contact.lastName}
                 </span>
                 {selectedContact.category && (
                   <Badge variant="outline" className="text-xs">
@@ -125,6 +197,10 @@ export function ContactSelector({
               onChange={(e) => setSearchTerm(e.target.value)}
               className="mb-2"
               onClick={(e) => e.stopPropagation()}
+              onKeyDown={(e) => {
+                // Prevent Select from intercepting keyboard events
+                e.stopPropagation()
+              }}
             />
           </div>
 
@@ -151,37 +227,66 @@ export function ContactSelector({
             </SelectGroup>
           )}
 
-          {/* Contact list */}
-          {filteredContacts.length > 0 ? (
+          {/* Loading state during search */}
+          {isLoading && searchTerm.length >= 2 && (
+            <div className="px-2 py-4 text-center text-sm text-muted-foreground">Searching...</div>
+          )}
+
+          {/* Recent contacts (shown when not searching) */}
+          {!shouldSearch && recentContacts.length > 0 && (
             <SelectGroup>
-              <SelectLabel>Contacts</SelectLabel>
-              {filteredContacts.map((contact: any) => (
-                <SelectItem key={contact.id} value={contact.id}>
+              <SelectLabel>Recently Used</SelectLabel>
+              {recentContacts.map((row: any) => (
+                <SelectItem key={row.contact.id} value={row.contact.id}>
                   <div className="flex items-center gap-2">
                     <span>
-                      {contact.firstName} {contact.lastName}
+                      {row.contact.firstName} {row.contact.lastName}
                     </span>
-                    {contact.company && (
-                      <span className="text-muted-foreground text-xs">({contact.company})</span>
+                    {row.contact.company && (
+                      <span className="text-muted-foreground text-xs">({row.contact.company})</span>
                     )}
-                    {contact.category && (
+                    {row.category && (
                       <Badge variant="outline" className="text-xs">
-                        {contact.category.displayName}
+                        {row.category.displayName}
                       </Badge>
                     )}
                   </div>
                 </SelectItem>
               ))}
             </SelectGroup>
-          ) : searchTerm ? (
+          )}
+
+          {/* Search results */}
+          {shouldSearch && otherContacts.length > 0 && !isLoading ? (
+            <SelectGroup>
+              <SelectLabel>Search Results</SelectLabel>
+              {otherContacts.map((row: any) => (
+                <SelectItem key={row.contact.id} value={row.contact.id}>
+                  <div className="flex items-center gap-2">
+                    <span>
+                      {row.contact.firstName} {row.contact.lastName}
+                    </span>
+                    {row.contact.company && (
+                      <span className="text-muted-foreground text-xs">({row.contact.company})</span>
+                    )}
+                    {row.category && (
+                      <Badge variant="outline" className="text-xs">
+                        {row.category.displayName}
+                      </Badge>
+                    )}
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          ) : shouldSearch && !isLoading ? (
             <div className="px-2 py-4 text-center text-sm text-muted-foreground">
               No contacts found matching "{searchTerm}"
             </div>
-          ) : (
+          ) : !shouldSearch && recentContacts.length === 0 && !isLoading ? (
             <div className="px-2 py-4 text-center text-sm text-muted-foreground">
-              No contacts linked to this project yet
+              Type to search contacts (minimum 2 characters)
             </div>
-          )}
+          ) : null}
         </SelectContent>
       </Select>
       {error && <p className="text-sm text-red-500">{error}</p>}
