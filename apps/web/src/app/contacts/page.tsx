@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { ContactList } from "@/components/contacts/ContactList"
 import { ContactForm } from "@/components/contacts/ContactForm"
@@ -18,6 +18,25 @@ import { Spinner } from "@/components/ui/spinner"
 import { Breadcrumb } from "@/components/ui/breadcrumb"
 
 /**
+ * Deep linking handler component - handles ?action=add URL parameter
+ * Must be in a separate component to be wrapped with Suspense
+ */
+function DeepLinkHandler({ onOpenCreate }: { onOpenCreate: () => void }) {
+  const searchParams = useSearchParams()
+
+  useEffect(() => {
+    if (searchParams.get("action") === "add") {
+      onOpenCreate()
+      // Clean up URL by removing the parameter
+      const newUrl = window.location.pathname
+      window.history.replaceState({}, "", newUrl)
+    }
+  }, [searchParams, onOpenCreate])
+
+  return null
+}
+
+/**
  * Contacts page - Main page for contact management
  *
  * Features:
@@ -29,19 +48,8 @@ import { Breadcrumb } from "@/components/ui/breadcrumb"
  * - Deep linking support via ?action=add URL parameter
  */
 export default function ContactsPage(): JSX.Element {
-  const searchParams = useSearchParams()
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [editContactId, setEditContactId] = useState<string | null>(null)
-
-  // Check for action=add URL parameter to auto-open create dialog
-  useEffect(() => {
-    if (searchParams.get("action") === "add") {
-      setIsCreateDialogOpen(true)
-      // Clean up URL by removing the parameter
-      const newUrl = window.location.pathname
-      window.history.replaceState({}, "", newUrl)
-    }
-  }, [searchParams])
 
   // Fetch contact details for editing
   const { data: editContact, isLoading: isLoadingEditContact } = api.contacts.getById.useQuery(
@@ -77,6 +85,11 @@ export default function ContactsPage(): JSX.Element {
 
   return (
     <main className="min-h-screen bg-background">
+      {/* Deep linking handler - wrapped in Suspense for Next.js static generation */}
+      <Suspense fallback={null}>
+        <DeepLinkHandler onOpenCreate={handleCreateClick} />
+      </Suspense>
+
       <Navbar />
       <div className="container mx-auto py-6 px-4 sm:px-6 lg:px-8">
         {/* Breadcrumb */}
