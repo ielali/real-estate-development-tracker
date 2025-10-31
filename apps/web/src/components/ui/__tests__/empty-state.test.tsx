@@ -6,6 +6,7 @@ import { render, screen, cleanup, within } from "@testing-library/react"
 import React from "react"
 import { EmptyState } from "../empty-state"
 import { Button } from "../button"
+import { FolderOpen } from "lucide-react"
 
 describe("EmptyState", () => {
   afterEach(() => {
@@ -50,15 +51,7 @@ describe("EmptyState", () => {
   describe("Structure", () => {
     it("displays icon/illustration when provided", () => {
       const { container } = render(
-        <EmptyState
-          icon={() => (
-            <svg data-testid="test-icon">
-              <circle />
-            </svg>
-          )}
-          title="Empty"
-          description="No content available"
-        />
+        <EmptyState icon={FolderOpen} title="Empty" description="No content available" />
       )
 
       // Check for SVG icon
