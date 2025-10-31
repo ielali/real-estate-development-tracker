@@ -114,14 +114,13 @@ export function ProjectQuickActions({
     {
       label: "Upload Document",
       icon: <FileText className="h-4 w-4" />,
-      onClick:
-        onUploadDocument || (() => router.push(`/projects/${projectId}/documents/new` as never)),
+      onClick: onUploadDocument || (() => router.push(`/projects/${projectId}/documents` as never)),
       shortcut: "⌘D",
     },
     {
       label: "Add Contact",
       icon: <Users className="h-4 w-4" />,
-      onClick: onAddContact || (() => router.push(`/projects/${projectId}/contacts/new` as never)),
+      onClick: onAddContact || (() => router.push("/contacts" as never)),
       shortcut: "⌘K",
     },
     {
@@ -168,13 +167,13 @@ export function GlobalQuickActions({
     {
       label: "Upload Document",
       icon: <Upload className="h-4 w-4" />,
-      onClick: onUploadDocument || (() => router.push("/documents/new" as never)),
+      onClick: onUploadDocument || (() => router.push("/projects" as never)),
       shortcut: "⌘D",
     },
     {
       label: "Add Contact",
       icon: <UserPlus className="h-4 w-4" />,
-      onClick: onAddContact || (() => router.push("/contacts/new" as never)),
+      onClick: onAddContact || (() => router.push("/contacts" as never)),
       shortcut: "⌘K",
     },
   ]
