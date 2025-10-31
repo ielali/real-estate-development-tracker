@@ -169,6 +169,10 @@ export function ContactSelector({
               onChange={(e) => setSearchTerm(e.target.value)}
               className="mb-2"
               onClick={(e) => e.stopPropagation()}
+              onKeyDown={(e) => {
+                // Prevent Select from intercepting keyboard events
+                e.stopPropagation()
+              }}
             />
           </div>
 
