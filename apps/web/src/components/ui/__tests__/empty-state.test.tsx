@@ -48,12 +48,30 @@ describe("EmptyState", () => {
   })
 
   describe("Structure", () => {
-    it("displays icon/illustration", () => {
-      const { container } = render(<EmptyState title="Empty" description="No content available" />)
+    it("displays icon/illustration when provided", () => {
+      const { container } = render(
+        <EmptyState
+          icon={() => (
+            <svg data-testid="test-icon">
+              <circle />
+            </svg>
+          )}
+          title="Empty"
+          description="No content available"
+        />
+      )
 
       // Check for SVG icon
       const svg = container.querySelector("svg")
       expect(svg).toBeInTheDocument()
+    })
+
+    it("renders without icon when not provided", () => {
+      const { container } = render(<EmptyState title="Empty" description="No content available" />)
+
+      // Should not have SVG icon
+      const svg = container.querySelector("svg")
+      expect(svg).not.toBeInTheDocument()
     })
 
     it("centers content vertically and horizontally", () => {
@@ -92,7 +110,7 @@ describe("EmptyState", () => {
     it("applies padding for spacing", () => {
       const { container } = render(<EmptyState title="Empty" description="No content" />)
 
-      const wrapper = container.querySelector(".py-12")
+      const wrapper = container.querySelector(".p-8")
       expect(wrapper).toBeInTheDocument()
     })
 
