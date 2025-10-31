@@ -106,7 +106,8 @@ export function ContactSelector({
     if (!searchTerm) return contacts
 
     const term = searchTerm.toLowerCase()
-    return contacts.filter((contact: any) => {
+    return contacts.filter((row: any) => {
+      const contact = row.contact
       const fullName = `${contact.firstName} ${contact.lastName ?? ""}`.toLowerCase()
       const company = contact.company?.toLowerCase() ?? ""
       return fullName.includes(term) || company.includes(term)
@@ -118,7 +119,7 @@ export function ContactSelector({
     if (searchTerm) return [] // Don't show recent when searching
     const contacts = projectContacts ?? []
     return recentContactIds
-      .map((id) => contacts.find((c: any) => c.id === id))
+      .map((id) => contacts.find((row: any) => row.contact.id === id))
       .filter(Boolean)
       .slice(0, 5) // Max 5 recent contacts
   }, [recentContactIds, projectContacts, searchTerm])
@@ -126,12 +127,12 @@ export function ContactSelector({
   // Get other contacts (excluding recent)
   const otherContacts = React.useMemo(() => {
     if (recentContacts.length === 0) return filteredContacts
-    const recentIds = new Set(recentContacts.map((c: any) => c.id))
-    return filteredContacts.filter((contact: any) => !recentIds.has(contact.id))
+    const recentIds = new Set(recentContacts.map((row: any) => row.contact.id))
+    return filteredContacts.filter((row: any) => !recentIds.has(row.contact.id))
   }, [filteredContacts, recentContacts])
 
   // Get selected contact for display
-  const selectedContact = projectContacts?.find((c: any) => c.id === value)
+  const selectedContact = projectContacts?.find((row: any) => row.contact.id === value)
 
   return (
     <div className="space-y-2">
@@ -147,7 +148,7 @@ export function ContactSelector({
             ) : value && selectedContact ? (
               <div className="flex items-center gap-2">
                 <span>
-                  {selectedContact.firstName} {selectedContact.lastName}
+                  {selectedContact.contact.firstName} {selectedContact.contact.lastName}
                 </span>
                 {selectedContact.category && (
                   <Badge variant="outline" className="text-xs">
@@ -203,18 +204,18 @@ export function ContactSelector({
           {recentContacts.length > 0 && (
             <SelectGroup>
               <SelectLabel>Recently Used</SelectLabel>
-              {recentContacts.map((contact: any) => (
-                <SelectItem key={contact.id} value={contact.id}>
+              {recentContacts.map((row: any) => (
+                <SelectItem key={row.contact.id} value={row.contact.id}>
                   <div className="flex items-center gap-2">
                     <span>
-                      {contact.firstName} {contact.lastName}
+                      {row.contact.firstName} {row.contact.lastName}
                     </span>
-                    {contact.company && (
-                      <span className="text-muted-foreground text-xs">({contact.company})</span>
+                    {row.contact.company && (
+                      <span className="text-muted-foreground text-xs">({row.contact.company})</span>
                     )}
-                    {contact.category && (
+                    {row.category && (
                       <Badge variant="outline" className="text-xs">
-                        {contact.category.displayName}
+                        {row.category.displayName}
                       </Badge>
                     )}
                   </div>
@@ -227,18 +228,18 @@ export function ContactSelector({
           {otherContacts.length > 0 ? (
             <SelectGroup>
               <SelectLabel>{recentContacts.length > 0 ? "Other Contacts" : "Contacts"}</SelectLabel>
-              {otherContacts.map((contact: any) => (
-                <SelectItem key={contact.id} value={contact.id}>
+              {otherContacts.map((row: any) => (
+                <SelectItem key={row.contact.id} value={row.contact.id}>
                   <div className="flex items-center gap-2">
                     <span>
-                      {contact.firstName} {contact.lastName}
+                      {row.contact.firstName} {row.contact.lastName}
                     </span>
-                    {contact.company && (
-                      <span className="text-muted-foreground text-xs">({contact.company})</span>
+                    {row.contact.company && (
+                      <span className="text-muted-foreground text-xs">({row.contact.company})</span>
                     )}
-                    {contact.category && (
+                    {row.category && (
                       <Badge variant="outline" className="text-xs">
-                        {contact.category.displayName}
+                        {row.category.displayName}
                       </Badge>
                     )}
                   </div>
