@@ -120,7 +120,7 @@ export function ProjectQuickActions({
     {
       label: "Add Contact",
       icon: <Users className="h-4 w-4" />,
-      onClick: onAddContact || (() => router.push("/contacts" as never)),
+      onClick: onAddContact || (() => router.push("/contacts?action=add" as never)),
       shortcut: "⌘K",
     },
     {
@@ -173,7 +173,7 @@ export function GlobalQuickActions({
     {
       label: "Add Contact",
       icon: <UserPlus className="h-4 w-4" />,
-      onClick: onAddContact || (() => router.push("/contacts" as never)),
+      onClick: onAddContact || (() => router.push("/contacts?action=add" as never)),
       shortcut: "⌘K",
     },
   ]

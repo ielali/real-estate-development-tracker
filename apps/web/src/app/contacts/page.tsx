@@ -1,7 +1,8 @@
 "use client"
 
 import * as React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useSearchParams } from "next/navigation"
 import { ContactList } from "@/components/contacts/ContactList"
 import { ContactForm } from "@/components/contacts/ContactForm"
 import { Navbar } from "@/components/layout/Navbar"
@@ -25,10 +26,22 @@ import { Breadcrumb } from "@/components/ui/breadcrumb"
  * - Edit contacts via modal dialog
  * - Mobile-responsive layout
  * - Breadcrumb navigation
+ * - Deep linking support via ?action=add URL parameter
  */
 export default function ContactsPage(): JSX.Element {
+  const searchParams = useSearchParams()
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [editContactId, setEditContactId] = useState<string | null>(null)
+
+  // Check for action=add URL parameter to auto-open create dialog
+  useEffect(() => {
+    if (searchParams.get("action") === "add") {
+      setIsCreateDialogOpen(true)
+      // Clean up URL by removing the parameter
+      const newUrl = window.location.pathname
+      window.history.replaceState({}, "", newUrl)
+    }
+  }, [searchParams])
 
   // Fetch contact details for editing
   const { data: editContact, isLoading: isLoadingEditContact } = api.contacts.getById.useQuery(
