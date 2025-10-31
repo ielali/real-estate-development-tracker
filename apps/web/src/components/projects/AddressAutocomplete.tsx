@@ -345,10 +345,3 @@ export function AddressAutocomplete({
     </div>
   )
 }
-
-// Extend global window type to include google
-declare global {
-  interface Window {
-    google: typeof google
-  }
-}

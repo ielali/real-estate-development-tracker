@@ -1,7 +1,8 @@
 import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
+import { twoFactor } from "better-auth/plugins"
 import { db } from "./db"
-import { users, sessions, accounts, verifications } from "./db/schema"
+import { users, sessions, accounts, verifications, twoFactor as twoFactorTable } from "./db/schema"
 import { emailService } from "../lib/email"
 
 export const auth = betterAuth({
@@ -12,8 +13,14 @@ export const auth = betterAuth({
       session: sessions,
       account: accounts,
       verification: verifications,
+      twoFactor: twoFactorTable,
     },
   }),
+  plugins: [
+    twoFactor({
+      issuer: "Real Estate Development Tracker",
+    }),
+  ],
   user: {
     additionalFields: {
       role: {
@@ -63,9 +70,11 @@ export const auth = betterAuth({
     },
   },
   rateLimit: {
-    window: 60 * 1000, // 1 minute
-    max: 10, // 10 requests per minute for auth endpoints
+    window: 5 * 60 * 1000, // 5 minutes
+    max: 5, // 5 requests per 5 minutes for auth endpoints (including 2FA verification)
     storage: "memory", // Use memory storage for rate limiting
+    // NOTE: This provides server-side rate limiting that cannot be bypassed by page refresh
+    // Protects against brute force attacks on 2FA codes (QA SEC-001)
   },
 })
 

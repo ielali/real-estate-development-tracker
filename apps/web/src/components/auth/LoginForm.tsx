@@ -50,17 +50,25 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
     setErrorMessage(null)
 
     try {
-      const { data, error } = await authClient.signIn.email({
+      const response = await authClient.signIn.email({
         email: values.email,
         password: values.password,
         rememberMe: values.rememberMe,
       })
 
-      if (error) {
-        throw new Error(error.message || "Invalid credentials")
+      if (response.error) {
+        throw new Error(response.error.message || "Invalid credentials")
       }
 
-      if (data) {
+      // Check if 2FA verification is required
+      // Use 'in' operator to check for twoFactorRedirect property as per better-auth docs
+      if ("twoFactorRedirect" in response && response.twoFactorRedirect) {
+        // Redirect to 2FA verification page
+        window.location.href = "/login/verify-2fa"
+        return
+      }
+
+      if (response.data) {
         // Call the success handler if provided
         if (onSuccess) {
           onSuccess()

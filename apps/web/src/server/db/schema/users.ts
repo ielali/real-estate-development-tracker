@@ -16,6 +16,8 @@ export const users = pgTable("users", {
   firstName: text("first_name").notNull().default(""),
   lastName: text("last_name").notNull().default(""),
   role: text("role").notNull().default("partner"),
+  // Two-Factor Authentication (Better-auth plugin)
+  twoFactorEnabled: boolean("two_factor_enabled").default(false),
 })
 
 export type User = typeof users.$inferSelect

@@ -26,6 +26,20 @@ interface InvitationEmailData {
   expiresAt: Date
 }
 
+/**
+ * QA Fix (SEC-004): Email notification data for 2FA state changes
+ */
+interface TwoFactorEmailData {
+  user: {
+    email: string
+    name: string
+  }
+  action: "enabled" | "disabled" | "backup-codes-regenerated"
+  ipAddress?: string
+  userAgent?: string
+  timestamp: Date
+}
+
 export class EmailService {
   private isDevelopment = process.env.NODE_ENV === "development"
   private resend: Resend | null = null
@@ -133,6 +147,29 @@ export class EmailService {
 
     await this.sendEmail({
       to: data.email,
+      subject,
+      html,
+      text,
+    })
+  }
+
+  /**
+   * QA Fix (SEC-004): Send email notification for 2FA state changes
+   */
+  async send2FANotification(data: TwoFactorEmailData): Promise<void> {
+    const actionText = {
+      enabled: "Two-Factor Authentication Enabled",
+      disabled: "Two-Factor Authentication Disabled",
+      "backup-codes-regenerated": "Backup Codes Regenerated",
+    }[data.action]
+
+    const subject = `${actionText} - Real Estate Portfolio`
+
+    const html = this.generate2FANotificationHTML(data)
+    const text = this.generate2FANotificationText(data)
+
+    await this.sendEmail({
+      to: data.user.email,
       subject,
       html,
       text,
@@ -466,6 +503,221 @@ If you have questions, contact ${inviterName} at ${inviterEmail}.
 This email was sent from Real Estate Portfolio.
 You received this email because ${inviterName} invited you to collaborate on a project.
     `.trim()
+  }
+
+  /**
+   * QA Fix (SEC-004): Generate HTML email for 2FA state change notifications
+   */
+  private generate2FANotificationHTML(data: TwoFactorEmailData): string {
+    const actionDetails = {
+      enabled: {
+        title: "Two-Factor Authentication Enabled",
+        description: "Two-factor authentication has been enabled on your account.",
+        icon: "🔒",
+        color: "#10b981",
+      },
+      disabled: {
+        title: "Two-Factor Authentication Disabled",
+        description: "Two-factor authentication has been disabled on your account.",
+        icon: "🔓",
+        color: "#f59e0b",
+      },
+      "backup-codes-regenerated": {
+        title: "Backup Codes Regenerated",
+        description:
+          "New backup codes have been generated for your account. Your old codes are no longer valid.",
+        icon: "🔑",
+        color: "#3b82f6",
+      },
+    }[data.action]
+
+    const timestamp = data.timestamp.toLocaleString("en-US", {
+      dateStyle: "full",
+      timeStyle: "long",
+    })
+
+    return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${actionDetails.title}</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f9fafb;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background: ${actionDetails.color};
+            color: white;
+            padding: 32px 24px;
+            text-align: center;
+        }
+        .content {
+            padding: 32px 24px;
+        }
+        .footer {
+            background: #f3f4f6;
+            padding: 24px;
+            text-align: center;
+            color: #6b7280;
+            font-size: 14px;
+        }
+        .info-box {
+            background: #f3f4f6;
+            border-radius: 6px;
+            padding: 16px;
+            margin: 24px 0;
+        }
+        .info-text {
+            color: #4b5563;
+            font-size: 14px;
+            margin: 4px 0;
+        }
+        .warning {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 6px;
+            padding: 16px;
+            margin: 24px 0;
+        }
+        .warning-text {
+            color: #92400e;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 style="margin: 0; font-size: 28px;">${actionDetails.icon} ${actionDetails.title}</h1>
+            <p style="margin: 8px 0 0 0; opacity: 0.9;">Real Estate Portfolio</p>
+        </div>
+
+        <div class="content">
+            <p>Hi ${data.user.name},</p>
+
+            <p>${actionDetails.description}</p>
+
+            <div class="info-box">
+                <p class="info-text"><strong>When:</strong> ${timestamp}</p>
+                ${data.ipAddress ? `<p class="info-text"><strong>IP Address:</strong> ${data.ipAddress}</p>` : ""}
+                ${data.userAgent ? `<p class="info-text"><strong>Device:</strong> ${data.userAgent}</p>` : ""}
+            </div>
+
+            ${
+              data.action === "disabled"
+                ? `
+            <div class="warning">
+                <p class="warning-text">
+                    <strong>Security Notice:</strong> If you did not make this change, please contact support immediately and reset your password.
+                </p>
+            </div>
+            `
+                : ""
+            }
+
+            ${
+              data.action === "backup-codes-regenerated"
+                ? `
+            <p style="color: #6b7280; font-size: 14px;">
+                <strong>Important:</strong> Your previous backup codes are no longer valid. Make sure to save your new codes in a secure location.
+            </p>
+            `
+                : ""
+            }
+
+            <p style="color: #6b7280; font-size: 14px; margin-top: 24px;">
+                If you did not make this change, please secure your account immediately:
+            </p>
+            <ol style="color: #6b7280; font-size: 14px; margin-top: 8px;">
+                <li>Change your password</li>
+                <li>Review your account settings</li>
+                <li>Contact our support team</li>
+            </ol>
+        </div>
+
+        <div class="footer">
+            <p>This email was sent from Real Estate Portfolio</p>
+            <p>This is an automated security notification for your account.</p>
+        </div>
+    </div>
+</body>
+</html>
+    `.trim()
+  }
+
+  /**
+   * QA Fix (SEC-004): Generate plain text email for 2FA state change notifications
+   */
+  private generate2FANotificationText(data: TwoFactorEmailData): string {
+    const actionDetails = {
+      enabled: {
+        title: "Two-Factor Authentication Enabled",
+        description: "Two-factor authentication has been enabled on your account.",
+      },
+      disabled: {
+        title: "Two-Factor Authentication Disabled",
+        description: "Two-factor authentication has been disabled on your account.",
+      },
+      "backup-codes-regenerated": {
+        title: "Backup Codes Regenerated",
+        description:
+          "New backup codes have been generated for your account. Your old codes are no longer valid.",
+      },
+    }[data.action]
+
+    const timestamp = data.timestamp.toLocaleString("en-US", {
+      dateStyle: "full",
+      timeStyle: "long",
+    })
+
+    let text = `
+Hi ${data.user.name},
+
+${actionDetails.description}
+
+WHEN: ${timestamp}
+${data.ipAddress ? `IP ADDRESS: ${data.ipAddress}` : ""}
+${data.userAgent ? `DEVICE: ${data.userAgent}` : ""}
+`
+
+    if (data.action === "disabled") {
+      text += `
+SECURITY NOTICE: If you did not make this change, please contact support immediately and reset your password.
+`
+    }
+
+    if (data.action === "backup-codes-regenerated") {
+      text += `
+IMPORTANT: Your previous backup codes are no longer valid. Make sure to save your new codes in a secure location.
+`
+    }
+
+    text += `
+If you did not make this change, please secure your account immediately:
+1. Change your password
+2. Review your account settings
+3. Contact our support team
+
+This email was sent from Real Estate Portfolio.
+This is an automated security notification for your account.
+    `.trim()
+
+    return text
   }
 }
 

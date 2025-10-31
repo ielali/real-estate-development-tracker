@@ -113,6 +113,14 @@ function createCleanupFunction(db: any) {
         users
       CASCADE
     `)
+
+    // Separately truncate two_factor if it exists (handles migration state)
+    try {
+      await db.execute(sql`TRUNCATE TABLE two_factor CASCADE`)
+    } catch (error) {
+      // Table doesn't exist yet - this is fine during migration periods
+      // Silently skip
+    }
   }
 }
 
@@ -223,6 +231,7 @@ export async function createTestContext(
         emailVerified: true,
         name: "Test User",
         image: null,
+        twoFactorEnabled: false,
       },
     },
     user: {
@@ -234,6 +243,7 @@ export async function createTestContext(
       emailVerified: true,
       name: "Test User",
       image: null,
+      twoFactorEnabled: false,
     },
     headers: new Headers(),
   }
