@@ -73,8 +73,8 @@ export function ContactSelector({
 
   const recentKey = `recent-contacts-${projectId}`
 
-  // Get contacts associated with this project
-  const { data: projectContacts, isLoading } = api.contacts.listByProject.useQuery({ projectId })
+  // Get all contacts (not just project-linked) for broader selection
+  const { data: projectContacts, isLoading } = api.contacts.list.useQuery({})
 
   // Load recent contacts from localStorage
   React.useEffect(() => {
