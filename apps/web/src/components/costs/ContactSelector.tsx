@@ -69,14 +69,46 @@ export function ContactSelector({
   disabled = false,
 }: ContactSelectorProps) {
   const [searchTerm, setSearchTerm] = React.useState("")
+  const [debouncedSearch, setDebouncedSearch] = React.useState("")
   const [recentContactIds, setRecentContactIds] = React.useState<string[]>([])
 
   const recentKey = `recent-contacts-${projectId}`
 
-  // Get all contacts (not just project-linked) for broader selection
-  const { data: projectContacts, isLoading } = api.contacts.list.useQuery({})
+  // Debounce search term (300ms delay)
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm)
+    }, 300)
 
-  // Load recent contacts from localStorage
+    return () => clearTimeout(timer)
+  }, [searchTerm])
+
+  // Dynamic search: only fetch when user types (min 2 characters)
+  const shouldSearch = debouncedSearch.length >= 2
+  const {
+    data: searchResults,
+    isLoading: isSearching,
+    isFetching,
+  } = api.contacts.list.useQuery(
+    { search: debouncedSearch },
+    {
+      enabled: shouldSearch,
+    }
+  )
+
+  // Fetch recent contacts separately (by IDs)
+  const { data: recentContactsData, isLoading: isLoadingRecent } = api.contacts.list.useQuery(
+    {},
+    {
+      enabled: recentContactIds.length > 0 && !shouldSearch,
+      select: (data) => {
+        // Filter to only recent contact IDs
+        return data.filter((row: any) => recentContactIds.includes(row.contact.id))
+      },
+    }
+  )
+
+  // Load recent contact IDs from localStorage
   React.useEffect(() => {
     try {
       const stored = localStorage.getItem(recentKey)
@@ -100,39 +132,34 @@ export function ContactSelector({
     }
   }
 
-  // Filter contacts by search term
-  const filteredContacts = React.useMemo(() => {
-    const contacts = projectContacts ?? []
-    if (!searchTerm) return contacts
+  // Display contacts based on search state
+  const displayContacts = shouldSearch ? (searchResults ?? []) : (recentContactsData ?? [])
 
-    const term = searchTerm.toLowerCase()
-    return contacts.filter((row: any) => {
-      const contact = row.contact
-      const fullName = `${contact.firstName} ${contact.lastName ?? ""}`.toLowerCase()
-      const company = contact.company?.toLowerCase() ?? ""
-      return fullName.includes(term) || company.includes(term)
-    })
-  }, [projectContacts, searchTerm])
-
-  // Get recently used contacts that are in the filtered list
+  // Get recently used contacts (only when not searching)
   const recentContacts = React.useMemo(() => {
-    if (searchTerm) return [] // Don't show recent when searching
-    const contacts = projectContacts ?? []
-    return recentContactIds
-      .map((id) => contacts.find((row: any) => row.contact.id === id))
-      .filter(Boolean)
-      .slice(0, 5) // Max 5 recent contacts
-  }, [recentContactIds, projectContacts, searchTerm])
+    if (shouldSearch) return []
+    return (recentContactsData ?? []).slice(0, 5)
+  }, [recentContactsData, shouldSearch])
 
-  // Get other contacts (excluding recent)
+  // Get other search results (excluding recent when showing recent)
   const otherContacts = React.useMemo(() => {
-    if (recentContacts.length === 0) return filteredContacts
-    const recentIds = new Set(recentContacts.map((row: any) => row.contact.id))
-    return filteredContacts.filter((row: any) => !recentIds.has(row.contact.id))
-  }, [filteredContacts, recentContacts])
+    if (shouldSearch) return searchResults ?? []
+    return []
+  }, [searchResults, shouldSearch])
 
-  // Get selected contact for display
-  const selectedContact = projectContacts?.find((row: any) => row.contact.id === value)
+  // Fetch selected contact for display if we have a value
+  const { data: selectedContactData } = api.contacts.list.useQuery(
+    {},
+    {
+      enabled: !!value && !displayContacts.find((row: any) => row.contact.id === value),
+      select: (data) => data.find((row: any) => row.contact.id === value),
+    }
+  )
+
+  const selectedContact =
+    displayContacts.find((row: any) => row.contact.id === value) || selectedContactData
+
+  const isLoading = isSearching || isLoadingRecent || isFetching
 
   return (
     <div className="space-y-2">
@@ -200,8 +227,13 @@ export function ContactSelector({
             </SelectGroup>
           )}
 
-          {/* Recent contacts */}
-          {recentContacts.length > 0 && (
+          {/* Loading state during search */}
+          {isLoading && searchTerm.length >= 2 && (
+            <div className="px-2 py-4 text-center text-sm text-muted-foreground">Searching...</div>
+          )}
+
+          {/* Recent contacts (shown when not searching) */}
+          {!shouldSearch && recentContacts.length > 0 && (
             <SelectGroup>
               <SelectLabel>Recently Used</SelectLabel>
               {recentContacts.map((row: any) => (
@@ -224,10 +256,10 @@ export function ContactSelector({
             </SelectGroup>
           )}
 
-          {/* Other contacts */}
-          {otherContacts.length > 0 ? (
+          {/* Search results */}
+          {shouldSearch && otherContacts.length > 0 && !isLoading ? (
             <SelectGroup>
-              <SelectLabel>{recentContacts.length > 0 ? "Other Contacts" : "Contacts"}</SelectLabel>
+              <SelectLabel>Search Results</SelectLabel>
               {otherContacts.map((row: any) => (
                 <SelectItem key={row.contact.id} value={row.contact.id}>
                   <div className="flex items-center gap-2">
@@ -246,13 +278,13 @@ export function ContactSelector({
                 </SelectItem>
               ))}
             </SelectGroup>
-          ) : searchTerm ? (
+          ) : shouldSearch && !isLoading ? (
             <div className="px-2 py-4 text-center text-sm text-muted-foreground">
               No contacts found matching "{searchTerm}"
             </div>
-          ) : recentContacts.length === 0 ? (
+          ) : !shouldSearch && recentContacts.length === 0 && !isLoading ? (
             <div className="px-2 py-4 text-center text-sm text-muted-foreground">
-              No contacts linked to this project yet
+              Type to search contacts (minimum 2 characters)
             </div>
           ) : null}
         </SelectContent>
