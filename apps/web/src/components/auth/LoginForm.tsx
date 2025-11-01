@@ -61,8 +61,8 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
       }
 
       // Check if 2FA verification is required
-      // Use 'in' operator to check for twoFactorRedirect property as per better-auth docs
-      if ("twoFactorRedirect" in response && response.twoFactorRedirect) {
+      // The twoFactorRedirect property is returned by better-auth twoFactor plugin
+      if ((response.data as { twoFactorRedirect?: boolean })?.twoFactorRedirect) {
         // Redirect to 2FA verification page
         window.location.href = "/login/verify-2fa"
         return

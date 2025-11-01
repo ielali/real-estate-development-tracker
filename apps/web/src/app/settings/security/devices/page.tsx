@@ -6,10 +6,10 @@ import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Spinner } from "@/components/ui/spinner"
 import { Badge } from "@/components/ui/badge"
+import { Breadcrumb } from "@/components/ui/breadcrumb"
 import { useSession } from "@/lib/auth-client"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, Smartphone, Monitor, Tablet, AlertTriangle, X } from "lucide-react"
-import Link from "next/link"
+import { Smartphone, Monitor, Tablet, AlertTriangle, X } from "lucide-react"
 import { toast } from "sonner"
 import {
   AlertDialog,
@@ -138,16 +138,16 @@ export default function DevicesPage() {
     )
   }
 
+  const breadcrumbs = [
+    { label: "Settings", href: "/settings" },
+    { label: "Security", href: "/settings/security" },
+    { label: "Trusted Devices" },
+  ]
+
   return (
     <div className="container max-w-4xl py-8">
       <div className="mb-6">
-        <Link
-          href="/settings/security"
-          className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Security Settings
-        </Link>
+        <Breadcrumb items={breadcrumbs} className="mb-4" />
         <h1 className="text-3xl font-bold">Trusted Devices</h1>
         <p className="mt-2 text-muted-foreground">
           Manage devices where you've chosen to skip 2FA verification

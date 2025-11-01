@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import React, { useState } from "react"
 import {
   Dialog,
   DialogContent,
@@ -106,9 +106,9 @@ export function TwoFactorSetupDialog({ open, onOpenChange, onSuccess }: TwoFacto
         throw new Error("Invalid verification code")
       }
 
-      // Generate backup codes
+      // Generate backup codes (use the password from step 1)
       const backupResponse = await twoFactor.generateBackupCodes({
-        password: "", // Session-based auth
+        password: password,
       })
 
       if (!backupResponse.data?.backupCodes) {
@@ -117,6 +117,10 @@ export function TwoFactorSetupDialog({ open, onOpenChange, onSuccess }: TwoFacto
 
       setBackupCodes(backupResponse.data.backupCodes)
       setStep("backup-codes")
+
+      // Clear password from memory for security
+      setPassword("")
+
       toast.success("2FA enabled successfully!")
 
       // QA Fix (SEC-004): Send email notification for 2FA enabled

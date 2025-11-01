@@ -5,9 +5,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Shield, ShieldCheck, ShieldOff, Key, Smartphone } from "lucide-react"
+import { Shield, ShieldCheck, ShieldOff, Key, Smartphone, KeyRound } from "lucide-react"
 import { TwoFactorSetupDialog } from "./TwoFactorSetupDialog"
 import { Disable2FADialog } from "./Disable2FADialog"
+import { ChangePasswordForm } from "./ChangePasswordForm"
 import { useSession } from "@/lib/auth-client"
 import { useRouter } from "next/navigation"
 
@@ -25,6 +26,7 @@ export function SecuritySettingsSection() {
   const { data: session, isPending } = useSession()
   const [showSetupDialog, setShowSetupDialog] = useState(false)
   const [showDisableDialog, setShowDisableDialog] = useState(false)
+  const [showChangePassword, setShowChangePassword] = useState(false)
 
   // Check if user has 2FA enabled
   const twoFactorEnabled = session?.user?.twoFactorEnabled ?? false
@@ -58,7 +60,7 @@ export function SecuritySettingsSection() {
   }
 
   return (
-    <>
+    <div className="space-y-6">
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -150,6 +152,26 @@ export function SecuritySettingsSection() {
         </CardContent>
       </Card>
 
+      <Card>
+        <CardHeader>
+          <CardTitle>Password</CardTitle>
+          <CardDescription>Change your account password</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {!showChangePassword ? (
+            <Button variant="outline" onClick={() => setShowChangePassword(true)}>
+              <KeyRound className="mr-2 h-4 w-4" />
+              Change Password
+            </Button>
+          ) : (
+            <ChangePasswordForm
+              onSuccess={() => setShowChangePassword(false)}
+              onCancel={() => setShowChangePassword(false)}
+            />
+          )}
+        </CardContent>
+      </Card>
+
       <TwoFactorSetupDialog
         open={showSetupDialog}
         onOpenChange={setShowSetupDialog}
@@ -160,6 +182,6 @@ export function SecuritySettingsSection() {
         onOpenChange={setShowDisableDialog}
         onSuccess={handleDisableSuccess}
       />
-    </>
+    </div>
   )
 }

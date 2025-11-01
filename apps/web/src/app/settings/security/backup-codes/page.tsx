@@ -8,11 +8,11 @@ import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { BackupCodesDisplay } from "@/components/auth"
 import { Spinner } from "@/components/ui/spinner"
+import { Breadcrumb } from "@/components/ui/breadcrumb"
 import { twoFactor, useSession } from "@/lib/auth-client"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
-import { AlertTriangle, Key, ArrowLeft } from "lucide-react"
-import Link from "next/link"
+import { AlertTriangle, Key } from "lucide-react"
 import { send2FANotification } from "@/app/actions/two-factor"
 
 /**
@@ -20,14 +20,16 @@ import { send2FANotification } from "@/app/actions/two-factor"
  *
  * Allows users with 2FA enabled to:
  * - View existing backup codes (if available)
- * - Regenerate new backup codes (requires 2FA verification)
+ * - Regenerate new backup codes (requires password + 2FA verification)
  * - Download codes for safekeeping
  *
- * Security: Requires active 2FA and valid verification code to regenerate
+ * Security: Requires active 2FA, password verification, and valid TOTP code to regenerate
+ * Defense-in-depth: Password + TOTP provides two-factor verification for this sensitive operation
  */
 export default function BackupCodesPage() {
   const router = useRouter()
   const { data: session, isPending } = useSession()
+  const [password, setPassword] = useState("")
   const [verificationCode, setVerificationCode] = useState("")
   const [newBackupCodes, setNewBackupCodes] = useState<string[]>([])
   const [isRegenerating, setIsRegenerating] = useState(false)
@@ -42,6 +44,11 @@ export default function BackupCodesPage() {
   }
 
   const handleRegenerate = async () => {
+    if (!password || password.length < 1) {
+      setError("Password is required")
+      return
+    }
+
     if (verificationCode.length !== 6) {
       setError("Please enter a 6-digit verification code")
       return
@@ -60,9 +67,9 @@ export default function BackupCodesPage() {
         throw new Error("Invalid verification code")
       }
 
-      // Then regenerate backup codes
+      // Then regenerate backup codes with password for authentication
       const regenerateResponse = await twoFactor.generateBackupCodes({
-        password: "", // Session-based auth
+        password: password,
       })
 
       if (!regenerateResponse.data?.backupCodes) {
@@ -70,7 +77,11 @@ export default function BackupCodesPage() {
       }
 
       setNewBackupCodes(regenerateResponse.data.backupCodes)
+
+      // Clear sensitive data from memory
+      setPassword("")
       setVerificationCode("")
+
       toast.success("Backup codes regenerated successfully")
 
       // QA Fix (SEC-004): Send email notification for backup codes regenerated
@@ -103,16 +114,16 @@ export default function BackupCodesPage() {
     )
   }
 
+  const breadcrumbs = [
+    { label: "Settings", href: "/settings" },
+    { label: "Security", href: "/settings/security" },
+    { label: "Backup Codes" },
+  ]
+
   return (
     <div className="container max-w-4xl py-8">
       <div className="mb-6">
-        <Link
-          href="/settings/security"
-          className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Security Settings
-        </Link>
+        <Breadcrumb items={breadcrumbs} className="mb-4" />
         <h1 className="text-3xl font-bold">Backup Codes</h1>
         <p className="mt-2 text-muted-foreground">
           Manage your two-factor authentication backup codes
@@ -180,6 +191,22 @@ export default function BackupCodesPage() {
               )}
 
               <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter your password"
+                  disabled={isRegenerating}
+                  aria-describedby="password-help"
+                />
+                <p id="password-help" className="text-sm text-muted-foreground">
+                  Enter your account password to confirm this action
+                </p>
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="verification-code">Verification Code</Label>
                 <Input
                   id="verification-code"
@@ -201,7 +228,7 @@ export default function BackupCodesPage() {
 
               <Button
                 onClick={handleRegenerate}
-                disabled={isRegenerating || verificationCode.length !== 6}
+                disabled={isRegenerating || !password || verificationCode.length !== 6}
                 className="w-full"
               >
                 {isRegenerating && <Spinner className="mr-2 h-4 w-4" />}
