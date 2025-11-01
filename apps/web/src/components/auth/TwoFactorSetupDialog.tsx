@@ -14,6 +14,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Spinner } from "@/components/ui/spinner"
+import { PinInput } from "@/components/ui/pin-input"
+import { Copy } from "lucide-react"
 import { twoFactor, useSession } from "@/lib/auth-client"
 import { toast } from "sonner"
 import QRCode from "qrcode"
@@ -45,6 +47,12 @@ export function TwoFactorSetupDialog({ open, onOpenChange, onSuccess }: TwoFacto
   const [backupCodes, setBackupCodes] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string>("")
+
+  // Copy manual secret to clipboard
+  const handleCopySecret = () => {
+    navigator.clipboard.writeText(manualSecret)
+    toast.success("Secret code copied to clipboard")
+  }
 
   // Verify password and initialize 2FA setup
   const handlePasswordVerify = async () => {
@@ -123,10 +131,11 @@ export function TwoFactorSetupDialog({ open, onOpenChange, onSuccess }: TwoFacto
 
       toast.success("2FA enabled successfully!")
 
-      // QA Fix (SEC-004): Send email notification for 2FA enabled
-      if (session?.user?.email && session?.user?.name) {
+      // QA Fix (SEC-004): Send email notification and log security event for 2FA enabled
+      if (session?.user?.id && session?.user?.email && session?.user?.name) {
         await send2FANotification(
           {
+            id: session.user.id,
             email: session.user.email,
             name: session.user.name,
           },
@@ -226,7 +235,18 @@ export function TwoFactorSetupDialog({ open, onOpenChange, onSuccess }: TwoFacto
                     <img src={qrCodeUrl} alt="2FA QR Code" className="h-48 w-48" />
                     <div className="w-full space-y-2">
                       <Label>Can't scan? Enter this code manually:</Label>
-                      <Input value={manualSecret} readOnly className="font-mono text-sm" />
+                      <div className="flex gap-2">
+                        <Input value={manualSecret} readOnly className="font-mono text-sm flex-1" />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={handleCopySecret}
+                          title="Copy to clipboard"
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -238,19 +258,17 @@ export function TwoFactorSetupDialog({ open, onOpenChange, onSuccess }: TwoFacto
         {step === "verify" && (
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="code">Verification Code</Label>
-              <Input
-                id="code"
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                maxLength={6}
+              <Label>Verification Code</Label>
+              <p className="text-sm text-muted-foreground">
+                Enter the 6-digit code from your authenticator app
+              </p>
+              <PinInput
+                length={6}
                 value={verificationCode}
-                onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, ""))}
-                placeholder="000000"
-                className="text-center text-2xl tracking-widest"
-                autoFocus
+                onChange={setVerificationCode}
+                onComplete={handleVerify}
                 disabled={isLoading}
+                autoFocus
               />
             </div>
           </div>

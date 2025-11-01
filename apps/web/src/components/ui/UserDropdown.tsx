@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { LogOut, Settings, ChevronDown } from "lucide-react"
+import { LogOut, Settings, ChevronDown, Shield } from "lucide-react"
 import { useAuth } from "@/components/providers/AuthProvider"
 import { Button } from "@/components/ui/button"
 import {
@@ -64,6 +64,14 @@ export function UserDropdown() {
             <span>Settings</span>
           </Link>
         </DropdownMenuItem>
+        {user.role === "admin" && (
+          <DropdownMenuItem asChild className="cursor-pointer">
+            <Link href="/admin/security">
+              <Shield className="mr-2 h-4 w-4" />
+              <span>Admin Dashboard</span>
+            </Link>
+          </DropdownMenuItem>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem
           className="cursor-pointer text-red-600 focus:text-red-600"

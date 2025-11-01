@@ -10,6 +10,7 @@ import { PinInput } from "@/components/ui/pin-input"
 import { twoFactor } from "@/lib/auth-client"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
+import { log2FALoginSuccess } from "@/app/actions/log-2fa-login"
 
 interface TwoFactorVerifyFormProps {
   onSuccess?: () => void
@@ -24,6 +25,7 @@ interface TwoFactorVerifyFormProps {
  * - Auto-submit when all 6 digits entered
  * - Optional device trust for 30 days
  * - Backup code fallback option
+ * - Security event logging for successful login
  */
 export function TwoFactorVerifyForm({ onSuccess, onUseBackupCode }: TwoFactorVerifyFormProps) {
   const router = useRouter()
@@ -47,6 +49,18 @@ export function TwoFactorVerifyForm({ onSuccess, onUseBackupCode }: TwoFactorVer
       }
 
       toast.success("2FA verification successful")
+
+      // QA Fix (SEC-004): Log successful 2FA login event
+      // Session is automatically updated by better-auth after successful verification
+      // The response contains the user data we need
+      if (response.data.user?.id && response.data.user?.email && response.data.user?.name) {
+        await log2FALoginSuccess({
+          id: response.data.user.id,
+          email: response.data.user.email,
+          name: response.data.user.name,
+        })
+      }
+
       onSuccess?.()
       router.push("/")
     } catch (err) {

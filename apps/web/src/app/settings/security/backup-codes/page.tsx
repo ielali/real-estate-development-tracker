@@ -84,10 +84,11 @@ export default function BackupCodesPage() {
 
       toast.success("Backup codes regenerated successfully")
 
-      // QA Fix (SEC-004): Send email notification for backup codes regenerated
-      if (session?.user?.email && session?.user?.name) {
+      // QA Fix (SEC-004): Send email notification and log security event for backup codes regenerated
+      if (session?.user?.id && session?.user?.email && session?.user?.name) {
         await send2FANotification(
           {
+            id: session.user.id,
             email: session.user.email,
             name: session.user.name,
           },

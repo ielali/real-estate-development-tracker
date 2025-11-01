@@ -719,6 +719,362 @@ This is an automated security notification for your account.
 
     return text
   }
+
+  /**
+   * Story 6.3: Send email notification when backup code is used
+   */
+  async sendBackupCodeUsedEmail(
+    user: { email: string; name: string },
+    timestamp: Date,
+    device: string,
+    ipAddress: string
+  ): Promise<void> {
+    const subject = "Security Alert: Backup Code Used - Real Estate Portfolio"
+
+    const html = this.generateBackupCodeUsedHTML(user, timestamp, device, ipAddress)
+    const text = this.generateBackupCodeUsedText(user, timestamp, device, ipAddress)
+
+    await this.sendEmail({
+      to: user.email,
+      subject,
+      html,
+      text,
+    })
+  }
+
+  /**
+   * Story 6.3: Send email notification when project backup is downloaded
+   */
+  async sendBackupDownloadedEmail(
+    user: { email: string; name: string },
+    projectName: string,
+    timestamp: Date,
+    device: string,
+    ipAddress: string
+  ): Promise<void> {
+    const subject = "Project Backup Downloaded - Real Estate Portfolio"
+
+    const html = this.generateBackupDownloadedHTML(user, projectName, timestamp, device, ipAddress)
+    const text = this.generateBackupDownloadedText(user, projectName, timestamp, device, ipAddress)
+
+    await this.sendEmail({
+      to: user.email,
+      subject,
+      html,
+      text,
+    })
+  }
+
+  /**
+   * Story 6.3: Generate HTML email for backup code used alert
+   */
+  private generateBackupCodeUsedHTML(
+    user: { email: string; name: string },
+    timestamp: Date,
+    device: string,
+    ipAddress: string
+  ): string {
+    const formattedTimestamp = timestamp.toLocaleString("en-US", {
+      dateStyle: "full",
+      timeStyle: "long",
+    })
+
+    // Partially mask IP address for privacy (e.g., "203.0.113.xxx")
+    const maskedIP = ipAddress.split(".").slice(0, 3).join(".") + ".xxx"
+
+    return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Alert: Backup Code Used</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f9fafb;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background: #dc2626;
+            color: white;
+            padding: 32px 24px;
+            text-align: center;
+        }
+        .content {
+            padding: 32px 24px;
+        }
+        .footer {
+            background: #f3f4f6;
+            padding: 24px;
+            text-align: center;
+            color: #6b7280;
+            font-size: 14px;
+        }
+        .info-box {
+            background: #f3f4f6;
+            border-radius: 6px;
+            padding: 16px;
+            margin: 24px 0;
+        }
+        .info-text {
+            color: #4b5563;
+            font-size: 14px;
+            margin: 4px 0;
+        }
+        .warning {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 6px;
+            padding: 16px;
+            margin: 24px 0;
+        }
+        .warning-text {
+            color: #92400e;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 style="margin: 0; font-size: 28px;">🚨 Security Alert: Backup Code Used</h1>
+            <p style="margin: 8px 0 0 0; opacity: 0.9;">Real Estate Portfolio</p>
+        </div>
+
+        <div class="content">
+            <p>Hi ${user.name},</p>
+
+            <p>A backup code was used to sign in to your account. This is an important security event.</p>
+
+            <div class="info-box">
+                <p class="info-text"><strong>When:</strong> ${formattedTimestamp}</p>
+                <p class="info-text"><strong>Device:</strong> ${device}</p>
+                <p class="info-text"><strong>IP Address:</strong> ${maskedIP}</p>
+            </div>
+
+            <div class="warning">
+                <p class="warning-text">
+                    <strong>Security Notice:</strong> Backup codes should only be used when you don't have access to your authenticator app. If this wasn't you, contact support immediately and secure your account.
+                </p>
+            </div>
+
+            <p style="color: #6b7280; font-size: 14px; margin-top: 24px;">
+                <strong>Remember:</strong> Each backup code can only be used once. Generate new codes if you're running low.
+            </p>
+        </div>
+
+        <div class="footer">
+            <p>This email was sent from Real Estate Portfolio</p>
+            <p>This is an automated security notification for your account.</p>
+        </div>
+    </div>
+</body>
+</html>
+    `.trim()
+  }
+
+  /**
+   * Story 6.3: Generate plain text email for backup code used alert
+   */
+  private generateBackupCodeUsedText(
+    user: { email: string; name: string },
+    timestamp: Date,
+    device: string,
+    ipAddress: string
+  ): string {
+    const formattedTimestamp = timestamp.toLocaleString("en-US", {
+      dateStyle: "full",
+      timeStyle: "long",
+    })
+
+    const maskedIP = ipAddress.split(".").slice(0, 3).join(".") + ".xxx"
+
+    return `
+Hi ${user.name},
+
+A backup code was used to sign in to your account. This is an important security event.
+
+WHEN: ${formattedTimestamp}
+DEVICE: ${device}
+IP ADDRESS: ${maskedIP}
+
+SECURITY NOTICE: Backup codes should only be used when you don't have access to your authenticator app. If this wasn't you, contact support immediately and secure your account.
+
+REMEMBER: Each backup code can only be used once. Generate new codes if you're running low.
+
+This email was sent from Real Estate Portfolio.
+This is an automated security notification for your account.
+    `.trim()
+  }
+
+  /**
+   * Story 6.3: Generate HTML email for project backup downloaded notification
+   */
+  private generateBackupDownloadedHTML(
+    user: { email: string; name: string },
+    projectName: string,
+    timestamp: Date,
+    device: string,
+    ipAddress: string
+  ): string {
+    const formattedTimestamp = timestamp.toLocaleString("en-US", {
+      dateStyle: "full",
+      timeStyle: "long",
+    })
+
+    const maskedIP = ipAddress.split(".").slice(0, 3).join(".") + ".xxx"
+
+    return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Backup Downloaded</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f9fafb;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background: #3b82f6;
+            color: white;
+            padding: 32px 24px;
+            text-align: center;
+        }
+        .content {
+            padding: 32px 24px;
+        }
+        .footer {
+            background: #f3f4f6;
+            padding: 24px;
+            text-align: center;
+            color: #6b7280;
+            font-size: 14px;
+        }
+        .info-box {
+            background: #f3f4f6;
+            border-radius: 6px;
+            padding: 16px;
+            margin: 24px 0;
+        }
+        .info-text {
+            color: #4b5563;
+            font-size: 14px;
+            margin: 4px 0;
+        }
+        .warning {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 6px;
+            padding: 16px;
+            margin: 24px 0;
+        }
+        .warning-text {
+            color: #92400e;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 style="margin: 0; font-size: 28px;">💾 Project Backup Downloaded</h1>
+            <p style="margin: 8px 0 0 0; opacity: 0.9;">Real Estate Portfolio</p>
+        </div>
+
+        <div class="content">
+            <p>Hi ${user.name},</p>
+
+            <p>A backup of your project <strong>${projectName}</strong> was downloaded from your account.</p>
+
+            <div class="info-box">
+                <p class="info-text"><strong>When:</strong> ${formattedTimestamp}</p>
+                <p class="info-text"><strong>Project:</strong> ${projectName}</p>
+                <p class="info-text"><strong>Device:</strong> ${device}</p>
+                <p class="info-text"><strong>IP Address:</strong> ${maskedIP}</p>
+            </div>
+
+            <div class="warning">
+                <p class="warning-text">
+                    <strong>Security Notice:</strong> If you didn't download this backup, please contact support immediately. Unauthorized access to project backups could indicate a security issue.
+                </p>
+            </div>
+
+            <p style="color: #6b7280; font-size: 14px; margin-top: 24px;">
+                Project backups contain sensitive information including costs, contacts, and documents. Please store them securely.
+            </p>
+        </div>
+
+        <div class="footer">
+            <p>This email was sent from Real Estate Portfolio</p>
+            <p>This is an automated security notification for your account.</p>
+        </div>
+    </div>
+</body>
+</html>
+    `.trim()
+  }
+
+  /**
+   * Story 6.3: Generate plain text email for project backup downloaded notification
+   */
+  private generateBackupDownloadedText(
+    user: { email: string; name: string },
+    projectName: string,
+    timestamp: Date,
+    device: string,
+    ipAddress: string
+  ): string {
+    const formattedTimestamp = timestamp.toLocaleString("en-US", {
+      dateStyle: "full",
+      timeStyle: "long",
+    })
+
+    const maskedIP = ipAddress.split(".").slice(0, 3).join(".") + ".xxx"
+
+    return `
+Hi ${user.name},
+
+A backup of your project "${projectName}" was downloaded from your account.
+
+WHEN: ${formattedTimestamp}
+PROJECT: ${projectName}
+DEVICE: ${device}
+IP ADDRESS: ${maskedIP}
+
+SECURITY NOTICE: If you didn't download this backup, please contact support immediately. Unauthorized access to project backups could indicate a security issue.
+
+Project backups contain sensitive information including costs, contacts, and documents. Please store them securely.
+
+This email was sent from Real Estate Portfolio.
+This is an automated security notification for your account.
+    `.trim()
+  }
 }
 
 export const emailService = new EmailService()

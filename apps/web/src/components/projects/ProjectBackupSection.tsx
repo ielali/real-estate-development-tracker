@@ -1,12 +1,13 @@
 "use client"
 
 import React, { useState } from "react"
+import Link from "next/link"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Progress } from "@/components/ui/progress"
-import { Download, FileJson, FileArchive, Info, AlertCircle } from "lucide-react"
+import { Download, FileJson, FileArchive, Info, AlertCircle, ExternalLink } from "lucide-react"
 import { api } from "@/lib/trpc/client"
 import { useToast } from "@/hooks/use-toast"
 
@@ -184,6 +185,16 @@ export function ProjectBackupSection({
           <AlertDescription>
             <strong>Backup options:</strong> JSON includes metadata only (fast). ZIP includes all
             documents (may take 1-2 minutes for large projects).
+            <br />
+            <Link
+              href="https://github.com/ielali/real-estate-development-tracker/blob/main/docs/guides/backup-restoration.md"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-xs text-primary hover:underline mt-1"
+            >
+              View backup and restoration guide
+              <ExternalLink className="h-3 w-3" />
+            </Link>
           </AlertDescription>
         </Alert>
 

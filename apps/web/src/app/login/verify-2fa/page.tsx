@@ -11,6 +11,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { twoFactor } from "@/lib/auth-client"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
+import { logBackupCodeUsed } from "@/app/actions/log-2fa-login"
 
 export default function Verify2FAPage() {
   const router = useRouter()
@@ -38,6 +39,18 @@ export default function Verify2FAPage() {
       }
 
       toast.success("Backup code verified successfully")
+
+      // QA Fix (SEC-004): Log backup code usage and send email notification
+      // Session is automatically updated by better-auth after successful verification
+      // The response contains the user data we need
+      if (response.data.user?.id && response.data.user?.email && response.data.user?.name) {
+        await logBackupCodeUsed({
+          id: response.data.user.id,
+          email: response.data.user.email,
+          name: response.data.user.name,
+        })
+      }
+
       router.push("/")
     } catch (err) {
       console.error("Backup code verification error:", err)

@@ -11,6 +11,8 @@ import {
 } from "../helpers/authorization"
 import { backupService } from "@/server/services/backup.service"
 import { backupRateLimiter, RATE_LIMITS } from "@/lib/rate-limiter"
+import { securityEventLogger, getRequestMetadata } from "@/server/services/security-event-logger"
+import { emailService } from "@/lib/email"
 
 /**
  * Zod schema for Australian states
@@ -464,6 +466,26 @@ export const projectRouter = createTRPCRouter({
           .replace("T", "-")
         const filename = `${sanitizedName}-backup-${timestamp}.json`
 
+        // Story 6.3: Log security event and send email notification
+        const { ipAddress, userAgent } = getRequestMetadata(ctx.headers)
+        const user = ctx.session.user
+
+        // Log security event (async, don't block response)
+        securityEventLogger
+          .logBackupDownloaded(userId, input.projectId, project.name, ipAddress, userAgent)
+          .catch((err) => console.error("Failed to log backup download event:", err))
+
+        // Send email notification (async, don't block response)
+        emailService
+          .sendBackupDownloadedEmail(
+            { email: user.email, name: user.name },
+            project.name,
+            new Date(),
+            userAgent,
+            ipAddress
+          )
+          .catch((err) => console.error("Failed to send backup download email:", err))
+
         return {
           backupData,
           filename,
@@ -498,6 +520,26 @@ export const projectRouter = createTRPCRouter({
           .replace(/\..+/, "")
           .replace("T", "-")
         const filename = `${sanitizedName}-archive-${timestamp}.zip`
+
+        // Story 6.3: Log security event and send email notification
+        const { ipAddress, userAgent } = getRequestMetadata(ctx.headers)
+        const user = ctx.session.user
+
+        // Log security event (async, don't block response)
+        securityEventLogger
+          .logBackupDownloaded(userId, input.projectId, project.name, ipAddress, userAgent)
+          .catch((err) => console.error("Failed to log backup download event:", err))
+
+        // Send email notification (async, don't block response)
+        emailService
+          .sendBackupDownloadedEmail(
+            { email: user.email, name: user.name },
+            project.name,
+            new Date(),
+            userAgent,
+            ipAddress
+          )
+          .catch((err) => console.error("Failed to send backup download email:", err))
 
         return {
           zipData,
