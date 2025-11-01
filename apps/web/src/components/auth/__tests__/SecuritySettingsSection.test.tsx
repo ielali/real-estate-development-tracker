@@ -44,7 +44,7 @@ describe("SecuritySettingsSection", () => {
     render(<SecuritySettingsSection />)
 
     expect(screen.getByRole("heading", { name: /two-factor authentication/i })).toBeInTheDocument()
-    expect(screen.getByText(/not enabled/i)).toBeInTheDocument()
+    expect(screen.getByText(/disabled/i)).toBeInTheDocument()
   })
 
   it("shows 2FA enabled status when user has 2FA enabled", () => {

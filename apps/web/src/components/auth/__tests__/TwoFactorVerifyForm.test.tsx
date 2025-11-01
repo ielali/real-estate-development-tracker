@@ -10,8 +10,7 @@ const mockUseRouter = vi.fn()
 
 vi.mock("@/lib/auth-client", () => ({
   twoFactor: {
-    // eslint-disable-line @typescript-eslint/no-explicit-any
-    verifyTotp: (...args: any[]) => mockVerifyTotp(...args),
+    verifyTotp: (...args: unknown[]) => mockVerifyTotp(...args),
   },
 }))
 
@@ -61,10 +60,12 @@ describe("TwoFactorVerifyForm", () => {
     expect(digit6).toBeInTheDocument()
   })
 
-  it("renders use backup code button", () => {
+  it("does not render backup code button when callback not provided", () => {
     render(<TwoFactorVerifyForm />)
 
-    expect(screen.getByRole("button", { name: /use a backup code instead/i })).toBeInTheDocument()
+    expect(
+      screen.queryByRole("button", { name: /use a backup code instead/i })
+    ).not.toBeInTheDocument()
   })
 
   it("code input only accepts numbers", async () => {
@@ -84,9 +85,10 @@ describe("TwoFactorVerifyForm", () => {
 
     render(<TwoFactorVerifyForm />)
 
-    // Type 6 digits
+    // Paste 6 digits (PinInput supports paste)
     const digit1 = screen.getByLabelText("Digit 1")
-    await user.type(digit1, "123456")
+    await user.click(digit1)
+    await user.paste("123456")
 
     // Should auto-submit via onComplete
     await waitFor(() => {
@@ -115,9 +117,10 @@ describe("TwoFactorVerifyForm", () => {
     const checkbox = screen.getByLabelText(/trust this device for 30 days/i)
     await user.click(checkbox)
 
-    // Enter code
+    // Enter code via paste
     const digit1 = screen.getByLabelText("Digit 1")
-    await user.type(digit1, "123456")
+    await user.click(digit1)
+    await user.paste("123456")
 
     await waitFor(() => {
       expect(mockVerifyTotp).toHaveBeenCalledWith({
@@ -134,7 +137,8 @@ describe("TwoFactorVerifyForm", () => {
     render(<TwoFactorVerifyForm />)
 
     const digit1 = screen.getByLabelText("Digit 1")
-    await user.type(digit1, "123456")
+    await user.click(digit1)
+    await user.paste("123456")
 
     await waitFor(() => {
       expect(mockUseRouter).toHaveBeenCalledWith("/")
@@ -148,7 +152,8 @@ describe("TwoFactorVerifyForm", () => {
     render(<TwoFactorVerifyForm />)
 
     const digit1 = screen.getByLabelText("Digit 1")
-    await user.type(digit1, "123456")
+    await user.click(digit1)
+    await user.paste("123456")
 
     await waitFor(() => {
       expect(screen.getByText(/invalid code/i)).toBeInTheDocument()
@@ -162,7 +167,8 @@ describe("TwoFactorVerifyForm", () => {
     render(<TwoFactorVerifyForm />)
 
     const digit1 = screen.getByLabelText("Digit 1") as HTMLInputElement
-    await user.type(digit1, "123456")
+    await user.click(digit1)
+    await user.paste("123456")
 
     await waitFor(() => {
       // After error, code should be cleared
@@ -180,7 +186,8 @@ describe("TwoFactorVerifyForm", () => {
     render(<TwoFactorVerifyForm />)
 
     const digit1 = screen.getByLabelText("Digit 1") as HTMLInputElement
-    await user.type(digit1, "123456")
+    await user.click(digit1)
+    await user.paste("123456")
 
     // Check that inputs are disabled during verification
     await waitFor(() => {
@@ -197,7 +204,8 @@ describe("TwoFactorVerifyForm", () => {
     render(<TwoFactorVerifyForm />)
 
     const digit1 = screen.getByLabelText("Digit 1")
-    await user.type(digit1, "123456")
+    await user.click(digit1)
+    await user.paste("123456")
 
     await waitFor(() => {
       expect(screen.getByText(/verifying/i)).toBeInTheDocument()
