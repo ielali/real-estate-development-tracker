@@ -38,97 +38,86 @@ describe("TwoFactorVerifyForm", () => {
     cleanup()
   })
 
-  it("renders verification code input", () => {
+  it("renders verification code label", () => {
     render(<TwoFactorVerifyForm />)
 
-    expect(screen.getByLabelText(/verification code/i)).toBeInTheDocument()
+    expect(screen.getByText("Verification Code")).toBeInTheDocument()
   })
 
   it("renders trust device checkbox", () => {
     render(<TwoFactorVerifyForm />)
 
-    expect(screen.getByLabelText(/remember this device/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/trust this device for 30 days/i)).toBeInTheDocument()
   })
 
-  it("renders verify button", () => {
+  it("renders 6 digit input fields", () => {
     render(<TwoFactorVerifyForm />)
 
-    expect(screen.getByRole("button", { name: /verify code/i })).toBeInTheDocument()
+    // PinInput creates 6 separate inputs with aria-labels
+    const digit1 = screen.getByLabelText("Digit 1")
+    const digit6 = screen.getByLabelText("Digit 6")
+
+    expect(digit1).toBeInTheDocument()
+    expect(digit6).toBeInTheDocument()
   })
 
   it("renders use backup code button", () => {
     render(<TwoFactorVerifyForm />)
 
-    expect(screen.getByRole("button", { name: /use backup code/i })).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: /use a backup code instead/i })).toBeInTheDocument()
   })
 
   it("code input only accepts numbers", async () => {
     const user = userEvent.setup()
     render(<TwoFactorVerifyForm />)
 
-    const input = screen.getByLabelText(/verification code/i) as HTMLInputElement
-    await user.type(input, "abc123def")
+    const input = screen.getByLabelText("Digit 1") as HTMLInputElement
+    await user.type(input, "abc")
 
-    // Should only have numbers
-    expect(input.value).toBe("123")
+    // Should not accept letters (pattern="[0-9]*" on input)
+    expect(input.value).toBe("")
   })
 
-  it("code input limits to 6 digits", async () => {
-    const user = userEvent.setup()
-    render(<TwoFactorVerifyForm />)
-
-    const input = screen.getByLabelText(/verification code/i) as HTMLInputElement
-    await user.type(input, "1234567890")
-
-    expect(input.value).toBe("123456")
-  })
-
-  it("verify button is disabled when code is less than 6 digits", () => {
-    render(<TwoFactorVerifyForm />)
-
-    const button = screen.getByRole("button", { name: /verify code/i })
-    expect(button).toBeDisabled()
-  })
-
-  it("verify button is enabled when code is 6 digits", async () => {
-    const user = userEvent.setup()
-    render(<TwoFactorVerifyForm />)
-
-    const input = screen.getByLabelText(/verification code/i)
-    await user.type(input, "123456")
-
-    const button = screen.getByRole("button", { name: /verify code/i })
-    await waitFor(() => {
-      expect(button).not.toBeDisabled()
-    })
-  })
-
-  it("shows backup code input when use backup code button clicked", async () => {
-    const user = userEvent.setup()
-    render(<TwoFactorVerifyForm />)
-
-    const backupButton = screen.getByRole("button", { name: /use backup code/i })
-    await user.click(backupButton)
-
-    await waitFor(() => {
-      expect(screen.getByLabelText(/backup code/i)).toBeInTheDocument()
-    })
-  })
-
-  it("calls verifyTotp with correct parameters on submit", async () => {
+  it("auto-submits when all 6 digits entered", async () => {
     const user = userEvent.setup()
     mockVerifyTotp.mockResolvedValue({ data: { success: true } })
 
     render(<TwoFactorVerifyForm />)
 
-    const input = screen.getByLabelText(/verification code/i)
-    await user.type(input, "123456")
+    // Type 6 digits
+    const digit1 = screen.getByLabelText("Digit 1")
+    await user.type(digit1, "123456")
 
-    const checkbox = screen.getByLabelText(/remember this device/i)
+    // Should auto-submit via onComplete
+    await waitFor(() => {
+      expect(mockVerifyTotp).toHaveBeenCalledWith({
+        code: "123456",
+        trustDevice: false,
+      })
+    })
+  })
+
+  it("shows backup code button when onUseBackupCode provided", () => {
+    const mockOnUseBackupCode = vi.fn()
+    render(<TwoFactorVerifyForm onUseBackupCode={mockOnUseBackupCode} />)
+
+    const backupButton = screen.getByRole("button", { name: /use a backup code instead/i })
+    expect(backupButton).toBeInTheDocument()
+  })
+
+  it("calls verifyTotp with correct parameters including trustDevice", async () => {
+    const user = userEvent.setup()
+    mockVerifyTotp.mockResolvedValue({ data: { success: true } })
+
+    render(<TwoFactorVerifyForm />)
+
+    // Check the trust device checkbox
+    const checkbox = screen.getByLabelText(/trust this device for 30 days/i)
     await user.click(checkbox)
 
-    const button = screen.getByRole("button", { name: /verify code/i })
-    await user.click(button)
+    // Enter code
+    const digit1 = screen.getByLabelText("Digit 1")
+    await user.type(digit1, "123456")
 
     await waitFor(() => {
       expect(mockVerifyTotp).toHaveBeenCalledWith({
@@ -144,11 +133,8 @@ describe("TwoFactorVerifyForm", () => {
 
     render(<TwoFactorVerifyForm />)
 
-    const input = screen.getByLabelText(/verification code/i)
-    await user.type(input, "123456")
-
-    const button = screen.getByRole("button", { name: /verify code/i })
-    await user.click(button)
+    const digit1 = screen.getByLabelText("Digit 1")
+    await user.type(digit1, "123456")
 
     await waitFor(() => {
       expect(mockUseRouter).toHaveBeenCalledWith("/")
@@ -161,31 +147,60 @@ describe("TwoFactorVerifyForm", () => {
 
     render(<TwoFactorVerifyForm />)
 
-    const input = screen.getByLabelText(/verification code/i)
-    await user.type(input, "123456")
-
-    const button = screen.getByRole("button", { name: /verify code/i })
-    await user.click(button)
+    const digit1 = screen.getByLabelText("Digit 1")
+    await user.type(digit1, "123456")
 
     await waitFor(() => {
       expect(screen.getByText(/invalid code/i)).toBeInTheDocument()
     })
   })
 
-  it("clears code input after failed verification", async () => {
+  it("clears code inputs after failed verification", async () => {
     const user = userEvent.setup()
     mockVerifyTotp.mockRejectedValue(new Error("Invalid code"))
 
     render(<TwoFactorVerifyForm />)
 
-    const input = screen.getByLabelText(/verification code/i) as HTMLInputElement
-    await user.type(input, "123456")
-
-    const button = screen.getByRole("button", { name: /verify code/i })
-    await user.click(button)
+    const digit1 = screen.getByLabelText("Digit 1") as HTMLInputElement
+    await user.type(digit1, "123456")
 
     await waitFor(() => {
-      expect(input.value).toBe("")
+      // After error, code should be cleared
+      expect(digit1.value).toBe("")
+    })
+  })
+
+  it("disables inputs while verifying", async () => {
+    const user = userEvent.setup()
+    // Simulate slow verification
+    mockVerifyTotp.mockImplementation(
+      () => new Promise((resolve) => setTimeout(() => resolve({ data: { success: true } }), 100))
+    )
+
+    render(<TwoFactorVerifyForm />)
+
+    const digit1 = screen.getByLabelText("Digit 1") as HTMLInputElement
+    await user.type(digit1, "123456")
+
+    // Check that inputs are disabled during verification
+    await waitFor(() => {
+      expect(digit1).toBeDisabled()
+    })
+  })
+
+  it("shows loading spinner while verifying", async () => {
+    const user = userEvent.setup()
+    mockVerifyTotp.mockImplementation(
+      () => new Promise((resolve) => setTimeout(() => resolve({ data: { success: true } }), 100))
+    )
+
+    render(<TwoFactorVerifyForm />)
+
+    const digit1 = screen.getByLabelText("Digit 1")
+    await user.type(digit1, "123456")
+
+    await waitFor(() => {
+      expect(screen.getByText(/verifying/i)).toBeInTheDocument()
     })
   })
 })
