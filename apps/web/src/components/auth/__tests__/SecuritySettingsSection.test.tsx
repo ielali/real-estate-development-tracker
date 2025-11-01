@@ -43,7 +43,7 @@ describe("SecuritySettingsSection", () => {
 
     render(<SecuritySettingsSection />)
 
-    expect(screen.getByText(/two-factor authentication/i)).toBeInTheDocument()
+    expect(screen.getByRole("heading", { name: /two-factor authentication/i })).toBeInTheDocument()
     expect(screen.getByText(/not enabled/i)).toBeInTheDocument()
   })
 
@@ -80,7 +80,9 @@ describe("SecuritySettingsSection", () => {
 
     render(<SecuritySettingsSection />)
 
-    expect(screen.getByRole("button", { name: /enable 2fa/i })).toBeInTheDocument()
+    expect(
+      screen.getByRole("button", { name: /enable two-factor authentication/i })
+    ).toBeInTheDocument()
   })
 
   it("shows disable and manage buttons when 2FA is enabled", () => {
@@ -98,9 +100,11 @@ describe("SecuritySettingsSection", () => {
 
     render(<SecuritySettingsSection />)
 
-    expect(screen.getByRole("button", { name: /disable 2fa/i })).toBeInTheDocument()
-    expect(screen.getByRole("button", { name: /manage backup codes/i })).toBeInTheDocument()
-    expect(screen.getByRole("button", { name: /manage devices/i })).toBeInTheDocument()
+    expect(
+      screen.getByRole("button", { name: /disable two-factor authentication/i })
+    ).toBeInTheDocument()
+    expect(screen.getByRole("link", { name: /backup codes/i })).toBeInTheDocument()
+    expect(screen.getByRole("link", { name: /trusted devices/i })).toBeInTheDocument()
   })
 
   it("opens setup dialog when enable button clicked", async () => {
@@ -119,11 +123,13 @@ describe("SecuritySettingsSection", () => {
 
     render(<SecuritySettingsSection />)
 
-    const enableButton = screen.getByRole("button", { name: /enable 2fa/i })
+    const enableButton = screen.getByRole("button", { name: /enable two-factor authentication/i })
     await user.click(enableButton)
 
     // Dialog should open with title
-    expect(screen.getByText(/enable two-factor authentication/i)).toBeInTheDocument()
+    expect(
+      screen.getByRole("heading", { name: /enable two-factor authentication/i })
+    ).toBeInTheDocument()
   })
 
   it("opens disable dialog when disable button clicked", async () => {
@@ -142,11 +148,13 @@ describe("SecuritySettingsSection", () => {
 
     render(<SecuritySettingsSection />)
 
-    const disableButton = screen.getByRole("button", { name: /disable 2fa/i })
+    const disableButton = screen.getByRole("button", { name: /disable two-factor authentication/i })
     await user.click(disableButton)
 
     // Dialog should open with title
-    expect(screen.getByText(/disable two-factor authentication/i)).toBeInTheDocument()
+    expect(
+      screen.getByRole("heading", { name: /disable two-factor authentication/i })
+    ).toBeInTheDocument()
   })
 
   it("shows loading state while session is pending", () => {

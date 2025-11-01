@@ -1,5 +1,5 @@
 import React from "react"
-import { describe, it, expect, afterEach, vi } from "vitest"
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
 import { render, screen, cleanup } from "@testing-library/react"
 import { userEvent } from "@testing-library/user-event"
 import { BackupCodesDisplay } from "../BackupCodesDisplay"
@@ -13,10 +13,13 @@ vi.mock("sonner", () => ({
 }))
 
 // Mock clipboard API
-Object.assign(navigator, {
-  clipboard: {
-    writeText: vi.fn(() => Promise.resolve()),
+const mockWriteText = vi.fn(() => Promise.resolve())
+Object.defineProperty(navigator, "clipboard", {
+  value: {
+    writeText: mockWriteText,
   },
+  writable: true,
+  configurable: true,
 })
 
 describe("BackupCodesDisplay", () => {
@@ -32,6 +35,10 @@ describe("BackupCodesDisplay", () => {
     "ABCD-EFGH",
     "IJKL-MNOP",
   ]
+
+  beforeEach(() => {
+    mockWriteText.mockClear()
+  })
 
   afterEach(() => {
     cleanup()
@@ -50,40 +57,40 @@ describe("BackupCodesDisplay", () => {
     render(<BackupCodesDisplay codes={mockCodes} />)
 
     expect(screen.getByText(/save these codes in a secure location/i)).toBeInTheDocument()
-    expect(screen.getByText(/they will not be shown again/i)).toBeInTheDocument()
+    expect(screen.getByText(/each code can be used once/i)).toBeInTheDocument()
   })
 
   it("renders copy and download buttons", () => {
     render(<BackupCodesDisplay codes={mockCodes} />)
 
-    expect(screen.getByRole("button", { name: /copy all codes/i })).toBeInTheDocument()
-    expect(screen.getByRole("button", { name: /download codes/i })).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: /copy/i })).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: /download/i })).toBeInTheDocument()
   })
 
   it("copies codes to clipboard when copy button clicked", async () => {
     const user = userEvent.setup()
     render(<BackupCodesDisplay codes={mockCodes} />)
 
-    const copyButton = screen.getByRole("button", { name: /copy all codes/i })
+    const copyButton = screen.getByRole("button", { name: /copy/i })
     await user.click(copyButton)
 
-    expect(navigator.clipboard.writeText).toHaveBeenCalledWith(mockCodes.join("\n"))
+    expect(mockWriteText).toHaveBeenCalledWith(mockCodes.join("\n"))
   })
 
   it("shows backup codes in a monospace font", () => {
     render(<BackupCodesDisplay codes={mockCodes} />)
 
     const codeElements = screen.getAllByText(/[A-Z0-9]{4}-[A-Z0-9]{4}/)
-    codeElements.forEach((element) => {
-      expect(element).toHaveClass("font-mono")
-    })
+    // font-mono is on the parent grid container, not individual elements
+    const parentGrid = codeElements[0].parentElement
+    expect(parentGrid).toHaveClass("font-mono")
   })
 
   it("renders warning icon", () => {
     render(<BackupCodesDisplay codes={mockCodes} />)
 
-    // Check for alert warning presence via text content
-    expect(screen.getByText(/important/i)).toBeInTheDocument()
+    // Check for alert warning presence via role
+    expect(screen.getByRole("alert")).toBeInTheDocument()
   })
 
   it("handles empty codes array gracefully", () => {

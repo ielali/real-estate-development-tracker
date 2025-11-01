@@ -22,7 +22,13 @@ export default defineConfig({
       ["json", { outputFile: "test-results/results.json" }],
     ],
     // Exclude e2e tests (run with Playwright separately)
-    exclude: ["**/node_modules/**", "**/e2e/**", "**/dist/**", "**/.next/**"],
+    exclude: [
+      "**/node_modules/**",
+      "**/dist/**",
+      "**/e2e/**", // Exclude E2E tests from unit test suite
+      "**/.{idea,git,cache,output,temp}/**",
+      "**/.next/**",
+    ],
     poolOptions: {
       forks: {
         singleFork: true, // Run tests sequentially to avoid database conflicts
@@ -31,12 +37,6 @@ export default defineConfig({
     hookTimeout: 60000, // 60s for migrations (CI has higher latency)
     testTimeout: 30000, // 30s per test (remote DB operations in CI)
     retry: process.env.CI ? 2 : 0, // Retry flaky tests in CI only
-    exclude: [
-      "**/node_modules/**",
-      "**/dist/**",
-      "**/e2e/**", // Exclude E2E tests from unit test suite
-      "**/.{idea,git,cache,output,temp}/**",
-    ],
 
     // Allow tests to use environment-specific configuration
     environmentMatchGlobs: [
@@ -65,5 +65,8 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+  },
+  esbuild: {
+    jsx: "automatic",
   },
 })
