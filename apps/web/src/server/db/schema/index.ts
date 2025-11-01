@@ -18,6 +18,7 @@ export * from "./contactDocuments"
 export * from "./auditLog"
 export * from "./categories"
 export * from "./costTemplates"
+export * from "./project-backups"
 
 import { relations } from "drizzle-orm"
 import { users } from "./users"
@@ -36,12 +37,14 @@ import { costDocuments } from "./costDocuments"
 import { contactDocuments } from "./contactDocuments"
 import { categories } from "./categories"
 import { costTemplates } from "./costTemplates"
+import { projectBackups } from "./project-backups"
 
 export const usersRelations = relations(users, ({ many }) => ({
   ownedProjects: many(projects),
   projectAccess: many(projectAccess),
   createdCosts: many(costs),
   costTemplates: many(costTemplates),
+  projectBackups: many(projectBackups),
 }))
 
 export const addressesRelations = relations(addresses, ({ many }) => ({
@@ -64,6 +67,7 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
   projectAccess: many(projectAccess),
   projectContacts: many(projectContact),
   costTemplates: many(costTemplates),
+  projectBackups: many(projectBackups),
 }))
 
 export const costsRelations = relations(costs, ({ one, many }) => ({
@@ -108,6 +112,10 @@ export const documentsRelations = relations(documents, ({ one, many }) => ({
   category: one(categories, {
     fields: [documents.categoryId],
     references: [categories.id],
+  }),
+  uploadedBy: one(users, {
+    fields: [documents.uploadedById],
+    references: [users.id],
   }),
   costDocuments: many(costDocuments),
   eventDocuments: many(eventDocuments),
@@ -237,5 +245,16 @@ export const costTemplatesRelations = relations(costTemplates, ({ one }) => ({
   contact: one(contacts, {
     fields: [costTemplates.contactId],
     references: [contacts.id],
+  }),
+}))
+
+export const projectBackupsRelations = relations(projectBackups, ({ one }) => ({
+  project: one(projects, {
+    fields: [projectBackups.projectId],
+    references: [projects.id],
+  }),
+  user: one(users, {
+    fields: [projectBackups.userId],
+    references: [users.id],
   }),
 }))

@@ -120,4 +120,19 @@ export const breadcrumbHelpers = {
     { label: projectName, href: `/projects/${projectId}` },
     { label: "Edit" },
   ],
+
+  projectSettings: (projectName: string, projectId: string): BreadcrumbItem[] => [
+    { label: "Projects", href: "/projects" },
+    { label: projectName, href: `/projects/${projectId}` },
+    { label: "Settings" },
+  ],
+
+  getSettingsBreadcrumbs: (
+    project: { name: string; id: string },
+    _router: any
+  ): BreadcrumbItem[] => [
+    { label: "Projects", href: "/projects" },
+    { label: project.name, href: `/projects/${project.id}` },
+    { label: "Settings" },
+  ],
 }

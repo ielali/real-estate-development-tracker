@@ -9,6 +9,8 @@ import {
   verifyProjectAccess,
   assertProjectOwner,
 } from "../helpers/authorization"
+import { backupService } from "@/server/services/backup.service"
+import { backupRateLimiter, RATE_LIMITS } from "@/lib/rate-limiter"
 
 /**
  * Zod schema for Australian states
@@ -383,5 +385,169 @@ export const projectRouter = createTRPCRouter({
           updatedAt: new Date(),
         })
         .where(eq(projects.id, input.id))
+    }),
+
+  /**
+   * Generate project backup (JSON or ZIP)
+   *
+   * Story 6.2: Generates complete backup of project data.
+   * - JSON: Metadata only (~50KB)
+   * - ZIP: Metadata + all document files
+   *
+   * Rate limits:
+   * - JSON: 5 per hour
+   * - ZIP: 2 per hour (more resource intensive)
+   *
+   * @throws {TRPCError} UNAUTHORIZED - User not authenticated
+   * @throws {TRPCError} FORBIDDEN - User does not own this project
+   * @throws {TRPCError} TOO_MANY_REQUESTS - Rate limit exceeded
+   * @returns Backup data with metadata
+   */
+  generateBackup: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string().uuid(),
+        backupType: z.enum(["json", "zip"]).default("json"),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id
+
+      // Verify user owns the project
+      const accessInfo = await verifyProjectAccess(ctx, input.projectId, "read")
+      assertProjectOwner(accessInfo, "generate backup")
+
+      // Check rate limit based on backup type
+      const limits = input.backupType === "json" ? RATE_LIMITS.JSON : RATE_LIMITS.ZIP
+      const canProceed = backupRateLimiter.check(
+        userId,
+        input.backupType,
+        limits.MAX_REQUESTS,
+        limits.WINDOW_MS
+      )
+
+      if (!canProceed) {
+        const resetIn = backupRateLimiter.getTimeUntilReset(userId, input.backupType)
+        const minutesRemaining = Math.ceil(resetIn / 1000 / 60)
+        throw new TRPCError({
+          code: "TOO_MANY_REQUESTS",
+          message: `${input.backupType.toUpperCase()} backup limit exceeded. You can download ${limits.MAX_REQUESTS} ${input.backupType} backups per hour. Try again in ${minutesRemaining} minutes.`,
+        })
+      }
+
+      // Generate backup based on type
+      if (input.backupType === "json") {
+        const backupData = await backupService.generateProjectBackup(input.projectId, userId)
+        const jsonString = JSON.stringify(backupData, null, 2)
+        const fileSize = Buffer.byteLength(jsonString, "utf8")
+
+        // Record backup in database
+        await backupService.recordBackup(
+          input.projectId,
+          userId,
+          "json",
+          fileSize,
+          0 // No documents in JSON backup
+        )
+
+        // Return backup data
+        const project = accessInfo.project
+        const sanitizedName = project.name
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-+|-+$/g, "")
+
+        const timestamp = new Date()
+          .toISOString()
+          .replace(/:/g, "")
+          .replace(/\..+/, "")
+          .replace("T", "-")
+        const filename = `${sanitizedName}-backup-${timestamp}.json`
+
+        return {
+          backupData,
+          filename,
+          fileSize,
+        }
+      } else {
+        // ZIP backup
+        const zipBlob = await backupService.generateZipArchive(input.projectId, userId)
+        const fileSize = zipBlob.size
+
+        // Get document count
+        const backupData = await backupService.generateProjectBackup(input.projectId, userId)
+        const documentCount = backupData.documents.length
+
+        // Record backup in database
+        await backupService.recordBackup(input.projectId, userId, "zip", fileSize, documentCount)
+
+        // Convert blob to base64 for transfer
+        const arrayBuffer = await zipBlob.arrayBuffer()
+        const buffer = Buffer.from(arrayBuffer)
+        const zipData = buffer.toString("base64")
+
+        const project = accessInfo.project
+        const sanitizedName = project.name
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-+|-+$/g, "")
+
+        const timestamp = new Date()
+          .toISOString()
+          .replace(/:/g, "")
+          .replace(/\..+/, "")
+          .replace("T", "-")
+        const filename = `${sanitizedName}-archive-${timestamp}.zip`
+
+        return {
+          zipData,
+          filename,
+          fileSize,
+        }
+      }
+    }),
+
+  /**
+   * Get backup history for a project
+   *
+   * Story 6.2: Returns last 10 backups with metadata.
+   *
+   * @throws {TRPCError} UNAUTHORIZED - User not authenticated
+   * @throws {TRPCError} FORBIDDEN - User does not own this project
+   * @returns Array of recent backups
+   */
+  getBackupHistory: protectedProcedure
+    .input(z.object({ projectId: z.string().uuid() }))
+    .query(async ({ ctx, input }) => {
+      // Verify user owns the project
+      const accessInfo = await verifyProjectAccess(ctx, input.projectId, "read")
+      assertProjectOwner(accessInfo, "view backup history")
+
+      // Get backup history
+      const backups = await backupService.getBackupHistory(input.projectId, 10)
+
+      return backups
+    }),
+
+  /**
+   * Estimate ZIP archive size before generation
+   *
+   * Story 6.2: Provides size estimate to inform user before initiating download.
+   *
+   * @throws {TRPCError} UNAUTHORIZED - User not authenticated
+   * @throws {TRPCError} FORBIDDEN - User does not own this project
+   * @returns Size estimate with warning if large
+   */
+  estimateZipSize: protectedProcedure
+    .input(z.object({ projectId: z.string().uuid() }))
+    .query(async ({ ctx, input }) => {
+      // Verify user owns the project
+      const accessInfo = await verifyProjectAccess(ctx, input.projectId, "read")
+      assertProjectOwner(accessInfo, "estimate backup size")
+
+      // Get size estimate
+      const estimate = await backupService.estimateZipSize(input.projectId)
+
+      return estimate
     }),
 })

@@ -32,7 +32,7 @@ import { SearchAndFilter } from "@/components/costs/SearchAndFilter"
 import { useCostFilters } from "@/hooks/useCostFilters"
 import { useFilterPersistence, loadSavedFilters } from "@/hooks/useFilterPersistence"
 import { Timeline, EventEntryForm, TimelineFilter } from "@/components/events"
-import { Plus, Users } from "lucide-react"
+import { Plus, Users, Settings as SettingsIcon } from "lucide-react"
 import { useUserRole } from "@/hooks/useUserRole"
 import { PartnerProjectDashboard } from "@/components/partner/PartnerProjectDashboard"
 import { Breadcrumb, breadcrumbHelpers } from "@/components/ui/breadcrumb"
@@ -285,6 +285,12 @@ export default function ProjectDetailPage() {
                   <Button variant="outline">
                     <Users className="mr-2 h-4 w-4" />
                     Partners
+                  </Button>
+                </Link>
+                <Link href={`/projects/${project.id}/settings` as never}>
+                  <Button variant="outline">
+                    <SettingsIcon className="mr-2 h-4 w-4" />
+                    Settings
                   </Button>
                 </Link>
                 <Link href={`/projects/${project.id}/edit` as never}>
