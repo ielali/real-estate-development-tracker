@@ -1,25 +1,15 @@
 "use client"
 
 import React, { useState } from "react"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { z } from "zod"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Spinner } from "@/components/ui/spinner"
+import { PinInput } from "@/components/ui/pin-input"
 import { twoFactor } from "@/lib/auth-client"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
-
-const verifySchema = z.object({
-  code: z.string().length(6, "Code must be 6 digits"),
-  trustDevice: z.boolean().default(false),
-})
-
-type VerifyFormData = z.infer<typeof verifySchema>
 
 interface TwoFactorVerifyFormProps {
   onSuccess?: () => void
@@ -29,39 +19,27 @@ interface TwoFactorVerifyFormProps {
 /**
  * TwoFactorVerifyForm - Form for verifying 2FA code during login
  *
- * Accepts 6-digit TOTP code from authenticator app.
- * Optionally trusts device for 30 days.
+ * Features:
+ * - Individual digit input fields for better UX
+ * - Auto-submit when all 6 digits entered
+ * - Optional device trust for 30 days
+ * - Backup code fallback option
  */
 export function TwoFactorVerifyForm({ onSuccess, onUseBackupCode }: TwoFactorVerifyFormProps) {
   const router = useRouter()
+  const [code, setCode] = useState("")
+  const [trustDevice, setTrustDevice] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string>("")
 
-  const {
-    register,
-    handleSubmit,
-    watch,
-    setValue,
-    formState: { errors },
-  } = useForm<VerifyFormData>({
-    resolver: zodResolver(verifySchema),
-    defaultValues: {
-      code: "",
-      trustDevice: false,
-    },
-  })
-
-  const code = watch("code")
-  const trustDevice = watch("trustDevice")
-
-  const onSubmit = async (data: VerifyFormData) => {
+  const handleVerify = async (verificationCode: string) => {
     setIsLoading(true)
     setError("")
 
     try {
       const response = await twoFactor.verifyTotp({
-        code: data.code,
-        trustDevice: data.trustDevice,
+        code: verificationCode,
+        trustDevice: trustDevice,
       })
 
       if (!response.data) {
@@ -78,13 +56,20 @@ export function TwoFactorVerifyForm({ onSuccess, onUseBackupCode }: TwoFactorVer
       const errorMessage = err instanceof Error ? err.message : "Invalid verification code"
       setError(errorMessage)
       toast.error(errorMessage)
+      // Clear the code on error so user can try again
+      setCode("")
     } finally {
       setIsLoading(false)
     }
   }
 
+  // Auto-submit when all 6 digits are entered
+  const handleComplete = (completedCode: string) => {
+    handleVerify(completedCode)
+  }
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <div className="space-y-6">
       {error && (
         <Alert variant="destructive">
           <AlertDescription>{error}</AlertDescription>
@@ -92,34 +77,25 @@ export function TwoFactorVerifyForm({ onSuccess, onUseBackupCode }: TwoFactorVer
       )}
 
       <div className="space-y-2">
-        <Label htmlFor="code">Verification Code</Label>
-        <Input
-          id="code"
-          type="text"
-          inputMode="numeric"
-          pattern="[0-9]*"
-          maxLength={6}
-          {...register("code")}
+        <Label>Verification Code</Label>
+        <p className="text-sm text-muted-foreground mb-3">
+          Enter the 6-digit code from your authenticator app
+        </p>
+        <PinInput
+          length={6}
           value={code}
-          onChange={(e) => setValue("code", e.target.value.replace(/\D/g, ""))}
-          placeholder="000000"
-          className="text-center text-2xl tracking-widest"
-          autoFocus
+          onChange={setCode}
+          onComplete={handleComplete}
           disabled={isLoading}
-          aria-describedby={errors.code ? "code-error" : undefined}
+          autoFocus
         />
-        {errors.code && (
-          <p id="code-error" className="text-sm text-destructive">
-            {errors.code.message}
-          </p>
-        )}
       </div>
 
       <div className="flex items-center space-x-2">
         <Checkbox
           id="trustDevice"
           checked={trustDevice}
-          onCheckedChange={(checked) => setValue("trustDevice", checked as boolean)}
+          onCheckedChange={(checked) => setTrustDevice(checked as boolean)}
           disabled={isLoading}
         />
         <Label
@@ -130,10 +106,12 @@ export function TwoFactorVerifyForm({ onSuccess, onUseBackupCode }: TwoFactorVer
         </Label>
       </div>
 
-      <Button type="submit" className="w-full" disabled={isLoading || code.length !== 6}>
-        {isLoading && <Spinner className="mr-2 h-4 w-4" />}
-        {isLoading ? "Verifying..." : "Verify"}
-      </Button>
+      {isLoading && (
+        <div className="flex items-center justify-center py-4">
+          <Spinner className="h-6 w-6" />
+          <span className="ml-2 text-sm text-muted-foreground">Verifying...</span>
+        </div>
+      )}
 
       {onUseBackupCode && (
         <Button
@@ -146,6 +124,6 @@ export function TwoFactorVerifyForm({ onSuccess, onUseBackupCode }: TwoFactorVer
           Use a backup code instead
         </Button>
       )}
-    </form>
+    </div>
   )
 }
