@@ -30,6 +30,7 @@ import { Pencil, Trash2, UserPlus } from "lucide-react"
 import { CostListSkeleton } from "@/components/skeletons/cost-list-skeleton"
 import { EmptyState } from "@/components/ui/empty-state"
 import { ContactSelector } from "./ContactSelector"
+import { CostImport } from "./CostImport"
 import type { CostFilters, SortOption, SortDirection } from "@/lib/utils/cost-filters"
 
 interface CostsListProps {
@@ -200,9 +201,18 @@ export function CostsList({
             </>
           )}
         </div>
-        <Link href={`/projects/${projectId}/costs/new` as never}>
-          <Button size="sm">Add Cost</Button>
-        </Link>
+        <div className="flex items-center gap-2">
+          <CostImport
+            projectId={projectId}
+            onSuccess={() => {
+              // Refresh the costs list after successful import
+              void utils.costs.list.invalidate()
+            }}
+          />
+          <Link href={`/projects/${projectId}/costs/new` as never}>
+            <Button size="sm">Add Cost</Button>
+          </Link>
+        </div>
       </div>
 
       {/* Empty State */}
