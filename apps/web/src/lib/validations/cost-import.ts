@@ -341,7 +341,9 @@ export const COLUMN_MAPPINGS: Record<string, string[]> = {
 /**
  * Detect column mapping from CSV header
  *
- * Case-insensitive fuzzy matching against known field aliases.
+ * Case-insensitive matching against known field aliases.
+ * Prioritizes exact matches, then checks if header contains alias.
+ * Empty headers return null.
  *
  * @param header - CSV column header
  * @returns Detected database field name or null if not matched
@@ -349,10 +351,21 @@ export const COLUMN_MAPPINGS: Record<string, string[]> = {
 export function detectColumnMapping(header: string): string | null {
   const normalizedHeader = header.toLowerCase().trim()
 
+  // Return null for empty headers
+  if (normalizedHeader.length === 0) {
+    return null
+  }
+
+  // First pass: Look for exact matches
   for (const [field, aliases] of Object.entries(COLUMN_MAPPINGS)) {
-    if (
-      aliases.some((alias) => normalizedHeader.includes(alias) || alias.includes(normalizedHeader))
-    ) {
+    if (aliases.some((alias) => normalizedHeader === alias)) {
+      return field
+    }
+  }
+
+  // Second pass: Look for headers that contain the alias (fuzzy match)
+  for (const [field, aliases] of Object.entries(COLUMN_MAPPINGS)) {
+    if (aliases.some((alias) => normalizedHeader.includes(alias))) {
       return field
     }
   }
