@@ -15,6 +15,16 @@ import {
   getCostByIdSchema,
   deleteCostSchema,
 } from "@/lib/validations/cost"
+import {
+  validateImportSchema,
+  importCostsSchema,
+  parseDate,
+  parseAmount,
+  importCostRowSchema,
+  type ValidationError,
+  type ValidationResult,
+} from "@/lib/validations/cost-import"
+import { auditLog } from "@/server/db/schema/auditLog"
 import type { Database } from "@/server/db"
 import { getCategoryById } from "@/server/db/types"
 import { z } from "zod"
@@ -580,9 +590,14 @@ export const costRouter = createTRPCRouter({
       )
 
       // Convert to array and sort by total (descending)
-      return (Object.values(grouped) as any[]).sort(
-        (a: { total: number }, b: { total: number }) => b.total - a.total
-      )
+      return (
+        Object.values(grouped) as Array<{
+          contactId: string
+          contact: typeof contacts.$inferSelect | null
+          total: number
+          count: number
+        }>
+      ).sort((a, b) => b.total - a.total)
     }),
 
   /**
@@ -814,4 +829,313 @@ export const costRouter = createTRPCRouter({
 
       return links.map((link: { document: typeof documents.$inferSelect }) => link.document)
     }),
+
+  /**
+   * Validate CSV import data (preview before committing)
+   *
+   * Validates each row with Zod schema, matches vendors and categories by name,
+   * and returns validation results with errors by line number.
+   *
+   * Story 7.2: CSV Import for Bulk Cost Entry
+   */
+  validateImport: protectedProcedure
+    .input(validateImportSchema)
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id
+
+      // Verify project ownership
+      await verifyProjectOwnership(ctx.db, input.projectId, userId)
+
+      const validationErrors: ValidationError[] = []
+      let validRowCount = 0
+
+      // Fetch all cost categories for matching
+      const costCategories = await ctx.db
+        .select()
+        .from(categories)
+        .where(and(eq(categories.type, "cost"), eq(categories.isArchived, false)))
+
+      // Fetch all contacts for vendor matching
+      const allContacts = await ctx.db.select().from(contacts).where(isNull(contacts.deletedAt))
+
+      const vendorMatches: Array<{ name: string; contactId: string }> = []
+      const unmatchedVendors: string[] = []
+      const categoryMatches: Array<{ name: string; categoryId: string }> = []
+      const unmatchedCategories: string[] = []
+
+      // Track unique vendors and categories
+      const seenVendors = new Set<string>()
+      const seenCategories = new Set<string>()
+
+      // Validate each row
+      for (let i = 0; i < input.rows.length; i++) {
+        const lineNumber = i + 2 // +2 because line 1 is headers, array is 0-indexed
+        const csvRow = input.rows[i]
+
+        // Map CSV columns to database fields using column mappings
+        const mappedRow: Record<string, string> = {}
+        for (const [csvColumn, dbField] of Object.entries(input.columnMappings)) {
+          mappedRow[dbField] = csvRow[csvColumn] || ""
+        }
+
+        // Validate row with Zod schema
+        const result = importCostRowSchema.safeParse(mappedRow)
+
+        if (!result.success) {
+          // Collect all validation errors for this row
+          for (const issue of result.error.issues) {
+            validationErrors.push({
+              lineNumber,
+              field: issue.path[0]?.toString() || "unknown",
+              message: issue.message,
+              value: mappedRow[issue.path[0]?.toString() || ""] || "",
+            })
+          }
+        } else {
+          validRowCount++
+
+          // Match vendor by name (case-insensitive)
+          const vendorName = result.data.vendor
+          if (vendorName && !seenVendors.has(vendorName.toLowerCase())) {
+            seenVendors.add(vendorName.toLowerCase())
+
+            const matchedContact = allContacts.find(
+              (contact: typeof contacts.$inferSelect) =>
+                contact.company?.toLowerCase() === vendorName.toLowerCase() ||
+                `${contact.firstName} ${contact.lastName}`.toLowerCase().trim() ===
+                  vendorName.toLowerCase().trim()
+            )
+
+            if (matchedContact) {
+              vendorMatches.push({ name: vendorName, contactId: matchedContact.id })
+            } else {
+              unmatchedVendors.push(vendorName)
+            }
+          }
+
+          // Match category by name (case-insensitive)
+          const categoryName = result.data.category
+          if (!seenCategories.has(categoryName.toLowerCase())) {
+            seenCategories.add(categoryName.toLowerCase())
+
+            const matchedCategory = costCategories.find(
+              (cat: typeof categories.$inferSelect) =>
+                cat.displayName.toLowerCase() === categoryName.toLowerCase()
+            )
+
+            if (matchedCategory) {
+              categoryMatches.push({ name: categoryName, categoryId: matchedCategory.id })
+            } else {
+              unmatchedCategories.push(categoryName)
+            }
+          }
+        }
+      }
+
+      const validationResult: ValidationResult = {
+        isValid: validationErrors.length === 0,
+        totalRows: input.rows.length,
+        validRows: validRowCount,
+        errorRows: input.rows.length - validRowCount,
+        errors: validationErrors,
+        matchedVendors: vendorMatches,
+        unmatchedVendors,
+        matchedCategories: categoryMatches,
+        unmatchedCategories,
+      }
+
+      return validationResult
+    }),
+
+  /**
+   * Import validated costs in bulk transaction
+   *
+   * Creates new vendors and categories if requested, then bulk inserts all costs.
+   * All-or-nothing transaction: if any operation fails, entire import is rolled back.
+   *
+   * Story 7.2: CSV Import for Bulk Cost Entry
+   */
+  importCosts: protectedProcedure.input(importCostsSchema).mutation(async ({ ctx, input }) => {
+    const userId = ctx.session.user.id
+
+    // Verify project ownership
+    await verifyProjectOwnership(ctx.db, input.projectId, userId)
+
+    // Execute import in transaction
+    const result = await ctx.db.transaction(async (tx: Database) => {
+      // Step 1: Create new categories if requested
+      const categoryMap = new Map<string, string>()
+      if (input.createNewCategories) {
+        const existingCategories = await tx
+          .select()
+          .from(categories)
+          .where(and(eq(categories.type, "cost"), eq(categories.isArchived, false)))
+
+        for (const category of existingCategories) {
+          categoryMap.set(category.displayName.toLowerCase(), category.id)
+        }
+
+        // Collect unique category names from rows
+        const uniqueCategories = new Set<string>()
+        for (const row of input.rows) {
+          uniqueCategories.add(row.category)
+        }
+
+        // Create missing categories
+        const newCategories: Array<typeof categories.$inferInsert> = []
+        for (const categoryName of uniqueCategories) {
+          if (!categoryMap.has(categoryName.toLowerCase())) {
+            const categoryId = categoryName.toLowerCase().replace(/\s+/g, "_")
+            newCategories.push({
+              id: categoryId,
+              type: "cost",
+              displayName: categoryName,
+              parentId: null,
+              isCustom: true,
+              createdById: userId,
+              createdAt: new Date(),
+            })
+            categoryMap.set(categoryName.toLowerCase(), categoryId)
+          }
+        }
+
+        if (newCategories.length > 0) {
+          await tx.insert(categories).values(newCategories)
+        }
+      } else {
+        // Load existing categories only
+        const existingCategories = await tx
+          .select()
+          .from(categories)
+          .where(and(eq(categories.type, "cost"), eq(categories.isArchived, false)))
+
+        for (const category of existingCategories) {
+          categoryMap.set(category.displayName.toLowerCase(), category.id)
+        }
+      }
+
+      // Step 2: Create new vendors if requested
+      const vendorMap = new Map<string, string>()
+      if (input.createNewVendors) {
+        const existingContacts = await tx.select().from(contacts).where(isNull(contacts.deletedAt))
+
+        for (const contact of existingContacts) {
+          if (contact.company) {
+            vendorMap.set(contact.company.toLowerCase(), contact.id)
+          }
+          const fullName = `${contact.firstName} ${contact.lastName}`.toLowerCase().trim()
+          vendorMap.set(fullName, contact.id)
+        }
+
+        // Get vendor category ID (should exist in seed data)
+        const vendorCategory = await tx
+          .select()
+          .from(categories)
+          .where(and(eq(categories.type, "contact"), eq(categories.id, "vendor")))
+          .limit(1)
+
+        if (!vendorCategory[0]) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message:
+              'Vendor category not found in database. Expected category with type="contact" and id="vendor"',
+          })
+        }
+
+        // Collect unique vendor names
+        const uniqueVendors = new Set<string>()
+        for (const row of input.rows) {
+          if (row.vendor) {
+            uniqueVendors.add(row.vendor)
+          }
+        }
+
+        // Create missing vendors
+        const newVendors: Array<typeof contacts.$inferInsert> = []
+        for (const vendorName of uniqueVendors) {
+          if (!vendorMap.has(vendorName.toLowerCase())) {
+            const newVendorId = crypto.randomUUID()
+            newVendors.push({
+              id: newVendorId,
+              firstName: "",
+              lastName: "",
+              company: vendorName,
+              categoryId: vendorCategory[0].id,
+              notes: "Created during CSV import",
+            })
+            vendorMap.set(vendorName.toLowerCase(), newVendorId)
+          }
+        }
+
+        if (newVendors.length > 0) {
+          await tx.insert(contacts).values(newVendors)
+        }
+      } else {
+        // Load existing contacts only
+        const existingContacts = await tx.select().from(contacts).where(isNull(contacts.deletedAt))
+
+        for (const contact of existingContacts) {
+          if (contact.company) {
+            vendorMap.set(contact.company.toLowerCase(), contact.id)
+          }
+          const fullName = `${contact.firstName} ${contact.lastName}`.toLowerCase().trim()
+          vendorMap.set(fullName, contact.id)
+        }
+      }
+
+      // Step 3: Bulk insert costs
+      const costValues: Array<typeof costs.$inferInsert> = []
+      for (const row of input.rows) {
+        const date = parseDate(row.date)
+        const amount = parseAmount(row.amount)
+        const categoryId = categoryMap.get(row.category.toLowerCase())
+        const contactId = row.vendor ? vendorMap.get(row.vendor.toLowerCase()) || null : null
+
+        if (!categoryId) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `Category "${row.category}" not found. Enable "createNewCategories" or ensure category exists.`,
+          })
+        }
+
+        costValues.push({
+          id: crypto.randomUUID(),
+          projectId: input.projectId,
+          amount,
+          description: row.description,
+          categoryId,
+          date,
+          contactId,
+          documentIds: null,
+          createdById: userId,
+        })
+      }
+
+      const insertedCosts = await tx.insert(costs).values(costValues).returning()
+
+      // Step 4: Create audit log entry
+      await tx.insert(auditLog).values({
+        id: crypto.randomUUID(),
+        projectId: input.projectId,
+        userId,
+        action: "created",
+        entityType: "cost",
+        entityId: "bulk-import",
+        metadata: JSON.stringify({
+          displayName: `Imported ${insertedCosts.length} costs via CSV`,
+          importedCount: insertedCosts.length,
+          createdVendorsCount: input.createNewVendors ? vendorMap.size : 0,
+          createdCategoriesCount: input.createNewCategories ? categoryMap.size : 0,
+        }),
+      })
+
+      return {
+        count: insertedCosts.length,
+        createdVendors: input.createNewVendors ? vendorMap.size : 0,
+        createdCategories: input.createNewCategories ? categoryMap.size : 0,
+      }
+    })
+
+    return result
+  }),
 })
