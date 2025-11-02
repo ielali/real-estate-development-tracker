@@ -4,6 +4,7 @@ import { Providers } from "@/components/providers/Providers"
 import { Toaster } from "@/components/ui/sonner"
 import { ErrorBoundary } from "@/components/error-boundary"
 import { OfflineBanner } from "@/components/ui/offline-banner"
+import { CommandPalette } from "@/components/search/CommandPalette"
 import "../styles/globals.css"
 
 const inter = Inter({ subsets: ["latin"] })
@@ -37,7 +38,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         )}
         <ErrorBoundary>
           <OfflineBanner />
-          <Providers>{children}</Providers>
+          <Providers>
+            {children}
+            <CommandPalette />
+          </Providers>
           <Toaster />
         </ErrorBoundary>
       </body>

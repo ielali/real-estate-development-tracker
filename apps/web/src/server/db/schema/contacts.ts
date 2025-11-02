@@ -1,7 +1,14 @@
-import { pgTable, text } from "drizzle-orm/pg-core"
+import { pgTable, text, customType } from "drizzle-orm/pg-core"
 import { baseEntityFields } from "./base"
 import { categories } from "./categories"
 import { addresses } from "./addresses"
+
+// Custom type for PostgreSQL tsvector (full-text search)
+const tsvector = customType<{ data: string }>({
+  dataType() {
+    return "tsvector"
+  },
+})
 
 export const contacts = pgTable("contacts", {
   ...baseEntityFields,
@@ -17,4 +24,5 @@ export const contacts = pgTable("contacts", {
     .notNull()
     .references(() => categories.id),
   notes: text("notes"),
+  search_vector: tsvector("search_vector"),
 })

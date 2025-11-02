@@ -1,8 +1,15 @@
-import { pgTable, text, bigint } from "drizzle-orm/pg-core"
+import { pgTable, text, bigint, customType } from "drizzle-orm/pg-core"
 import { baseEntityFields } from "./base"
 import { projects } from "./projects"
 import { categories } from "./categories"
 import { users } from "./users"
+
+// Custom type for PostgreSQL tsvector (full-text search)
+const tsvector = customType<{ data: string }>({
+  dataType() {
+    return "tsvector"
+  },
+})
 
 export const documents = pgTable("documents", {
   ...baseEntityFields,
@@ -20,6 +27,7 @@ export const documents = pgTable("documents", {
   uploadedById: text("uploaded_by_id")
     .notNull()
     .references(() => users.id),
+  search_vector: tsvector("search_vector"),
 })
 
 export type Document = typeof documents.$inferSelect

@@ -2,9 +2,11 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { Search } from "lucide-react"
 import { UserDropdown } from "@/components/ui/UserDropdown"
 import { useAuth } from "@/components/providers/AuthProvider"
 import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
 
 /**
  * Navbar - Main navigation component
@@ -25,6 +27,21 @@ export function Navbar() {
         ]
       : []),
   ]
+
+  // Trigger command palette programmatically
+  const handleSearchClick = () => {
+    const event = new KeyboardEvent("keydown", {
+      key: "k",
+      metaKey: true,
+      ctrlKey: true,
+      bubbles: true,
+    })
+    document.dispatchEvent(event)
+  }
+
+  // Detect OS for keyboard shortcut display
+  const isMac = typeof navigator !== "undefined" && navigator.platform.toLowerCase().includes("mac")
+  const shortcutKey = isMac ? "⌘K" : "Ctrl+K"
 
   return (
     <div className="border-b bg-card">
@@ -60,7 +77,24 @@ export function Navbar() {
               })}
             </nav>
           </div>
-          <UserDropdown />
+          <div className="flex items-center gap-4">
+            {/* Search button - only show for authenticated users */}
+            {user && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSearchClick}
+                className="hidden sm:flex items-center gap-2 text-muted-foreground hover:text-foreground"
+              >
+                <Search className="h-4 w-4" />
+                <span className="text-sm">Search</span>
+                <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+                  {shortcutKey}
+                </kbd>
+              </Button>
+            )}
+            <UserDropdown />
+          </div>
         </div>
 
         {/* Mobile navigation */}

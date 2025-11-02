@@ -44,6 +44,7 @@ import { RelatedDocuments } from "@/components/documents/RelatedDocuments"
 import { DocumentLinkSelector } from "@/components/documents/DocumentLinkSelector"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Link as LinkIcon } from "lucide-react"
+import { ContactSelector } from "./ContactSelector"
 
 /**
  * Client-side form schema for cost editing
@@ -58,6 +59,7 @@ const costEditFormSchema = z.object({
   description: z.string().min(1, "Description is required"),
   categoryId: z.string().min(1, "Category is required"),
   date: z.string().min(1, "Date is required"),
+  contactId: z.string().uuid().nullable().optional(),
 })
 
 type FormValues = z.infer<typeof costEditFormSchema>
@@ -109,6 +111,7 @@ export function CostEditForm({ projectId, costId }: CostEditFormProps) {
       description: "",
       categoryId: "",
       date: today,
+      contactId: null,
     },
   })
 
@@ -120,6 +123,7 @@ export function CostEditForm({ projectId, costId }: CostEditFormProps) {
         description: costData.description,
         categoryId: costData.categoryId,
         date: new Date(costData.date).toISOString().split("T")[0],
+        contactId: costData.contactId || null,
       }
 
       form.reset(formValues)
@@ -128,6 +132,9 @@ export function CostEditForm({ projectId, costId }: CostEditFormProps) {
       // This is needed because the Select component doesn't always update properly on reset
       setTimeout(() => {
         form.setValue("categoryId", costData.categoryId)
+        if (costData.contactId) {
+          form.setValue("contactId", costData.contactId)
+        }
       }, 0)
     }
   }, [costData])
@@ -199,6 +206,7 @@ export function CostEditForm({ projectId, costId }: CostEditFormProps) {
       description: data.description,
       categoryId: data.categoryId,
       date: dateObj,
+      contactId: data.contactId || null,
     })
   }
 
@@ -351,6 +359,29 @@ export function CostEditForm({ projectId, costId }: CostEditFormProps) {
                 />
               </FormControl>
               <FormDescription>Brief description of this cost</FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Contact field */}
+        <FormField
+          control={form.control}
+          name="contactId"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Contact (Optional)</FormLabel>
+              <FormControl>
+                <ContactSelector
+                  projectId={projectId}
+                  value={field.value || undefined}
+                  onChange={field.onChange}
+                  disabled={isSubmitting}
+                />
+              </FormControl>
+              <FormDescription>
+                Associate this cost with a contact (contractor, vendor, etc.)
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}

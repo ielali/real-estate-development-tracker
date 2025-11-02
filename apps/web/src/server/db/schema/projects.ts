@@ -1,7 +1,14 @@
-import { pgTable, text, timestamp, bigint } from "drizzle-orm/pg-core"
+import { pgTable, text, timestamp, bigint, customType } from "drizzle-orm/pg-core"
 import { baseEntityFields } from "./base"
 import { users } from "./users"
 import { addresses } from "./addresses"
+
+// Custom type for PostgreSQL tsvector (full-text search)
+const tsvector = customType<{ data: string }>({
+  dataType() {
+    return "tsvector"
+  },
+})
 
 export const projects = pgTable("projects", {
   ...baseEntityFields,
@@ -16,4 +23,5 @@ export const projects = pgTable("projects", {
     .notNull()
     .references(() => users.id),
   totalBudget: bigint("total_budget", { mode: "number" }),
+  search_vector: tsvector("search_vector"),
 })
