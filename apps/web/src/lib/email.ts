@@ -5,6 +5,7 @@ interface SendEmailOptions {
   subject: string
   html: string
   text?: string
+  tags?: Record<string, string>
 }
 
 interface PasswordResetEmailData {
@@ -55,7 +56,56 @@ export class EmailService {
     return this.resend
   }
 
-  async sendEmail({ to, subject, html, text }: SendEmailOptions): Promise<void> {
+  /**
+   * Sleep utility for retry delays
+   */
+  private sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms))
+  }
+
+  /**
+   * Send email with retry logic and exponential backoff
+   * Story 8.2: QA Fix - Implement email retry mechanism
+   *
+   * @param maxRetries - Maximum number of retry attempts (default: 3)
+   * @param baseDelay - Base delay in milliseconds for exponential backoff (default: 1000ms)
+   */
+  async sendEmailWithRetry(
+    options: SendEmailOptions,
+    maxRetries: number = 3,
+    baseDelay: number = 1000
+  ): Promise<{ resendId: string | null; attempts: number; error?: string }> {
+    let lastError: Error | null = null
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const resendId = await this.sendEmail(options)
+        return { resendId, attempts: attempt }
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error("Unknown error")
+        console.warn(`Email send attempt ${attempt}/${maxRetries} failed:`, lastError.message)
+
+        // Don't retry on the last attempt
+        if (attempt < maxRetries) {
+          // Exponential backoff: 1s, 2s, 4s, etc.
+          const delay = baseDelay * Math.pow(2, attempt - 1)
+          console.log(`Retrying in ${delay}ms...`)
+          await this.sleep(delay)
+        }
+      }
+    }
+
+    // All retries exhausted
+    const errorMessage = lastError?.message || "Unknown error after all retries"
+    console.error(`❌ Email failed after ${maxRetries} attempts:`, errorMessage)
+    return {
+      resendId: null,
+      attempts: maxRetries,
+      error: errorMessage,
+    }
+  }
+
+  async sendEmail({ to, subject, html, text, tags }: SendEmailOptions): Promise<string | null> {
     if (this.isDevelopment) {
       // Development: Log email to console
       console.log("\n" + "=".repeat(60))
@@ -63,6 +113,9 @@ export class EmailService {
       console.log("=".repeat(60))
       console.log(`To: ${to}`)
       console.log(`Subject: ${subject}`)
+      if (tags) {
+        console.log(`Tags: ${JSON.stringify(tags)}`)
+      }
       console.log("\nHTML Content:")
       console.log(html)
       if (text) {
@@ -70,7 +123,7 @@ export class EmailService {
         console.log(text)
       }
       console.log("=".repeat(60) + "\n")
-      return
+      return null // No Resend ID in development
     }
 
     // Production: Send via Resend
@@ -78,15 +131,22 @@ export class EmailService {
       const resend = this.getResendClient()
       const fromEmail = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev"
 
+      // Convert tags from Record<string, string> to Tag[] format
+      const tagsArray = tags
+        ? Object.entries(tags).map(([name, value]) => ({ name, value }))
+        : undefined
+
       const result = await resend.emails.send({
         from: fromEmail,
         to,
         subject,
         html,
         ...(text && { text }),
+        ...(tagsArray && { tags: tagsArray }),
       })
 
       console.log("✅ Email sent successfully via Resend:", result)
+      return result.data?.id || null
     } catch (error) {
       console.error("❌ Failed to send email via Resend:", error)
       throw new Error(
@@ -99,7 +159,7 @@ export class EmailService {
     user,
     resetUrl,
     token: _token,
-  }: PasswordResetEmailData): Promise<void> {
+  }: PasswordResetEmailData): Promise<string | null> {
     const subject = "Reset Your Password - Real Estate Portfolio"
 
     const html = this.generatePasswordResetHTML({
@@ -114,15 +174,19 @@ export class EmailService {
       expirationTime: "1 hour",
     })
 
-    await this.sendEmail({
+    return await this.sendEmail({
       to: user.email,
       subject,
       html,
       text,
+      tags: {
+        type: "password-reset",
+        userId: user.email,
+      },
     })
   }
 
-  async sendInvitationEmail(data: InvitationEmailData): Promise<void> {
+  async sendInvitationEmail(data: InvitationEmailData): Promise<string | null> {
     const subject = `You've been invited to ${data.projectName} - Real Estate Portfolio`
 
     const invitationUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/invite/${data.invitationToken}`
@@ -145,18 +209,23 @@ export class EmailService {
       expiresAt: data.expiresAt,
     })
 
-    await this.sendEmail({
+    return await this.sendEmail({
       to: data.email,
       subject,
       html,
       text,
+      tags: {
+        type: "project-invitation",
+        projectName: data.projectName,
+        permission: data.permission,
+      },
     })
   }
 
   /**
    * QA Fix (SEC-004): Send email notification for 2FA state changes
    */
-  async send2FANotification(data: TwoFactorEmailData): Promise<void> {
+  async send2FANotification(data: TwoFactorEmailData): Promise<string | null> {
     const actionText = {
       enabled: "Two-Factor Authentication Enabled",
       disabled: "Two-Factor Authentication Disabled",
@@ -168,11 +237,16 @@ export class EmailService {
     const html = this.generate2FANotificationHTML(data)
     const text = this.generate2FANotificationText(data)
 
-    await this.sendEmail({
+    return await this.sendEmail({
       to: data.user.email,
       subject,
       html,
       text,
+      tags: {
+        type: "2fa-notification",
+        action: data.action,
+        userId: data.user.email,
+      },
     })
   }
 
@@ -728,17 +802,22 @@ This is an automated security notification for your account.
     timestamp: Date,
     device: string,
     ipAddress: string
-  ): Promise<void> {
+  ): Promise<string | null> {
     const subject = "Security Alert: Backup Code Used - Real Estate Portfolio"
 
     const html = this.generateBackupCodeUsedHTML(user, timestamp, device, ipAddress)
     const text = this.generateBackupCodeUsedText(user, timestamp, device, ipAddress)
 
-    await this.sendEmail({
+    return await this.sendEmail({
       to: user.email,
       subject,
       html,
       text,
+      tags: {
+        type: "security-alert",
+        event: "backup-code-used",
+        userId: user.email,
+      },
     })
   }
 
@@ -751,17 +830,23 @@ This is an automated security notification for your account.
     timestamp: Date,
     device: string,
     ipAddress: string
-  ): Promise<void> {
+  ): Promise<string | null> {
     const subject = "Project Backup Downloaded - Real Estate Portfolio"
 
     const html = this.generateBackupDownloadedHTML(user, projectName, timestamp, device, ipAddress)
     const text = this.generateBackupDownloadedText(user, projectName, timestamp, device, ipAddress)
 
-    await this.sendEmail({
+    return await this.sendEmail({
       to: user.email,
       subject,
       html,
       text,
+      tags: {
+        type: "security-alert",
+        event: "backup-downloaded",
+        projectName,
+        userId: user.email,
+      },
     })
   }
 
@@ -1074,6 +1159,314 @@ Project backups contain sensitive information including costs, contacts, and doc
 This email was sent from Real Estate Portfolio.
 This is an automated security notification for your account.
     `.trim()
+  }
+
+  /**
+   * Story 8.2: Notification Email Methods
+   */
+
+  async sendCostAddedEmail(
+    data: import("./notification-email-templates").CostEmailData
+  ): Promise<string | null> {
+    const { generateCostAddedHTML, generateCostAddedText } = await import(
+      "./notification-email-templates"
+    )
+
+    const subject = `New Cost Added to ${data.projectName} - Real Estate Portfolio`
+    const html = generateCostAddedHTML(data)
+    const text = generateCostAddedText(data)
+
+    return await this.sendEmail({
+      to: data.recipientEmail,
+      subject,
+      html,
+      text,
+      tags: {
+        type: "notification",
+        notificationType: "cost-added",
+        projectId: data.projectId,
+        projectName: data.projectName,
+      },
+    })
+  }
+
+  async sendLargeExpenseEmail(
+    data: import("./notification-email-templates").LargeExpenseEmailData
+  ): Promise<string | null> {
+    const { generateLargeExpenseHTML, generateLargeExpenseText } = await import(
+      "./notification-email-templates"
+    )
+
+    const subject = `🚨 Large Expense Alert: ${data.projectName} - Real Estate Portfolio`
+    const html = generateLargeExpenseHTML(data)
+    const text = generateLargeExpenseText(data)
+
+    return await this.sendEmail({
+      to: data.recipientEmail,
+      subject,
+      html,
+      text,
+      tags: {
+        type: "notification",
+        notificationType: "large-expense",
+        priority: "critical",
+        projectId: data.projectId,
+        projectName: data.projectName,
+      },
+    })
+  }
+
+  async sendDocumentUploadedEmail(
+    data: import("./notification-email-templates").DocumentEmailData
+  ): Promise<string | null> {
+    const { generateDocumentUploadedHTML, generateDocumentUploadedText } = await import(
+      "./notification-email-templates"
+    )
+
+    const subject = `New Document Uploaded to ${data.projectName} - Real Estate Portfolio`
+    const html = generateDocumentUploadedHTML(data)
+    const text = generateDocumentUploadedText(data)
+
+    return await this.sendEmail({
+      to: data.recipientEmail,
+      subject,
+      html,
+      text,
+      tags: {
+        type: "notification",
+        notificationType: "document-uploaded",
+        projectId: data.projectId,
+        projectName: data.projectName,
+      },
+    })
+  }
+
+  async sendTimelineEventEmail(
+    data: import("./notification-email-templates").TimelineEventEmailData
+  ): Promise<string | null> {
+    const { generateTimelineEventHTML, generateTimelineEventText } = await import(
+      "./notification-email-templates"
+    )
+
+    const subject = `New Timeline Event: ${data.projectName} - Real Estate Portfolio`
+    const html = generateTimelineEventHTML(data)
+    const text = generateTimelineEventText(data)
+
+    return await this.sendEmail({
+      to: data.recipientEmail,
+      subject,
+      html,
+      text,
+      tags: {
+        type: "notification",
+        notificationType: "timeline-event",
+        projectId: data.projectId,
+        projectName: data.projectName,
+      },
+    })
+  }
+
+  async sendCommentAddedEmail(
+    data: import("./notification-email-templates").CommentEmailData
+  ): Promise<string | null> {
+    const { generateCommentAddedHTML, generateCommentAddedText } = await import(
+      "./notification-email-templates"
+    )
+
+    const subject = `New Comment on ${data.projectName} - Real Estate Portfolio`
+    const html = generateCommentAddedHTML(data)
+    const text = generateCommentAddedText(data)
+
+    return await this.sendEmail({
+      to: data.recipientEmail,
+      subject,
+      html,
+      text,
+      tags: {
+        type: "notification",
+        notificationType: "comment-added",
+        projectId: data.projectId,
+        projectName: data.projectName,
+      },
+    })
+  }
+
+  async sendDailyDigestEmail(
+    data: import("./notification-email-templates").DailyDigestEmailData
+  ): Promise<string | null> {
+    const { generateDailyDigestHTML, generateDailyDigestText } = await import(
+      "./notification-email-templates"
+    )
+
+    const subject = `Daily Project Digest - Real Estate Portfolio`
+    const html = generateDailyDigestHTML(data)
+    const text = generateDailyDigestText(data)
+
+    return await this.sendEmail({
+      to: data.recipientEmail,
+      subject,
+      html,
+      text,
+      tags: {
+        type: "digest",
+        digestType: "daily",
+        date: data.date.toISOString().split("T")[0],
+      },
+    })
+  }
+
+  async sendWeeklyDigestEmail(
+    data: import("./notification-email-templates").WeeklyDigestEmailData
+  ): Promise<string | null> {
+    const { generateWeeklyDigestHTML, generateWeeklyDigestText } = await import(
+      "./notification-email-templates"
+    )
+
+    const subject = `Weekly Project Digest - Real Estate Portfolio`
+    const html = generateWeeklyDigestHTML(data)
+    const text = generateWeeklyDigestText(data)
+
+    return await this.sendEmail({
+      to: data.recipientEmail,
+      subject,
+      html,
+      text,
+      tags: {
+        type: "digest",
+        digestType: "weekly",
+        weekStart: data.weekStart.toISOString().split("T")[0],
+      },
+    })
+  }
+
+  /**
+   * Email retry wrapper methods
+   * Story 8.2: QA Fix - Implement email retry for notification emails
+   */
+
+  async sendCostAddedEmailWithRetry(
+    data: import("./notification-email-templates").CostEmailData
+  ): Promise<{ resendId: string | null; attempts: number; error?: string }> {
+    const { generateCostAddedHTML, generateCostAddedText } = await import(
+      "./notification-email-templates"
+    )
+
+    const subject = `New Cost Added to ${data.projectName} - Real Estate Portfolio`
+    const html = generateCostAddedHTML(data)
+    const text = generateCostAddedText(data)
+
+    return await this.sendEmailWithRetry({
+      to: data.recipientEmail,
+      subject,
+      html,
+      text,
+      tags: {
+        type: "notification",
+        notificationType: "cost-added",
+        projectId: data.projectId,
+        projectName: data.projectName,
+      },
+    })
+  }
+
+  async sendLargeExpenseEmailWithRetry(
+    data: import("./notification-email-templates").LargeExpenseEmailData
+  ): Promise<{ resendId: string | null; attempts: number; error?: string }> {
+    const { generateLargeExpenseHTML, generateLargeExpenseText } = await import(
+      "./notification-email-templates"
+    )
+
+    const subject = `🚨 Large Expense Alert: ${data.projectName} - Real Estate Portfolio`
+    const html = generateLargeExpenseHTML(data)
+    const text = generateLargeExpenseText(data)
+
+    return await this.sendEmailWithRetry({
+      to: data.recipientEmail,
+      subject,
+      html,
+      text,
+      tags: {
+        type: "notification",
+        notificationType: "large-expense",
+        projectId: data.projectId,
+        projectName: data.projectName,
+      },
+    })
+  }
+
+  async sendDocumentUploadedEmailWithRetry(
+    data: import("./notification-email-templates").DocumentEmailData
+  ): Promise<{ resendId: string | null; attempts: number; error?: string }> {
+    const { generateDocumentUploadedHTML, generateDocumentUploadedText } = await import(
+      "./notification-email-templates"
+    )
+
+    const subject = `New Document Uploaded to ${data.projectName} - Real Estate Portfolio`
+    const html = generateDocumentUploadedHTML(data)
+    const text = generateDocumentUploadedText(data)
+
+    return await this.sendEmailWithRetry({
+      to: data.recipientEmail,
+      subject,
+      html,
+      text,
+      tags: {
+        type: "notification",
+        notificationType: "document-uploaded",
+        projectId: data.projectId,
+        projectName: data.projectName,
+      },
+    })
+  }
+
+  async sendTimelineEventEmailWithRetry(
+    data: import("./notification-email-templates").TimelineEventEmailData
+  ): Promise<{ resendId: string | null; attempts: number; error?: string }> {
+    const { generateTimelineEventHTML, generateTimelineEventText } = await import(
+      "./notification-email-templates"
+    )
+
+    const subject = `New Timeline Event: ${data.projectName} - Real Estate Portfolio`
+    const html = generateTimelineEventHTML(data)
+    const text = generateTimelineEventText(data)
+
+    return await this.sendEmailWithRetry({
+      to: data.recipientEmail,
+      subject,
+      html,
+      text,
+      tags: {
+        type: "notification",
+        notificationType: "timeline-event",
+        projectId: data.projectId,
+        projectName: data.projectName,
+      },
+    })
+  }
+
+  async sendCommentAddedEmailWithRetry(
+    data: import("./notification-email-templates").CommentEmailData
+  ): Promise<{ resendId: string | null; attempts: number; error?: string }> {
+    const { generateCommentAddedHTML, generateCommentAddedText } = await import(
+      "./notification-email-templates"
+    )
+
+    const subject = `New Comment on ${data.projectName} - Real Estate Portfolio`
+    const html = generateCommentAddedHTML(data)
+    const text = generateCommentAddedText(data)
+
+    return await this.sendEmailWithRetry({
+      to: data.recipientEmail,
+      subject,
+      html,
+      text,
+      tags: {
+        type: "notification",
+        notificationType: "comment-added",
+        projectId: data.projectId,
+        projectName: data.projectName,
+      },
+    })
   }
 }
 

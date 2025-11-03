@@ -45,6 +45,7 @@ import { DocumentLinkSelector } from "@/components/documents/DocumentLinkSelecto
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Link as LinkIcon } from "lucide-react"
 import { ContactSelector } from "./ContactSelector"
+import { QuickContactCreate } from "./QuickContactCreate"
 
 /**
  * Client-side form schema for cost editing
@@ -79,6 +80,7 @@ export function CostEditForm({ projectId, costId }: CostEditFormProps) {
   const router = useRouter()
   const utils = api.useUtils()
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false)
+  const [isQuickContactOpen, setIsQuickContactOpen] = React.useState(false)
 
   // Fetch existing cost data
   const { data: costData, isLoading } = api.costs.getById.useQuery({ id: costId })
@@ -376,6 +378,7 @@ export function CostEditForm({ projectId, costId }: CostEditFormProps) {
                   projectId={projectId}
                   value={field.value || undefined}
                   onChange={field.onChange}
+                  onCreateNew={() => setIsQuickContactOpen(true)}
                   disabled={isSubmitting}
                 />
               </FormControl>
@@ -460,6 +463,16 @@ export function CostEditForm({ projectId, costId }: CostEditFormProps) {
           </div>
         </div>
       </form>
+
+      <QuickContactCreate
+        projectId={projectId}
+        isOpen={isQuickContactOpen}
+        onClose={() => setIsQuickContactOpen(false)}
+        onSuccess={(contact) => {
+          form.setValue("contactId", contact.id)
+          setIsQuickContactOpen(false)
+        }}
+      />
     </Form>
   )
 }

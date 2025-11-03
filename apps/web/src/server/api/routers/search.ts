@@ -267,7 +267,9 @@ export const searchRouter = createTRPCRouter({
             )
           )
 
-        const contactIdList = accessibleContactIds.map((row) => row.contactId)
+        const contactIdList = accessibleContactIds.map(
+          (row: { contactId: string }) => row.contactId
+        )
 
         if (contactIdList.length === 0) {
           // No accessible contacts, skip search

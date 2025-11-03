@@ -90,6 +90,13 @@ export function CommandPalette() {
     return () => document.removeEventListener("keydown", handleKeyDown)
   }, [])
 
+  // Clear search input when dialog is closed
+  React.useEffect(() => {
+    if (!open) {
+      setSearchQuery("")
+    }
+  }, [open])
+
   // Search query using tRPC
   const { data: searchResults, isLoading } = api.search.globalSearch.useQuery(
     {
