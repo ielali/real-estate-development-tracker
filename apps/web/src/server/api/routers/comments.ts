@@ -153,16 +153,21 @@ export const commentsRouter = createTRPCRouter({
         })
         .returning()
 
-      // TODO: Trigger notification generation (Story 8.3 - notifications task)
-      // This will be implemented in the notification service integration task
-      // await notifyCommentAdded({
-      //   commentId: newComment.id,
-      //   entityType: input.entityType,
-      //   entityId: input.entityId,
-      //   projectId: input.projectId,
-      //   authorId: userId,
-      //   content: input.content,
-      // })
+      // Trigger notification generation (Story 8.3)
+      // Fire-and-forget pattern - don't block on notification creation
+      const { notifyCommentAdded } = await import("@/server/services/notifications")
+      notifyCommentAdded({
+        commentId: newComment.id,
+        entityType: input.entityType,
+        entityId: input.entityId,
+        projectId: input.projectId,
+        projectName: project.name,
+        commenterName: ctx.session.user.name,
+        commentAuthorId: userId,
+        content: input.content,
+      }).catch((err) => {
+        console.error("Failed to send comment notification:", err)
+      })
 
       // Return comment with user info
       const commentWithUser = await ctx.db.query.comments.findFirst({
