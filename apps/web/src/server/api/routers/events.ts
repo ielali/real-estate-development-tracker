@@ -10,6 +10,7 @@ import { documents } from "@/server/db/schema/documents"
 import { projects } from "@/server/db/schema/projects"
 import { auditLog } from "@/server/db/schema/auditLog"
 import { verifyProjectAccess } from "../helpers/verifyProjectAccess"
+import { notifyTimelineEvent } from "@/server/services/notifications"
 
 /**
  * Zod schema for creating an event
@@ -82,6 +83,20 @@ export const eventsRouter = createTRPCRouter({
     // Verify project access
     await verifyProjectAccess(ctx.db, input.projectId, userId)
 
+    // Get project name for notification
+    const [project] = await ctx.db
+      .select({ name: projects.name })
+      .from(projects)
+      .where(eq(projects.id, input.projectId))
+      .limit(1)
+
+    if (!project) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Project not found",
+      })
+    }
+
     // Generate event ID
     const eventId = crypto.randomUUID()
 
@@ -123,6 +138,15 @@ export const eventsRouter = createTRPCRouter({
         eventDate: input.date.toISOString(),
         category: input.categoryId,
       }),
+    })
+
+    // Send notification (Story 8.1: AC #10, #11)
+    await notifyTimelineEvent({
+      projectId: input.projectId,
+      eventId: event.id,
+      eventTitle: event.title,
+      projectName: project.name,
+      excludeUserId: userId,
     })
 
     return event

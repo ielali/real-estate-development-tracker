@@ -8,6 +8,7 @@ import { users } from "@/server/db/schema/users"
 import { auditLog } from "@/server/db/schema/auditLog"
 import { emailService } from "@/lib/email"
 import { randomUUID } from "crypto"
+import { notifyPartnerInvited } from "@/server/services/notifications"
 
 /**
  * Partners router with invitation and access management operations
@@ -182,6 +183,16 @@ export const partnersRouter = createTRPCRouter({
             timestamp: now,
           })
 
+          // Send notification if user already exists (Story 8.1: AC #10, #11)
+          if (existingUser[0]) {
+            await notifyPartnerInvited({
+              userId: existingUser[0].id,
+              projectId,
+              projectName: project[0].name,
+              inviterName: `${inviter[0]?.firstName} ${inviter[0]?.lastName}`,
+            })
+          }
+
           return {
             status: "reinvite_sent" as const,
             message: "Invitation sent to previously revoked partner.",
@@ -239,6 +250,16 @@ export const partnersRouter = createTRPCRouter({
         }),
         timestamp: now,
       })
+
+      // Send notification if user already exists (Story 8.1: AC #10, #11)
+      if (existingUser[0]) {
+        await notifyPartnerInvited({
+          userId: existingUser[0].id,
+          projectId,
+          projectName: project[0].name,
+          inviterName: `${inviter[0]?.firstName} ${inviter[0]?.lastName}`,
+        })
+      }
 
       return {
         status: "invitation_sent" as const,

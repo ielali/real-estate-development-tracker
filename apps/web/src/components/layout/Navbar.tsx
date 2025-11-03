@@ -4,6 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Search } from "lucide-react"
 import { UserDropdown } from "@/components/ui/UserDropdown"
+import { NotificationBell } from "@/components/notifications/NotificationBell"
 import { useAuth } from "@/components/providers/AuthProvider"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -93,6 +94,8 @@ export function Navbar() {
                 </kbd>
               </Button>
             )}
+            {/* Notifications - only show for authenticated users */}
+            {user && <NotificationBell />}
             <UserDropdown />
           </div>
         </div>
