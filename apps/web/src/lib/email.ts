@@ -82,13 +82,18 @@ export class EmailService {
       const resend = this.getResendClient()
       const fromEmail = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev"
 
+      // Convert tags from Record<string, string> to Tag[] format
+      const tagsArray = tags
+        ? Object.entries(tags).map(([name, value]) => ({ name, value }))
+        : undefined
+
       const result = await resend.emails.send({
         from: fromEmail,
         to,
         subject,
         html,
         ...(text && { text }),
-        ...(tags && { tags }),
+        ...(tagsArray && { tags: tagsArray }),
       })
 
       console.log("✅ Email sent successfully via Resend:", result)
@@ -1280,7 +1285,7 @@ This is an automated security notification for your account.
       tags: {
         type: "digest",
         digestType: "weekly",
-        weekStarting: data.weekStarting.toISOString().split("T")[0],
+        weekStart: data.weekStart.toISOString().split("T")[0],
       },
     })
   }
