@@ -22,6 +22,8 @@ export * from "./project-backups"
 export * from "./security-events"
 export * from "./notifications"
 export * from "./notification_preferences"
+export * from "./email_logs"
+export * from "./digest_queue"
 
 import { relations } from "drizzle-orm"
 import { users } from "./users"
