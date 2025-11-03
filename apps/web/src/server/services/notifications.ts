@@ -163,14 +163,13 @@ export async function notifyProjectMembers(params: {
       .returning()
 
     // Story 8.2: Trigger email notifications (fire-and-forget)
-    // Get user names for email personalization
+    // Get user records for email personalization
     const userRecords = await db
       .select({ id: users.id, name: users.name, email: users.email })
       .from(users)
-      .where(eq(users.id, userIds.values().next().value))
 
     for (const notification of createdNotifications) {
-      const userRecord = userRecords.find((u) => u.id === notification.userId) ?? {
+      const userRecord = userRecords.find((u: { id: string }) => u.id === notification.userId) ?? {
         name: "User",
       }
 

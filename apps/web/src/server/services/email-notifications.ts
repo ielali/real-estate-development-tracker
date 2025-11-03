@@ -18,28 +18,15 @@ import { users } from "@/server/db/schema/users"
 import { eq } from "drizzle-orm"
 import { emailService } from "@/lib/email"
 import { emailRateLimiter } from "@/server/utils/email-rate-limiter"
+import { generateUnsubscribeToken } from "@/server/utils/jwt"
+import { toZonedTime, fromZonedTime } from "date-fns-tz"
+import { addDays, nextMonday, set, isAfter } from "date-fns"
 import type {
   CostEmailData,
   LargeExpenseEmailData,
   DocumentEmailData,
   TimelineEventEmailData,
 } from "@/lib/notification-email-templates"
-
-/**
- * Generate unsubscribe token using better-auth JWT utilities
- * Token expires in 90 days (matching notification cleanup period)
- */
-function generateUnsubscribeToken(userId: string): string {
-  // TODO: Implement proper JWT token generation using better-auth
-  // For now, use a simple base64 encoding
-  // In production, this should use better-auth's JWT signing
-  const payload = JSON.stringify({
-    userId,
-    purpose: "unsubscribe",
-    exp: Date.now() + 90 * 24 * 60 * 60 * 1000, // 90 days
-  })
-  return Buffer.from(payload).toString("base64url")
-}
 
 /**
  * Log email attempt to database
@@ -95,23 +82,69 @@ async function queueForDigest(params: {
 
 /**
  * Calculate next digest scheduled time based on user's timezone
+ * Uses date-fns-tz for proper timezone-aware scheduling
  */
-function calculateNextDigestTime(digestType: "daily" | "weekly", _timezone: string): Date {
-  // TODO: Implement proper timezone-aware scheduling
-  // For now, use simple UTC-based scheduling
-  const now = new Date()
+function calculateNextDigestTime(digestType: "daily" | "weekly", timezone: string): Date {
+  try {
+    // Get current time in user's timezone
+    const now = new Date()
+    const nowInUserTz = toZonedTime(now, timezone)
 
-  if (digestType === "daily") {
-    // Schedule for next 8 AM (24 hours from now for simplicity)
-    const scheduledFor = new Date(now.getTime() + 24 * 60 * 60 * 1000)
-    scheduledFor.setHours(8, 0, 0, 0)
-    return scheduledFor
-  } else {
-    // Weekly: Schedule for next Monday 8 AM
-    const daysUntilMonday = (8 - now.getDay()) % 7 || 7
-    const scheduledFor = new Date(now.getTime() + daysUntilMonday * 24 * 60 * 60 * 1000)
-    scheduledFor.setHours(8, 0, 0, 0)
-    return scheduledFor
+    if (digestType === "daily") {
+      // Schedule for next 8 AM in user's timezone
+      let scheduledTime = set(nowInUserTz, {
+        hours: 8,
+        minutes: 0,
+        seconds: 0,
+        milliseconds: 0,
+      })
+
+      // If 8 AM has already passed today, schedule for tomorrow
+      if (!isAfter(scheduledTime, nowInUserTz)) {
+        scheduledTime = addDays(scheduledTime, 1)
+      }
+
+      // Convert back to UTC for storage
+      return fromZonedTime(scheduledTime, timezone)
+    } else {
+      // Weekly: Schedule for next Monday 8 AM in user's timezone
+      let scheduledTime = nextMonday(nowInUserTz)
+      scheduledTime = set(scheduledTime, {
+        hours: 8,
+        minutes: 0,
+        seconds: 0,
+        milliseconds: 0,
+      })
+
+      // Convert back to UTC for storage
+      return fromZonedTime(scheduledTime, timezone)
+    }
+  } catch (error) {
+    // Fallback to UTC if timezone is invalid
+    console.error(`Invalid timezone ${timezone}, falling back to UTC:`, error)
+    const now = new Date()
+
+    if (digestType === "daily") {
+      let scheduledTime = set(now, {
+        hours: 8,
+        minutes: 0,
+        seconds: 0,
+        milliseconds: 0,
+      })
+      if (!isAfter(scheduledTime, now)) {
+        scheduledTime = addDays(scheduledTime, 1)
+      }
+      return scheduledTime
+    } else {
+      let scheduledTime = nextMonday(now)
+      scheduledTime = set(scheduledTime, {
+        hours: 8,
+        minutes: 0,
+        seconds: 0,
+        milliseconds: 0,
+      })
+      return scheduledTime
+    }
   }
 }
 
@@ -184,7 +217,7 @@ export async function sendCostAddedEmailNotification(params: {
     }
 
     // Generate unsubscribe token
-    const unsubscribeToken = generateUnsubscribeToken(params.userId)
+    const unsubscribeToken = await generateUnsubscribeToken(params.userId)
 
     // Prepare email data
     const emailData: CostEmailData = {
@@ -266,7 +299,7 @@ export async function sendLargeExpenseEmailNotification(params: {
     }
 
     // Generate unsubscribe token
-    const unsubscribeToken = generateUnsubscribeToken(params.userId)
+    const unsubscribeToken = await generateUnsubscribeToken(params.userId)
 
     // Prepare email data
     const emailData: LargeExpenseEmailData = {
@@ -361,7 +394,7 @@ export async function sendDocumentUploadedEmailNotification(params: {
       return
     }
 
-    const unsubscribeToken = generateUnsubscribeToken(params.userId)
+    const unsubscribeToken = await generateUnsubscribeToken(params.userId)
 
     const emailData: DocumentEmailData = {
       userName: params.userName,
@@ -447,7 +480,7 @@ export async function sendTimelineEventEmailNotification(params: {
       return
     }
 
-    const unsubscribeToken = generateUnsubscribeToken(params.userId)
+    const unsubscribeToken = await generateUnsubscribeToken(params.userId)
 
     const emailData: TimelineEventEmailData = {
       userName: params.userName,

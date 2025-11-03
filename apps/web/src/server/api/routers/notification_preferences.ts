@@ -1,8 +1,9 @@
 import { z } from "zod"
 import { eq } from "drizzle-orm"
 import { TRPCError } from "@trpc/server"
-import { createTRPCRouter, protectedProcedure } from "../trpc"
+import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc"
 import { notificationPreferences } from "@/server/db/schema/notification_preferences"
+import { verifyUnsubscribeToken } from "@/server/utils/jwt"
 
 /**
  * Notification Preferences Router
@@ -88,5 +89,27 @@ export const notificationPreferencesRouter = createTRPCRouter({
         .returning()
 
       return updated
+    }),
+
+  /**
+   * Verify an unsubscribe token and return the user ID
+   * Public endpoint (no auth required) for unsubscribe links
+   */
+  verifyUnsubscribeToken: publicProcedure
+    .input(
+      z.object({
+        token: z.string(),
+      })
+    )
+    .query(async ({ input }) => {
+      try {
+        const userId = await verifyUnsubscribeToken(input.token)
+        return { userId }
+      } catch (error) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: error instanceof Error ? error.message : "Invalid or expired unsubscribe link",
+        })
+      }
     }),
 })

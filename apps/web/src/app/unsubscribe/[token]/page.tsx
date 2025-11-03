@@ -31,32 +31,23 @@ export default function UnsubscribePage() {
     },
   })
 
-  // Decode JWT token to extract userId
+  // Verify JWT token using tRPC
+  const { data: tokenData, error: tokenError } =
+    api.notificationPreferences.verifyUnsubscribeToken.useQuery(
+      { token },
+      {
+        retry: false,
+        refetchOnWindowFocus: false,
+      }
+    )
+
   useEffect(() => {
-    try {
-      // Simple base64url decode for now
-      // TODO: Implement proper JWT verification with better-auth
-      const decoded = Buffer.from(token, "base64url").toString("utf-8")
-      const payload = JSON.parse(decoded)
-
-      // Check expiry
-      if (payload.exp && payload.exp < Date.now()) {
-        setError("This unsubscribe link has expired")
-        return
-      }
-
-      // Verify purpose
-      if (payload.purpose !== "unsubscribe") {
-        setError("Invalid unsubscribe link")
-        return
-      }
-
-      setUserId(payload.userId)
-    } catch (err) {
-      console.error("Token decode error:", err)
-      setError("Invalid or expired unsubscribe link")
+    if (tokenError) {
+      setError(tokenError.message || "Invalid or expired unsubscribe link")
+    } else if (tokenData) {
+      setUserId(tokenData.userId)
     }
-  }, [token])
+  }, [tokenData, tokenError])
 
   const handleUnsubscribe = async () => {
     if (!userId) {
