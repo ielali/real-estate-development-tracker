@@ -25,6 +25,7 @@ export * from "./notification_preferences"
 export * from "./email_logs"
 export * from "./digest_queue"
 export * from "./revoked_tokens"
+export * from "./comments"
 
 import { relations } from "drizzle-orm"
 import { users } from "./users"
@@ -47,6 +48,7 @@ import { projectBackups } from "./project-backups"
 import { securityEvents } from "./security-events"
 import { notifications } from "./notifications"
 import { notificationPreferences } from "./notification_preferences"
+import { comments } from "./comments"
 
 export const usersRelations = relations(users, ({ one, many }) => ({
   ownedProjects: many(projects),
@@ -56,6 +58,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   projectBackups: many(projectBackups),
   securityEvents: many(securityEvents),
   notifications: many(notifications),
+  comments: many(comments),
   notificationPreferences: one(notificationPreferences, {
     fields: [users.id],
     references: [notificationPreferences.userId],
@@ -84,6 +87,7 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
   costTemplates: many(costTemplates),
   projectBackups: many(projectBackups),
   notifications: many(notifications),
+  comments: many(comments),
 }))
 
 export const costsRelations = relations(costs, ({ one, many }) => ({
@@ -273,4 +277,20 @@ export const projectBackupsRelations = relations(projectBackups, ({ one }) => ({
     fields: [projectBackups.userId],
     references: [users.id],
   }),
+}))
+
+export const commentsRelations = relations(comments, ({ one, many }) => ({
+  user: one(users, {
+    fields: [comments.userId],
+    references: [users.id],
+  }),
+  project: one(projects, {
+    fields: [comments.projectId],
+    references: [projects.id],
+  }),
+  parentComment: one(comments, {
+    fields: [comments.parentCommentId],
+    references: [comments.id],
+  }),
+  replies: many(comments),
 }))
