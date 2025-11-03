@@ -16,6 +16,7 @@
 "use client"
 
 import { useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { formatDistanceToNow, isToday, isYesterday, isThisWeek } from "date-fns"
 import {
   DollarSign,
@@ -30,6 +31,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import { api } from "@/lib/trpc/client"
 import { cn } from "@/lib/utils"
+import { getNotificationNavigationUrl } from "@/lib/utils/notification-navigation"
 
 interface NotificationPanelProps {
   onClose?: () => void
@@ -63,6 +65,9 @@ function groupNotificationsByDate(
     read: boolean
     message: string
     type: string
+    entityType: string
+    entityId: string
+    projectId: string | null
     project: { id: string; name: string } | null
   }>
 ) {
@@ -89,8 +94,9 @@ function groupNotificationsByDate(
   return groups
 }
 
-export function NotificationPanel({ onClose: _onClose }: NotificationPanelProps) {
+export function NotificationPanel({ onClose }: NotificationPanelProps) {
   const utils = api.useUtils()
+  const router = useRouter()
 
   // Fetch notifications with 30-second polling (AC #9)
   const { data: notifications = [], isLoading } = api.notifications.list.useQuery(
@@ -117,9 +123,32 @@ export function NotificationPanel({ onClose: _onClose }: NotificationPanelProps)
     },
   })
 
-  const handleNotificationClick = (notificationId: string, isRead: boolean) => {
-    if (!isRead) {
-      markAsReadMutation.mutate({ id: notificationId })
+  const handleNotificationClick = (notification: {
+    id: string
+    read: boolean
+    entityType: string
+    entityId: string
+    projectId: string | null
+  }) => {
+    // Mark as read if unread (AC #8)
+    if (!notification.read) {
+      markAsReadMutation.mutate({ id: notification.id })
+    }
+
+    // Navigate to entity (AC #10, #11)
+    const url = getNotificationNavigationUrl({
+      entityType: notification.entityType,
+      entityId: notification.entityId,
+      projectId: notification.projectId,
+    })
+
+    // Use dynamic navigation (Next.js type-safe routing accepts strings at runtime)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    router.push(url as any)
+
+    // Close the notification panel
+    if (onClose) {
+      onClose()
     }
   }
 
@@ -191,7 +220,7 @@ export function NotificationPanel({ onClose: _onClose }: NotificationPanelProps)
                   {groupNotifications.map((notification, index) => (
                     <div key={notification.id}>
                       <button
-                        onClick={() => handleNotificationClick(notification.id, notification.read)}
+                        onClick={() => handleNotificationClick(notification)}
                         className={cn(
                           "w-full text-left px-3 py-3 rounded-md transition-colors hover:bg-accent",
                           !notification.read && "bg-primary/5"
