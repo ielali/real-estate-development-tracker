@@ -44,8 +44,17 @@ export function parseDate(dateString: string): Date {
   const isoMatch = trimmed.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/)
   if (isoMatch) {
     const [_, year, month, day] = isoMatch
-    const isoDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
-    if (isValid(isoDate)) {
+    const yearNum = parseInt(year)
+    const monthNum = parseInt(month)
+    const dayNum = parseInt(day)
+
+    // Validate ranges
+    if (monthNum < 1 || monthNum > 12 || dayNum < 1 || dayNum > 31) {
+      throw new Error(`Invalid date format: ${dateString}`)
+    }
+
+    const isoDate = new Date(yearNum, monthNum - 1, dayNum)
+    if (isValid(isoDate) && isoDate.getMonth() === monthNum - 1 && isoDate.getDate() === dayNum) {
       return isoDate
     }
   }
@@ -56,32 +65,57 @@ export function parseDate(dateString: string): Date {
     const [_, first, second, year] = slashMatch
     const firstNum = parseInt(first)
     const secondNum = parseInt(second)
+    const yearNum = parseInt(year)
+
+    // Validate basic ranges
+    if (firstNum < 1 || secondNum < 1 || firstNum > 31 || secondNum > 31) {
+      throw new Error(`Invalid date format: ${dateString}`)
+    }
 
     // If first number > 12, must be DD/MM/YYYY
     if (firstNum > 12) {
-      const ddMMDate = new Date(parseInt(year), secondNum - 1, firstNum)
-      if (isValid(ddMMDate)) {
+      if (secondNum > 12) {
+        throw new Error(`Invalid date format: ${dateString}`)
+      }
+      const ddMMDate = new Date(yearNum, secondNum - 1, firstNum)
+      if (
+        isValid(ddMMDate) &&
+        ddMMDate.getMonth() === secondNum - 1 &&
+        ddMMDate.getDate() === firstNum
+      ) {
         return ddMMDate
       }
     }
 
     // If second number > 12, must be MM/DD/YYYY
     if (secondNum > 12) {
-      const mmDDDate = new Date(parseInt(year), firstNum - 1, secondNum)
-      if (isValid(mmDDDate)) {
+      const mmDDDate = new Date(yearNum, firstNum - 1, secondNum)
+      if (
+        isValid(mmDDDate) &&
+        mmDDDate.getMonth() === firstNum - 1 &&
+        mmDDDate.getDate() === secondNum
+      ) {
         return mmDDDate
       }
     }
 
     // Both numbers ≤ 12: ambiguous. Try MM/DD/YYYY first (US format default)
-    const mmDDDate = new Date(parseInt(year), firstNum - 1, secondNum)
-    if (isValid(mmDDDate)) {
+    const mmDDDate = new Date(yearNum, firstNum - 1, secondNum)
+    if (
+      isValid(mmDDDate) &&
+      mmDDDate.getMonth() === firstNum - 1 &&
+      mmDDDate.getDate() === secondNum
+    ) {
       return mmDDDate
     }
 
     // Fallback to DD/MM/YYYY
-    const ddMMDate = new Date(parseInt(year), secondNum - 1, firstNum)
-    if (isValid(ddMMDate)) {
+    const ddMMDate = new Date(yearNum, secondNum - 1, firstNum)
+    if (
+      isValid(ddMMDate) &&
+      ddMMDate.getMonth() === secondNum - 1 &&
+      ddMMDate.getDate() === firstNum
+    ) {
       return ddMMDate
     }
   }
@@ -133,19 +167,25 @@ export function parseAmount(amountString: string): number {
   // Detect European format (1.500,00) vs US format (1,500.00)
   // European: period for thousands, comma for decimal
   // US: comma for thousands, period for decimal
-  const europeanFormat = str.match(/\d+\.\d{3}(?:,\d{1,2})?$/)
+  const europeanWithDecimal = str.match(/\d+\.\d{3},\d{1,2}$/)
+  // European no decimal: 1-3 digits, then period, then exactly 3 digits (e.g., "10.005")
+  // But NOT 4+ digits before period (e.g., "1500.555" is decimal, not European)
+  const europeanNoDecimal = str.match(/^\d{1,3}\.\d{3}$/)
   const usFormat = str.match(/\d+,\d{3}(?:\.\d{1,2})?$/)
 
   let cleaned: string
 
-  if (europeanFormat) {
+  if (europeanWithDecimal) {
     // European format: replace periods (thousands) and convert comma to period (decimal)
     cleaned = str.replace(/\./g, "").replace(",", ".")
+  } else if (europeanNoDecimal) {
+    // European thousand separator only, no decimal: "10.005" -> "10005"
+    cleaned = str.replace(/\./g, "")
   } else if (usFormat) {
     // US format: remove commas (thousands), keep period (decimal)
     cleaned = str.replace(/,/g, "")
   } else {
-    // Simple number or already cleaned
+    // Simple number or already cleaned (includes decimals like "1500.555")
     cleaned = str.replace(/,/g, "") // Remove any remaining commas
   }
 
@@ -363,9 +403,57 @@ export function detectColumnMapping(header: string): string | null {
     }
   }
 
-  // Second pass: Look for headers that contain the alias (fuzzy match)
+  // Second pass: Look for word boundary matches (most specific)
+  // Collect all word boundary matches and choose the best one
+  const wordMatches: Array<{ field: string; alias: string; index: number }> = []
   for (const [field, aliases] of Object.entries(COLUMN_MAPPINGS)) {
-    if (aliases.some((alias) => normalizedHeader.includes(alias))) {
+    for (const alias of aliases) {
+      if (alias.length < 3) continue // Skip short aliases
+      // Create regex for word boundary match (separated by _, -, space, or at start/end)
+      const wordBoundaryRegex = new RegExp(`(^|[_\\s-])${alias}([_\\s-]|$)`)
+      const match = normalizedHeader.match(wordBoundaryRegex)
+      if (match) {
+        wordMatches.push({
+          field,
+          alias,
+          index: match.index ?? 0,
+        })
+      }
+    }
+  }
+
+  // If we have word boundary matches, pick the best one
+  // Prefer: 1) Rightmost position (for compound headers like "expense_amount"), 2) Longest alias
+  if (wordMatches.length > 0) {
+    wordMatches.sort((a, b) => {
+      // First priority: rightmost position in header
+      if (a.index !== b.index) {
+        return b.index - a.index
+      }
+      // Second priority: longest alias
+      return b.alias.length - a.alias.length
+    })
+    return wordMatches[0].field
+  }
+
+  // Third pass: Look for headers that contain the alias (fuzzy match)
+  // Create flat list of (field, alias) pairs and sort by alias length (longest first)
+  const fieldAliasPairs: Array<[string, string]> = []
+  for (const [field, aliases] of Object.entries(COLUMN_MAPPINGS)) {
+    for (const alias of aliases) {
+      if (alias.length >= 3) {
+        // Only include aliases >= 3 chars
+        fieldAliasPairs.push([field, alias])
+      }
+    }
+  }
+
+  // Sort by alias length descending (longest/most specific first)
+  fieldAliasPairs.sort((a, b) => b[1].length - a[1].length)
+
+  // Check each alias in order of specificity
+  for (const [field, alias] of fieldAliasPairs) {
+    if (normalizedHeader.includes(alias)) {
       return field
     }
   }
