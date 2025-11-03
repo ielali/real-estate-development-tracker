@@ -16,7 +16,6 @@
 "use client"
 
 import { useEffect } from "react"
-import { useRouter } from "next/navigation"
 import { formatDistanceToNow, isToday, isYesterday, isThisWeek } from "date-fns"
 import {
   DollarSign,
@@ -96,7 +95,6 @@ function groupNotificationsByDate(
 
 export function NotificationPanel({ onClose }: NotificationPanelProps) {
   const utils = api.useUtils()
-  const router = useRouter()
 
   // Fetch notifications with 30-second polling (AC #9)
   const { data: notifications = [], isLoading } = api.notifications.list.useQuery(
@@ -142,14 +140,14 @@ export function NotificationPanel({ onClose }: NotificationPanelProps) {
       projectId: notification.projectId,
     })
 
-    // Use dynamic navigation (Next.js type-safe routing accepts strings at runtime)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    router.push(url as any)
-
-    // Close the notification panel
+    // Close the notification panel first
     if (onClose) {
       onClose()
     }
+
+    // Use hard navigation to ensure page loads with new params
+    // This is necessary because router.push may not trigger re-render when on same page
+    window.location.href = url
   }
 
   const handleMarkAllAsRead = () => {
