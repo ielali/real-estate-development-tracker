@@ -15,6 +15,7 @@ import { projectContact } from "@/server/db/schema/projectContact"
 import { documentService, bufferToArrayBuffer } from "@/server/services/document.service"
 import { validateDocumentCategory } from "@/server/db/validate-document-category"
 import { verifyProjectAccess } from "../helpers/verifyProjectAccess"
+import { notifyDocumentUploaded } from "@/server/services/notifications"
 
 /**
  * Zod schema for file upload validation
@@ -148,6 +149,15 @@ export const documentsRouter = createTRPCRouter({
         projectId: input.projectId,
         displayName: `Uploaded ${document.fileName}`,
       }),
+    })
+
+    // Send notification (Story 8.1: AC #10, #11)
+    await notifyDocumentUploaded({
+      projectId: input.projectId,
+      documentId: document.id,
+      fileName: document.fileName,
+      projectName: project[0].name,
+      excludeUserId: userId,
     })
 
     return document

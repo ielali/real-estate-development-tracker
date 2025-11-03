@@ -28,6 +28,7 @@ import { auditLog } from "@/server/db/schema/auditLog"
 import type { Database } from "@/server/db"
 import { getCategoryById } from "@/server/db/types"
 import { z } from "zod"
+import { notifyCostAdded, notifyLargeExpense } from "@/server/services/notifications"
 
 /**
  * Helper function to verify project ownership or partner access
@@ -136,6 +137,20 @@ export const costRouter = createTRPCRouter({
     // Verify project ownership
     await verifyProjectOwnership(ctx.db, input.projectId, userId)
 
+    // Get project name for notification
+    const [project] = await ctx.db
+      .select({ name: projects.name })
+      .from(projects)
+      .where(eq(projects.id, input.projectId))
+      .limit(1)
+
+    if (!project) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Project not found",
+      })
+    }
+
     // Verify category exists and is a cost category
     const category = await ctx.db
       .select()
@@ -169,6 +184,29 @@ export const costRouter = createTRPCRouter({
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
         message: "Failed to create cost entry",
+      })
+    }
+
+    // Send notification (Story 8.1: AC #10, #11)
+    // Large expense threshold: $10,000 (1,000,000 cents)
+    const LARGE_EXPENSE_THRESHOLD = 1000000
+    if (cost.amount >= LARGE_EXPENSE_THRESHOLD) {
+      await notifyLargeExpense({
+        projectId: input.projectId,
+        costId: cost.id,
+        description: cost.description,
+        amount: cost.amount,
+        projectName: project.name,
+        excludeUserId: userId,
+      })
+    } else {
+      await notifyCostAdded({
+        projectId: input.projectId,
+        costId: cost.id,
+        description: cost.description,
+        amount: cost.amount,
+        projectName: project.name,
+        excludeUserId: userId,
       })
     }
 
