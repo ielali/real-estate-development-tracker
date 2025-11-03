@@ -20,7 +20,7 @@ import { Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
-import { api } from "@/trpc/react"
+import { api } from "@/lib/trpc/client"
 
 const commentFormSchema = z.object({
   content: z

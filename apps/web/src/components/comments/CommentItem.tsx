@@ -42,7 +42,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { useToast } from "@/hooks/use-toast"
-import { api } from "@/trpc/react"
+import { api } from "@/lib/trpc/client"
 import { NewCommentForm } from "./NewCommentForm"
 
 const editFormSchema = z.object({

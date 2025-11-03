@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { RelatedDocuments } from "@/components/documents/RelatedDocuments"
 import { DocumentLinkSelector } from "@/components/documents/DocumentLinkSelector"
-import { api } from "@/trpc/react"
+import { api } from "@/lib/trpc/client"
 
 interface EventContact {
   id: string

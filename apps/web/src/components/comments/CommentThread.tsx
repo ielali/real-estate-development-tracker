@@ -16,7 +16,7 @@
 import { useSession } from "@/lib/auth-client"
 import { MessageSquare } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
-import { api } from "@/trpc/react"
+import { api } from "@/lib/trpc/client"
 import { CommentItem } from "./CommentItem"
 import { NewCommentForm } from "./NewCommentForm"
 
