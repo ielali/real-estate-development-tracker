@@ -13,6 +13,7 @@ import { partnerDashboardRouter } from "./routers/partnerDashboard"
 import { usersRouter } from "./routers/users"
 import { securityRouter } from "./routers/security"
 import { searchRouter } from "./routers/search"
+import { notificationRouter } from "./routers/notification"
 
 export const appRouter = createTRPCRouter({
   auth: authRouter,
@@ -29,6 +30,7 @@ export const appRouter = createTRPCRouter({
   users: usersRouter,
   security: securityRouter,
   search: searchRouter,
+  notifications: notificationRouter,
 })
 
 export type AppRouter = typeof appRouter
