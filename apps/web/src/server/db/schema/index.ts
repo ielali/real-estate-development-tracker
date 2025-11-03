@@ -20,6 +20,7 @@ export * from "./categories"
 export * from "./costTemplates"
 export * from "./project-backups"
 export * from "./security-events"
+export * from "./notifications"
 
 import { relations } from "drizzle-orm"
 import { users } from "./users"
@@ -40,6 +41,7 @@ import { categories } from "./categories"
 import { costTemplates } from "./costTemplates"
 import { projectBackups } from "./project-backups"
 import { securityEvents } from "./security-events"
+import { notifications } from "./notifications"
 
 export const usersRelations = relations(users, ({ many }) => ({
   ownedProjects: many(projects),
@@ -48,6 +50,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   costTemplates: many(costTemplates),
   projectBackups: many(projectBackups),
   securityEvents: many(securityEvents),
+  notifications: many(notifications),
 }))
 
 export const addressesRelations = relations(addresses, ({ many }) => ({
@@ -71,6 +74,7 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
   projectContacts: many(projectContact),
   costTemplates: many(costTemplates),
   projectBackups: many(projectBackups),
+  notifications: many(notifications),
 }))
 
 export const costsRelations = relations(costs, ({ one, many }) => ({
