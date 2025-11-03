@@ -110,7 +110,15 @@ function createCleanupFunction(db: any) {
         accounts,
         verifications,
         addresses,
-        users
+        users,
+        notification_preferences,
+        notifications,
+        email_logs,
+        digest_queue,
+        revoked_tokens,
+        security_events,
+        project_backups,
+        cost_templates
       CASCADE
     `)
 

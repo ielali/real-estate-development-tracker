@@ -129,6 +129,15 @@ export const notificationPreferencesRouter = createTRPCRouter({
         // Verify the token and get user ID
         const userId = await verifyUnsubscribeToken(input.token)
 
+        // RBAC check: If user is authenticated, they can only unsubscribe themselves
+        // If unauthenticated (email link), token provides authorization
+        if (ctx.session?.user?.id && ctx.session.user.id !== userId) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "You can only unsubscribe yourself",
+          })
+        }
+
         // Update preferences to disable all emails
         const [updated] = await ctx.db
           .insert(notificationPreferences)
@@ -148,13 +157,17 @@ export const notificationPreferencesRouter = createTRPCRouter({
 
         // Revoke the token to prevent reuse
         try {
-          await revokeToken(input.token, "User unsubscribed from emails")
+          await revokeToken(input.token, "User unsubscribed via email link")
         } catch (revokeError) {
           // Log but don't fail the unsubscribe if revocation fails
           console.error("Failed to revoke token after unsubscribe:", revokeError)
         }
 
-        return { success: true, preferences: updated }
+        return {
+          success: true,
+          message: "You have successfully unsubscribed from email notifications",
+          preferences: updated,
+        }
       } catch (error) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",

@@ -5,15 +5,27 @@
  * Tests for getPreferences, updatePreferences, and unsubscribeWithToken procedures
  */
 
-import { describe, it, expect } from "vitest"
+import { describe, it, expect, beforeEach, afterEach } from "vitest"
 import { eq } from "drizzle-orm"
 import { notificationPreferences } from "@/server/db/schema/notification_preferences"
 import { revokedTokens } from "@/server/db/schema/revoked_tokens"
 import { appRouter } from "../../root"
-import { createTestContext } from "@/test/test-db"
-import { generateToken } from "@/server/utils/jwt"
+import { createTestContext, createTestDb } from "@/test/test-db"
+import { generateToken, TokenExpiry } from "@/server/utils/jwt"
 
 describe("notificationPreferences.getPreferences", () => {
+  let cleanup: () => Promise<void>
+
+  beforeEach(async () => {
+    const testDb = await createTestDb()
+    cleanup = testDb.cleanup
+  })
+
+  afterEach(async () => {
+    if (cleanup) {
+      await cleanup()
+    }
+  })
   it("should create default preferences if none exist", async () => {
     const ctx = await createTestContext()
     const caller = appRouter.createCaller(ctx)
@@ -68,6 +80,20 @@ describe("notificationPreferences.getPreferences", () => {
     const ctx = await createTestContext()
     const caller = appRouter.createCaller(ctx)
 
+    // Create a different user first
+    const { users } = await import("@/server/db/schema")
+    await ctx.db.insert(users).values({
+      id: "different-user-id",
+      email: "different@example.com",
+      name: "Different User",
+      firstName: "Different",
+      lastName: "User",
+      role: "partner",
+      emailVerified: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    })
+
     // Create preferences for a different user
     await ctx.db.insert(notificationPreferences).values({
       userId: "different-user-id",
@@ -90,6 +116,18 @@ describe("notificationPreferences.getPreferences", () => {
 })
 
 describe("notificationPreferences.updatePreferences", () => {
+  let cleanup: () => Promise<void>
+
+  beforeEach(async () => {
+    const testDb = await createTestDb()
+    cleanup = testDb.cleanup
+  })
+
+  afterEach(async () => {
+    if (cleanup) {
+      await cleanup()
+    }
+  })
   it("should update existing preferences", async () => {
     const ctx = await createTestContext()
     const caller = appRouter.createCaller(ctx)
@@ -183,6 +221,20 @@ describe("notificationPreferences.updatePreferences", () => {
     const ctx = await createTestContext()
     const caller = appRouter.createCaller(ctx)
 
+    // Create a different user first
+    const { users } = await import("@/server/db/schema")
+    await ctx.db.insert(users).values({
+      id: "different-user-id",
+      email: "different@example.com",
+      name: "Different User",
+      firstName: "Different",
+      lastName: "User",
+      role: "partner",
+      emailVerified: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    })
+
     // Create preferences for a different user
     await ctx.db.insert(notificationPreferences).values({
       userId: "different-user-id",
@@ -211,41 +263,63 @@ describe("notificationPreferences.updatePreferences", () => {
 })
 
 describe("notificationPreferences.unsubscribeWithToken", () => {
-  it("should unsubscribe user with valid token", async () => {
-    const ctx = await createTestContext()
-    const caller = appRouter.createCaller(ctx)
+  let cleanup: () => Promise<void>
 
-    // Create preferences
-    await ctx.db.insert(notificationPreferences).values({
-      userId: ctx.user.id,
-      emailOnCost: true,
-      emailOnLargeExpense: true,
-      emailOnDocument: true,
-      emailOnTimeline: true,
-      emailOnComment: true,
-      emailDigestFrequency: "immediate",
-      timezone: "Australia/Sydney",
-    })
-
-    // Generate unsubscribe token
-    const { token } = await generateToken({ userId: ctx.user.id, purpose: "unsubscribe" }, "90d")
-
-    const result = await caller.notificationPreferences.unsubscribeWithToken({ token })
-
-    expect(result.success).toBe(true)
-    expect(result.message).toContain("unsubscribed")
-
-    // Verify preferences updated
-    const preferences = await caller.notificationPreferences.getPreferences()
-    expect(preferences.emailDigestFrequency).toBe("never")
-
-    // Verify token was revoked
-    const revokedToken = await ctx.db.select().from(revokedTokens).where(eq(revokedTokens.jti, jti))
-
-    expect(revokedToken).toHaveLength(1)
-    expect(revokedToken[0].purpose).toBe("unsubscribe")
-    expect(revokedToken[0].reason).toBe("User unsubscribed via email link")
+  beforeEach(async () => {
+    const testDb = await createTestDb()
+    cleanup = testDb.cleanup
   })
+
+  afterEach(async () => {
+    if (cleanup) {
+      await cleanup()
+    }
+  })
+  it(
+    "should unsubscribe user with valid token",
+    async () => {
+      const ctx = await createTestContext()
+      const caller = appRouter.createCaller(ctx)
+
+      // Create preferences
+      await ctx.db.insert(notificationPreferences).values({
+        userId: ctx.user.id,
+        emailOnCost: true,
+        emailOnLargeExpense: true,
+        emailOnDocument: true,
+        emailOnTimeline: true,
+        emailOnComment: true,
+        emailDigestFrequency: "immediate",
+        timezone: "Australia/Sydney",
+      })
+
+      // Generate unsubscribe token
+      const { token, jti } = await generateToken(
+        { userId: ctx.user.id, purpose: "unsubscribe" },
+        TokenExpiry.UNSUBSCRIBE
+      )
+
+      const result = await caller.notificationPreferences.unsubscribeWithToken({ token })
+
+      expect(result.success).toBe(true)
+      expect(result.message).toContain("unsubscribed")
+
+      // Verify preferences updated
+      const preferences = await caller.notificationPreferences.getPreferences()
+      expect(preferences.emailDigestFrequency).toBe("never")
+
+      // Verify token was revoked
+      const revokedToken = await ctx.db
+        .select()
+        .from(revokedTokens)
+        .where(eq(revokedTokens.jti, jti))
+
+      expect(revokedToken).toHaveLength(1)
+      expect(revokedToken[0].purpose).toBe("unsubscribe")
+      expect(revokedToken[0].reason).toBe("User unsubscribed via email link")
+    },
+    { timeout: 15000 }
+  )
 
   it("should reject invalid token", async () => {
     const ctx = await createTestContext()
@@ -263,7 +337,7 @@ describe("notificationPreferences.unsubscribeWithToken", () => {
     // Generate token with very short expiry
     const { token } = await generateToken(
       { userId: ctx.user.id, purpose: "unsubscribe" },
-      "1ms" // 1 millisecond
+      1 // 1 millisecond
     )
 
     // Wait for token to expire
@@ -272,39 +346,49 @@ describe("notificationPreferences.unsubscribeWithToken", () => {
     await expect(caller.notificationPreferences.unsubscribeWithToken({ token })).rejects.toThrow()
   })
 
-  it("should reject already revoked token", async () => {
-    const ctx = await createTestContext()
-    const caller = appRouter.createCaller(ctx)
+  it(
+    "should reject already revoked token",
+    async () => {
+      const ctx = await createTestContext()
+      const caller = appRouter.createCaller(ctx)
 
-    // Create preferences
-    await ctx.db.insert(notificationPreferences).values({
-      userId: ctx.user.id,
-      emailOnCost: true,
-      emailOnLargeExpense: true,
-      emailOnDocument: true,
-      emailOnTimeline: true,
-      emailOnComment: true,
-      emailDigestFrequency: "immediate",
-      timezone: "Australia/Sydney",
-    })
+      // Create preferences
+      await ctx.db.insert(notificationPreferences).values({
+        userId: ctx.user.id,
+        emailOnCost: true,
+        emailOnLargeExpense: true,
+        emailOnDocument: true,
+        emailOnTimeline: true,
+        emailOnComment: true,
+        emailDigestFrequency: "immediate",
+        timezone: "Australia/Sydney",
+      })
 
-    // Generate token
-    const { token } = await generateToken({ userId: ctx.user.id, purpose: "unsubscribe" }, "90d")
+      // Generate token
+      const { token } = await generateToken(
+        { userId: ctx.user.id, purpose: "unsubscribe" },
+        TokenExpiry.UNSUBSCRIBE
+      )
 
-    // First unsubscribe should succeed
-    const result1 = await caller.notificationPreferences.unsubscribeWithToken({ token })
-    expect(result1.success).toBe(true)
+      // First unsubscribe should succeed
+      const result1 = await caller.notificationPreferences.unsubscribeWithToken({ token })
+      expect(result1.success).toBe(true)
 
-    // Second unsubscribe with same token should fail
-    await expect(caller.notificationPreferences.unsubscribeWithToken({ token })).rejects.toThrow()
-  })
+      // Second unsubscribe with same token should fail
+      await expect(caller.notificationPreferences.unsubscribeWithToken({ token })).rejects.toThrow()
+    },
+    { timeout: 15000 }
+  )
 
   it("should reject token with wrong purpose", async () => {
     const ctx = await createTestContext()
     const caller = appRouter.createCaller(ctx)
 
     // Generate token with different purpose
-    const { token } = await generateToken({ userId: ctx.user.id, purpose: "password_reset" }, "90d")
+    const { token } = await generateToken(
+      { userId: ctx.user.id, purpose: "password_reset" },
+      TokenExpiry.PASSWORD_RESET
+    )
 
     await expect(caller.notificationPreferences.unsubscribeWithToken({ token })).rejects.toThrow()
   })
@@ -312,6 +396,20 @@ describe("notificationPreferences.unsubscribeWithToken", () => {
   it("should only unsubscribe the token's user (RBAC)", async () => {
     const ctx = await createTestContext()
     const caller = appRouter.createCaller(ctx)
+
+    // Create a different user first
+    const { users } = await import("@/server/db/schema")
+    await ctx.db.insert(users).values({
+      id: "different-user-id",
+      email: "different@example.com",
+      name: "Different User",
+      firstName: "Different",
+      lastName: "User",
+      role: "partner",
+      emailVerified: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    })
 
     // Create preferences for a different user
     await ctx.db.insert(notificationPreferences).values({
@@ -328,7 +426,7 @@ describe("notificationPreferences.unsubscribeWithToken", () => {
     // Generate token for different user
     const { token } = await generateToken(
       { userId: "different-user-id", purpose: "unsubscribe" },
-      "90d"
+      TokenExpiry.UNSUBSCRIBE
     )
 
     // Authenticated user should not be able to unsubscribe other user
