@@ -372,10 +372,11 @@ describe("SecurityEventLogger - Error Handling", () => {
   })
 
   test("logs error to console but doesn't throw on failure", async () => {
-    // Test with invalid user ID that would cause DB constraint violation
+    // Test with non-existent user ID that would cause DB foreign key constraint violation
     // The service should catch the error and log it, not throw
+    const nonExistentUserId = "00000000-0000-0000-0000-000000000000"
     const result = logger.logEvent(
-      "", // Empty user ID should violate not null constraint
+      nonExistentUserId, // Non-existent user ID should violate foreign key constraint
       SecurityEventType.TWO_FA_ENABLED,
       "203.0.113.1",
       "Mozilla/5.0"
