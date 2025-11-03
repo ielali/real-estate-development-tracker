@@ -1075,6 +1075,143 @@ This email was sent from Real Estate Portfolio.
 This is an automated security notification for your account.
     `.trim()
   }
+
+  /**
+   * Story 8.2: Notification Email Methods
+   */
+
+  async sendCostAddedEmail(
+    data: import("./notification-email-templates").CostEmailData
+  ): Promise<void> {
+    const { generateCostAddedHTML, generateCostAddedText } = await import(
+      "./notification-email-templates"
+    )
+
+    const subject = `New Cost Added to ${data.projectName} - Real Estate Portfolio`
+    const html = generateCostAddedHTML(data)
+    const text = generateCostAddedText(data)
+
+    await this.sendEmail({
+      to: data.recipientEmail,
+      subject,
+      html,
+      text,
+    })
+  }
+
+  async sendLargeExpenseEmail(
+    data: import("./notification-email-templates").LargeExpenseEmailData
+  ): Promise<void> {
+    const { generateLargeExpenseHTML, generateLargeExpenseText } = await import(
+      "./notification-email-templates"
+    )
+
+    const subject = `🚨 Large Expense Alert: ${data.projectName} - Real Estate Portfolio`
+    const html = generateLargeExpenseHTML(data)
+    const text = generateLargeExpenseText(data)
+
+    await this.sendEmail({
+      to: data.recipientEmail,
+      subject,
+      html,
+      text,
+    })
+  }
+
+  async sendDocumentUploadedEmail(
+    data: import("./notification-email-templates").DocumentEmailData
+  ): Promise<void> {
+    const { generateDocumentUploadedHTML, generateDocumentUploadedText } = await import(
+      "./notification-email-templates"
+    )
+
+    const subject = `New Document Uploaded to ${data.projectName} - Real Estate Portfolio`
+    const html = generateDocumentUploadedHTML(data)
+    const text = generateDocumentUploadedText(data)
+
+    await this.sendEmail({
+      to: data.recipientEmail,
+      subject,
+      html,
+      text,
+    })
+  }
+
+  async sendTimelineEventEmail(
+    data: import("./notification-email-templates").TimelineEventEmailData
+  ): Promise<void> {
+    const { generateTimelineEventHTML, generateTimelineEventText } = await import(
+      "./notification-email-templates"
+    )
+
+    const subject = `New Timeline Event: ${data.projectName} - Real Estate Portfolio`
+    const html = generateTimelineEventHTML(data)
+    const text = generateTimelineEventText(data)
+
+    await this.sendEmail({
+      to: data.recipientEmail,
+      subject,
+      html,
+      text,
+    })
+  }
+
+  async sendCommentAddedEmail(
+    data: import("./notification-email-templates").CommentEmailData
+  ): Promise<void> {
+    const { generateCommentAddedHTML, generateCommentAddedText } = await import(
+      "./notification-email-templates"
+    )
+
+    const subject = `New Comment on ${data.projectName} - Real Estate Portfolio`
+    const html = generateCommentAddedHTML(data)
+    const text = generateCommentAddedText(data)
+
+    await this.sendEmail({
+      to: data.recipientEmail,
+      subject,
+      html,
+      text,
+    })
+  }
+
+  async sendDailyDigestEmail(
+    data: import("./notification-email-templates").DailyDigestEmailData
+  ): Promise<void> {
+    const { generateDailyDigestHTML, generateDailyDigestText } = await import(
+      "./notification-email-templates"
+    )
+
+    const subject = `Daily Project Digest - Real Estate Portfolio`
+    const html = generateDailyDigestHTML(data)
+    const text = generateDailyDigestText(data)
+
+    await this.sendEmail({
+      to: data.recipientEmail,
+      subject,
+      html,
+      text,
+    })
+  }
+
+  async sendWeeklyDigestEmail(
+    data: import("./notification-email-templates").WeeklyDigestEmailData
+  ): Promise<void> {
+    const { generateWeeklyDigestHTML, generateWeeklyDigestText } = await import(
+      "./notification-email-templates"
+    )
+
+    const subject = `Weekly Project Digest - Real Estate Portfolio`
+    const html = generateWeeklyDigestHTML(data)
+    const text = generateWeeklyDigestText(data)
+
+    await this.sendEmail({
+      to: data.recipientEmail,
+      subject,
+      html,
+      text,
+    })
+  }
 }
 
 export const emailService = new EmailService()
