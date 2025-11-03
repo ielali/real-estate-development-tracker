@@ -14,7 +14,11 @@
 import { describe, test, expect, beforeEach, vi } from "vitest"
 import { SecurityEventLogger, getRequestMetadata } from "../security-event-logger"
 import { db } from "@/server/db"
-import { securityEvents, SecurityEventType } from "@/server/db/schema/security-events"
+import {
+  securityEvents,
+  SecurityEventType,
+  type SecurityEvent,
+} from "@/server/db/schema/security-events"
 import { eq, desc } from "drizzle-orm"
 import { createTestContext } from "@/test/test-db"
 
@@ -142,17 +146,17 @@ describe("SecurityEventLogger - Event Logging Methods", () => {
 
   test("log2FAEnabled creates correct event", async () => {
     const ctx = await createTestContext()
-    await logger.log2FAEnabled(ctx.user.id, testIpAddress, testUserAgent)
+    await logger.log2FAEnabled(ctx.user!.id, testIpAddress, testUserAgent)
 
     const events = await db.query.securityEvents.findMany({
-      where: eq(securityEvents.userId, ctx.user.id),
+      where: eq(securityEvents.userId, ctx.user!.id),
       orderBy: [desc(securityEvents.timestamp)],
       limit: 1,
     })
 
     expect(events.length).toBeGreaterThanOrEqual(1)
     expect(events[0].eventType).toBe(SecurityEventType.TWO_FA_ENABLED)
-    expect(events[0].userId).toBe(ctx.user.id)
+    expect(events[0].userId).toBe(ctx.user!.id)
     expect(events[0].ipAddress).toBe(testIpAddress)
     expect(events[0].userAgent).toBe(testUserAgent)
     expect(events[0].metadata).toBeNull()
@@ -160,10 +164,10 @@ describe("SecurityEventLogger - Event Logging Methods", () => {
 
   test("log2FADisabled creates correct event", async () => {
     const ctx = await createTestContext()
-    await logger.log2FADisabled(ctx.user.id, testIpAddress, testUserAgent)
+    await logger.log2FADisabled(ctx.user!.id, testIpAddress, testUserAgent)
 
     const events = await db.query.securityEvents.findMany({
-      where: eq(securityEvents.userId, ctx.user.id),
+      where: eq(securityEvents.userId, ctx.user!.id),
       orderBy: [desc(securityEvents.timestamp)],
       limit: 1,
     })
@@ -173,10 +177,10 @@ describe("SecurityEventLogger - Event Logging Methods", () => {
 
   test("log2FALoginSuccess creates correct event", async () => {
     const ctx = await createTestContext()
-    await logger.log2FALoginSuccess(ctx.user.id, testIpAddress, testUserAgent)
+    await logger.log2FALoginSuccess(ctx.user!.id, testIpAddress, testUserAgent)
 
     const events = await db.query.securityEvents.findMany({
-      where: eq(securityEvents.userId, ctx.user.id),
+      where: eq(securityEvents.userId, ctx.user!.id),
       orderBy: [desc(securityEvents.timestamp)],
       limit: 1,
     })
@@ -187,10 +191,10 @@ describe("SecurityEventLogger - Event Logging Methods", () => {
   test("log2FALoginFailure creates event with attempts metadata", async () => {
     const ctx = await createTestContext()
     const attempts = 3
-    await logger.log2FALoginFailure(ctx.user.id, testIpAddress, testUserAgent, attempts)
+    await logger.log2FALoginFailure(ctx.user!.id, testIpAddress, testUserAgent, attempts)
 
     const events = await db.query.securityEvents.findMany({
-      where: eq(securityEvents.userId, ctx.user.id),
+      where: eq(securityEvents.userId, ctx.user!.id),
       orderBy: [desc(securityEvents.timestamp)],
       limit: 1,
     })
@@ -202,10 +206,10 @@ describe("SecurityEventLogger - Event Logging Methods", () => {
   test("logBackupCodeGenerated creates event with codeCount metadata", async () => {
     const ctx = await createTestContext()
     const codeCount = 10
-    await logger.logBackupCodeGenerated(ctx.user.id, testIpAddress, testUserAgent, codeCount)
+    await logger.logBackupCodeGenerated(ctx.user!.id, testIpAddress, testUserAgent, codeCount)
 
     const events = await db.query.securityEvents.findMany({
-      where: eq(securityEvents.userId, ctx.user.id),
+      where: eq(securityEvents.userId, ctx.user!.id),
       orderBy: [desc(securityEvents.timestamp)],
       limit: 1,
     })
@@ -216,10 +220,10 @@ describe("SecurityEventLogger - Event Logging Methods", () => {
 
   test("logBackupCodeUsed creates correct event", async () => {
     const ctx = await createTestContext()
-    await logger.logBackupCodeUsed(ctx.user.id, testIpAddress, testUserAgent)
+    await logger.logBackupCodeUsed(ctx.user!.id, testIpAddress, testUserAgent)
 
     const events = await db.query.securityEvents.findMany({
-      where: eq(securityEvents.userId, ctx.user.id),
+      where: eq(securityEvents.userId, ctx.user!.id),
       orderBy: [desc(securityEvents.timestamp)],
       limit: 1,
     })
@@ -233,7 +237,7 @@ describe("SecurityEventLogger - Event Logging Methods", () => {
     const projectName = "Test Project"
 
     await logger.logBackupDownloaded(
-      ctx.user.id,
+      ctx.user!.id,
       projectId,
       projectName,
       testIpAddress,
@@ -241,7 +245,7 @@ describe("SecurityEventLogger - Event Logging Methods", () => {
     )
 
     const events = await db.query.securityEvents.findMany({
-      where: eq(securityEvents.userId, ctx.user.id),
+      where: eq(securityEvents.userId, ctx.user!.id),
       orderBy: [desc(securityEvents.timestamp)],
       limit: 1,
     })
@@ -255,7 +259,7 @@ describe("SecurityEventLogger - Event Logging Methods", () => {
     const metadata = { custom: "data", number: 42 }
 
     await logger.logEvent(
-      ctx.user.id,
+      ctx.user!.id,
       SecurityEventType.TWO_FA_ENABLED,
       testIpAddress,
       testUserAgent,
@@ -263,7 +267,7 @@ describe("SecurityEventLogger - Event Logging Methods", () => {
     )
 
     const events = await db.query.securityEvents.findMany({
-      where: eq(securityEvents.userId, ctx.user.id),
+      where: eq(securityEvents.userId, ctx.user!.id),
       orderBy: [desc(securityEvents.timestamp)],
       limit: 1,
     })
@@ -275,12 +279,12 @@ describe("SecurityEventLogger - Event Logging Methods", () => {
     const ctx = await createTestContext()
     const beforeTime = new Date()
 
-    await logger.log2FAEnabled(ctx.user.id, testIpAddress, testUserAgent)
+    await logger.log2FAEnabled(ctx.user!.id, testIpAddress, testUserAgent)
 
     const afterTime = new Date()
 
     const events = await db.query.securityEvents.findMany({
-      where: eq(securityEvents.userId, ctx.user.id),
+      where: eq(securityEvents.userId, ctx.user!.id),
       orderBy: [desc(securityEvents.timestamp)],
       limit: 1,
     })
@@ -303,23 +307,23 @@ describe("SecurityEventLogger - getUserEvents", () => {
     const ctx = await createTestContext()
 
     // Create some test events
-    await logger.log2FAEnabled(ctx.user.id, testIpAddress, testUserAgent)
-    await logger.log2FALoginSuccess(ctx.user.id, testIpAddress, testUserAgent)
-    await logger.logBackupCodeGenerated(ctx.user.id, testIpAddress, testUserAgent, 10)
+    await logger.log2FAEnabled(ctx.user!.id, testIpAddress, testUserAgent)
+    await logger.log2FALoginSuccess(ctx.user!.id, testIpAddress, testUserAgent)
+    await logger.logBackupCodeGenerated(ctx.user!.id, testIpAddress, testUserAgent, 10)
 
-    const events = await logger.getUserEvents(ctx.user.id)
+    const events = await logger.getUserEvents(ctx.user!.id)
 
     expect(events.length).toBeGreaterThanOrEqual(3)
-    expect(events.every((e) => e.userId === ctx.user.id)).toBe(true)
+    expect(events.every((e: SecurityEvent) => e.userId === ctx.user!.id)).toBe(true)
   })
 
   test("returns events in descending order by timestamp", async () => {
     const ctx = await createTestContext()
 
-    await logger.log2FAEnabled(ctx.user.id, testIpAddress, testUserAgent)
-    await logger.log2FALoginSuccess(ctx.user.id, testIpAddress, testUserAgent)
+    await logger.log2FAEnabled(ctx.user!.id, testIpAddress, testUserAgent)
+    await logger.log2FALoginSuccess(ctx.user!.id, testIpAddress, testUserAgent)
 
-    const events = await logger.getUserEvents(ctx.user.id)
+    const events = await logger.getUserEvents(ctx.user!.id)
 
     for (let i = 0; i < events.length - 1; i++) {
       const currentTime = new Date(events[i].timestamp).getTime()
@@ -331,11 +335,11 @@ describe("SecurityEventLogger - getUserEvents", () => {
   test("respects limit parameter", async () => {
     const ctx = await createTestContext()
 
-    await logger.log2FAEnabled(ctx.user.id, testIpAddress, testUserAgent)
-    await logger.log2FALoginSuccess(ctx.user.id, testIpAddress, testUserAgent)
+    await logger.log2FAEnabled(ctx.user!.id, testIpAddress, testUserAgent)
+    await logger.log2FALoginSuccess(ctx.user!.id, testIpAddress, testUserAgent)
 
     const limit = 1
-    const events = await logger.getUserEvents(ctx.user.id, limit)
+    const events = await logger.getUserEvents(ctx.user!.id, limit)
 
     expect(events.length).toBeLessThanOrEqual(limit)
   })
@@ -343,16 +347,16 @@ describe("SecurityEventLogger - getUserEvents", () => {
   test("defaults to limit of 50", async () => {
     const ctx = await createTestContext()
 
-    await logger.log2FAEnabled(ctx.user.id, testIpAddress, testUserAgent)
+    await logger.log2FAEnabled(ctx.user!.id, testIpAddress, testUserAgent)
 
-    const events = await logger.getUserEvents(ctx.user.id)
+    const events = await logger.getUserEvents(ctx.user!.id)
     expect(Array.isArray(events)).toBe(true)
   })
 
   test("returns empty array for user with no events", async () => {
     const ctx = await createTestContext()
 
-    const events = await logger.getUserEvents(ctx.user.id)
+    const events = await logger.getUserEvents(ctx.user!.id)
 
     // May have events from test setup, but should be an array
     expect(Array.isArray(events)).toBe(true)
@@ -399,11 +403,11 @@ describe("SecurityEventLogger - Integration", () => {
     const ctx = await createTestContext()
 
     // Simulate a complete user journey
-    await logger.log2FAEnabled(ctx.user.id, testIpAddress, testUserAgent)
-    await logger.logBackupCodeGenerated(ctx.user.id, testIpAddress, testUserAgent, 10)
-    await logger.log2FALoginSuccess(ctx.user.id, testIpAddress, testUserAgent)
+    await logger.log2FAEnabled(ctx.user!.id, testIpAddress, testUserAgent)
+    await logger.logBackupCodeGenerated(ctx.user!.id, testIpAddress, testUserAgent, 10)
+    await logger.log2FALoginSuccess(ctx.user!.id, testIpAddress, testUserAgent)
     await logger.logBackupDownloaded(
-      ctx.user.id,
+      ctx.user!.id,
       "project-1",
       "My Project",
       testIpAddress,
@@ -411,7 +415,7 @@ describe("SecurityEventLogger - Integration", () => {
     )
 
     // Retrieve all events
-    const events = await logger.getUserEvents(ctx.user.id)
+    const events = await logger.getUserEvents(ctx.user!.id)
 
     expect(events.length).toBeGreaterThanOrEqual(4)
 
@@ -426,15 +430,15 @@ describe("SecurityEventLogger - Integration", () => {
     const ctx1 = await createTestContext()
     const ctx2 = await createTestContext()
 
-    await logger.log2FAEnabled(ctx1.user.id, testIpAddress, testUserAgent)
-    await logger.log2FAEnabled(ctx2.user.id, testIpAddress, testUserAgent)
+    await logger.log2FAEnabled(ctx1.user!.id, testIpAddress, testUserAgent)
+    await logger.log2FAEnabled(ctx2.user!.id, testIpAddress, testUserAgent)
 
-    const user1Events = await logger.getUserEvents(ctx1.user.id)
-    const user2Events = await logger.getUserEvents(ctx2.user.id)
+    const user1Events = await logger.getUserEvents(ctx1.user!.id)
+    const user2Events = await logger.getUserEvents(ctx2.user!.id)
 
-    expect(user1Events.every((e) => e.userId === ctx1.user.id)).toBe(true)
-    expect(user2Events.every((e) => e.userId === ctx2.user.id)).toBe(true)
-    expect(user1Events.some((e) => e.userId === ctx2.user.id)).toBe(false)
-    expect(user2Events.some((e) => e.userId === ctx1.user.id)).toBe(false)
+    expect(user1Events.every((e: SecurityEvent) => e.userId === ctx1.user!.id)).toBe(true)
+    expect(user2Events.every((e: SecurityEvent) => e.userId === ctx2.user!.id)).toBe(true)
+    expect(user1Events.some((e: SecurityEvent) => e.userId === ctx2.user!.id)).toBe(false)
+    expect(user2Events.some((e: SecurityEvent) => e.userId === ctx1.user!.id)).toBe(false)
   })
 })
