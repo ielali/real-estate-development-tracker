@@ -5,6 +5,7 @@ interface SendEmailOptions {
   subject: string
   html: string
   text?: string
+  tags?: Record<string, string>
 }
 
 interface PasswordResetEmailData {
@@ -55,7 +56,7 @@ export class EmailService {
     return this.resend
   }
 
-  async sendEmail({ to, subject, html, text }: SendEmailOptions): Promise<void> {
+  async sendEmail({ to, subject, html, text, tags }: SendEmailOptions): Promise<string | null> {
     if (this.isDevelopment) {
       // Development: Log email to console
       console.log("\n" + "=".repeat(60))
@@ -63,6 +64,9 @@ export class EmailService {
       console.log("=".repeat(60))
       console.log(`To: ${to}`)
       console.log(`Subject: ${subject}`)
+      if (tags) {
+        console.log(`Tags: ${JSON.stringify(tags)}`)
+      }
       console.log("\nHTML Content:")
       console.log(html)
       if (text) {
@@ -70,7 +74,7 @@ export class EmailService {
         console.log(text)
       }
       console.log("=".repeat(60) + "\n")
-      return
+      return null // No Resend ID in development
     }
 
     // Production: Send via Resend
@@ -84,9 +88,11 @@ export class EmailService {
         subject,
         html,
         ...(text && { text }),
+        ...(tags && { tags }),
       })
 
       console.log("✅ Email sent successfully via Resend:", result)
+      return result.data?.id || null
     } catch (error) {
       console.error("❌ Failed to send email via Resend:", error)
       throw new Error(
@@ -99,7 +105,7 @@ export class EmailService {
     user,
     resetUrl,
     token: _token,
-  }: PasswordResetEmailData): Promise<void> {
+  }: PasswordResetEmailData): Promise<string | null> {
     const subject = "Reset Your Password - Real Estate Portfolio"
 
     const html = this.generatePasswordResetHTML({
@@ -114,15 +120,19 @@ export class EmailService {
       expirationTime: "1 hour",
     })
 
-    await this.sendEmail({
+    return await this.sendEmail({
       to: user.email,
       subject,
       html,
       text,
+      tags: {
+        type: "password-reset",
+        userId: user.email,
+      },
     })
   }
 
-  async sendInvitationEmail(data: InvitationEmailData): Promise<void> {
+  async sendInvitationEmail(data: InvitationEmailData): Promise<string | null> {
     const subject = `You've been invited to ${data.projectName} - Real Estate Portfolio`
 
     const invitationUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/invite/${data.invitationToken}`
@@ -145,18 +155,23 @@ export class EmailService {
       expiresAt: data.expiresAt,
     })
 
-    await this.sendEmail({
+    return await this.sendEmail({
       to: data.email,
       subject,
       html,
       text,
+      tags: {
+        type: "project-invitation",
+        projectName: data.projectName,
+        permission: data.permission,
+      },
     })
   }
 
   /**
    * QA Fix (SEC-004): Send email notification for 2FA state changes
    */
-  async send2FANotification(data: TwoFactorEmailData): Promise<void> {
+  async send2FANotification(data: TwoFactorEmailData): Promise<string | null> {
     const actionText = {
       enabled: "Two-Factor Authentication Enabled",
       disabled: "Two-Factor Authentication Disabled",
@@ -168,11 +183,16 @@ export class EmailService {
     const html = this.generate2FANotificationHTML(data)
     const text = this.generate2FANotificationText(data)
 
-    await this.sendEmail({
+    return await this.sendEmail({
       to: data.user.email,
       subject,
       html,
       text,
+      tags: {
+        type: "2fa-notification",
+        action: data.action,
+        userId: data.user.email,
+      },
     })
   }
 
@@ -728,17 +748,22 @@ This is an automated security notification for your account.
     timestamp: Date,
     device: string,
     ipAddress: string
-  ): Promise<void> {
+  ): Promise<string | null> {
     const subject = "Security Alert: Backup Code Used - Real Estate Portfolio"
 
     const html = this.generateBackupCodeUsedHTML(user, timestamp, device, ipAddress)
     const text = this.generateBackupCodeUsedText(user, timestamp, device, ipAddress)
 
-    await this.sendEmail({
+    return await this.sendEmail({
       to: user.email,
       subject,
       html,
       text,
+      tags: {
+        type: "security-alert",
+        event: "backup-code-used",
+        userId: user.email,
+      },
     })
   }
 
@@ -751,17 +776,23 @@ This is an automated security notification for your account.
     timestamp: Date,
     device: string,
     ipAddress: string
-  ): Promise<void> {
+  ): Promise<string | null> {
     const subject = "Project Backup Downloaded - Real Estate Portfolio"
 
     const html = this.generateBackupDownloadedHTML(user, projectName, timestamp, device, ipAddress)
     const text = this.generateBackupDownloadedText(user, projectName, timestamp, device, ipAddress)
 
-    await this.sendEmail({
+    return await this.sendEmail({
       to: user.email,
       subject,
       html,
       text,
+      tags: {
+        type: "security-alert",
+        event: "backup-downloaded",
+        projectName,
+        userId: user.email,
+      },
     })
   }
 
@@ -1082,7 +1113,7 @@ This is an automated security notification for your account.
 
   async sendCostAddedEmail(
     data: import("./notification-email-templates").CostEmailData
-  ): Promise<void> {
+  ): Promise<string | null> {
     const { generateCostAddedHTML, generateCostAddedText } = await import(
       "./notification-email-templates"
     )
@@ -1091,17 +1122,23 @@ This is an automated security notification for your account.
     const html = generateCostAddedHTML(data)
     const text = generateCostAddedText(data)
 
-    await this.sendEmail({
+    return await this.sendEmail({
       to: data.recipientEmail,
       subject,
       html,
       text,
+      tags: {
+        type: "notification",
+        notificationType: "cost-added",
+        projectId: data.projectId,
+        projectName: data.projectName,
+      },
     })
   }
 
   async sendLargeExpenseEmail(
     data: import("./notification-email-templates").LargeExpenseEmailData
-  ): Promise<void> {
+  ): Promise<string | null> {
     const { generateLargeExpenseHTML, generateLargeExpenseText } = await import(
       "./notification-email-templates"
     )
@@ -1110,17 +1147,24 @@ This is an automated security notification for your account.
     const html = generateLargeExpenseHTML(data)
     const text = generateLargeExpenseText(data)
 
-    await this.sendEmail({
+    return await this.sendEmail({
       to: data.recipientEmail,
       subject,
       html,
       text,
+      tags: {
+        type: "notification",
+        notificationType: "large-expense",
+        priority: "critical",
+        projectId: data.projectId,
+        projectName: data.projectName,
+      },
     })
   }
 
   async sendDocumentUploadedEmail(
     data: import("./notification-email-templates").DocumentEmailData
-  ): Promise<void> {
+  ): Promise<string | null> {
     const { generateDocumentUploadedHTML, generateDocumentUploadedText } = await import(
       "./notification-email-templates"
     )
@@ -1129,17 +1173,23 @@ This is an automated security notification for your account.
     const html = generateDocumentUploadedHTML(data)
     const text = generateDocumentUploadedText(data)
 
-    await this.sendEmail({
+    return await this.sendEmail({
       to: data.recipientEmail,
       subject,
       html,
       text,
+      tags: {
+        type: "notification",
+        notificationType: "document-uploaded",
+        projectId: data.projectId,
+        projectName: data.projectName,
+      },
     })
   }
 
   async sendTimelineEventEmail(
     data: import("./notification-email-templates").TimelineEventEmailData
-  ): Promise<void> {
+  ): Promise<string | null> {
     const { generateTimelineEventHTML, generateTimelineEventText } = await import(
       "./notification-email-templates"
     )
@@ -1148,17 +1198,23 @@ This is an automated security notification for your account.
     const html = generateTimelineEventHTML(data)
     const text = generateTimelineEventText(data)
 
-    await this.sendEmail({
+    return await this.sendEmail({
       to: data.recipientEmail,
       subject,
       html,
       text,
+      tags: {
+        type: "notification",
+        notificationType: "timeline-event",
+        projectId: data.projectId,
+        projectName: data.projectName,
+      },
     })
   }
 
   async sendCommentAddedEmail(
     data: import("./notification-email-templates").CommentEmailData
-  ): Promise<void> {
+  ): Promise<string | null> {
     const { generateCommentAddedHTML, generateCommentAddedText } = await import(
       "./notification-email-templates"
     )
@@ -1167,17 +1223,23 @@ This is an automated security notification for your account.
     const html = generateCommentAddedHTML(data)
     const text = generateCommentAddedText(data)
 
-    await this.sendEmail({
+    return await this.sendEmail({
       to: data.recipientEmail,
       subject,
       html,
       text,
+      tags: {
+        type: "notification",
+        notificationType: "comment-added",
+        projectId: data.projectId,
+        projectName: data.projectName,
+      },
     })
   }
 
   async sendDailyDigestEmail(
     data: import("./notification-email-templates").DailyDigestEmailData
-  ): Promise<void> {
+  ): Promise<string | null> {
     const { generateDailyDigestHTML, generateDailyDigestText } = await import(
       "./notification-email-templates"
     )
@@ -1186,17 +1248,22 @@ This is an automated security notification for your account.
     const html = generateDailyDigestHTML(data)
     const text = generateDailyDigestText(data)
 
-    await this.sendEmail({
+    return await this.sendEmail({
       to: data.recipientEmail,
       subject,
       html,
       text,
+      tags: {
+        type: "digest",
+        digestType: "daily",
+        date: data.date.toISOString().split("T")[0],
+      },
     })
   }
 
   async sendWeeklyDigestEmail(
     data: import("./notification-email-templates").WeeklyDigestEmailData
-  ): Promise<void> {
+  ): Promise<string | null> {
     const { generateWeeklyDigestHTML, generateWeeklyDigestText } = await import(
       "./notification-email-templates"
     )
@@ -1205,11 +1272,16 @@ This is an automated security notification for your account.
     const html = generateWeeklyDigestHTML(data)
     const text = generateWeeklyDigestText(data)
 
-    await this.sendEmail({
+    return await this.sendEmail({
       to: data.recipientEmail,
       subject,
       html,
       text,
+      tags: {
+        type: "digest",
+        digestType: "weekly",
+        weekStarting: data.weekStarting.toISOString().split("T")[0],
+      },
     })
   }
 }

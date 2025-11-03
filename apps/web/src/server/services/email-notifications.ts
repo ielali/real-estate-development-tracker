@@ -231,10 +231,10 @@ export async function sendCostAddedEmailNotification(params: {
       unsubscribeToken,
     }
 
-    // Send email (fire-and-forget)
-    await emailService.sendCostAddedEmail(emailData)
+    // Send email and capture Resend ID
+    const resendId = await emailService.sendCostAddedEmail(emailData)
 
-    // Log success
+    // Log success with Resend ID
     await logEmailAttempt({
       userId: params.userId,
       notificationId: params.notificationId,
@@ -242,6 +242,7 @@ export async function sendCostAddedEmailNotification(params: {
       recipientEmail: user.email,
       subject: `New Cost Added to ${params.projectName} - Real Estate Portfolio`,
       status: "sent",
+      resendId: resendId ?? undefined,
     })
   } catch (error) {
     console.error("Failed to send cost added email:", error)
@@ -313,10 +314,10 @@ export async function sendLargeExpenseEmailNotification(params: {
       unsubscribeToken,
     }
 
-    // Send email (fire-and-forget)
-    await emailService.sendLargeExpenseEmail(emailData)
+    // Send email and capture Resend ID
+    const resendId = await emailService.sendLargeExpenseEmail(emailData)
 
-    // Log success
+    // Log success with Resend ID
     await logEmailAttempt({
       userId: params.userId,
       notificationId: params.notificationId,
@@ -324,6 +325,7 @@ export async function sendLargeExpenseEmailNotification(params: {
       recipientEmail: user.email,
       subject: `🚨 Large Expense Alert: ${params.projectName} - Real Estate Portfolio`,
       status: "sent",
+      resendId: resendId ?? undefined,
     })
   } catch (error) {
     console.error("Failed to send large expense email:", error)
@@ -406,7 +408,7 @@ export async function sendDocumentUploadedEmailNotification(params: {
       unsubscribeToken,
     }
 
-    await emailService.sendDocumentUploadedEmail(emailData)
+    const resendId = await emailService.sendDocumentUploadedEmail(emailData)
 
     await logEmailAttempt({
       userId: params.userId,
@@ -415,6 +417,7 @@ export async function sendDocumentUploadedEmailNotification(params: {
       recipientEmail: user.email,
       subject: `New Document Uploaded to ${params.projectName} - Real Estate Portfolio`,
       status: "sent",
+      resendId: resendId ?? undefined,
     })
   } catch (error) {
     console.error("Failed to send document uploaded email:", error)
@@ -493,7 +496,7 @@ export async function sendTimelineEventEmailNotification(params: {
       unsubscribeToken,
     }
 
-    await emailService.sendTimelineEventEmail(emailData)
+    const resendId = await emailService.sendTimelineEventEmail(emailData)
 
     await logEmailAttempt({
       userId: params.userId,
@@ -502,6 +505,7 @@ export async function sendTimelineEventEmailNotification(params: {
       recipientEmail: user.email,
       subject: `New Timeline Event: ${params.projectName} - Real Estate Portfolio`,
       status: "sent",
+      resendId: resendId ?? undefined,
     })
   } catch (error) {
     console.error("Failed to send timeline event email:", error)

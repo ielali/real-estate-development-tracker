@@ -17,8 +17,10 @@ import { notifications } from "@/server/db/schema/notifications"
 import { notificationPreferences } from "@/server/db/schema/notification_preferences"
 import { users } from "@/server/db/schema/users"
 import { projects } from "@/server/db/schema/projects"
-import { eq, and, lte } from "drizzle-orm"
-import { emailService } from "@/lib/email"
+import { emailLogs } from "@/server/db/schema/email_logs"
+import { eq, and, lte, inArray } from "drizzle-orm"
+import { generateUnsubscribeToken } from "@/server/utils/jwt"
+import { Resend } from "resend"
 
 interface DigestNotification {
   id: string
@@ -90,7 +92,7 @@ async function processDailyDigests(): Promise<number> {
     }
   }
 
-  // Fetch full notification details
+  // Fetch full notification details for all notifications
   const notificationIds = pendingDigests.map((d) => d.notificationId)
   const notificationDetails = await db
     .select({
@@ -103,7 +105,7 @@ async function processDailyDigests(): Promise<number> {
       createdAt: notifications.createdAt,
     })
     .from(notifications)
-    .where(eq(notifications.id, notificationIds[0])) // TODO: Fix to handle multiple IDs
+    .where(inArray(notifications.id, notificationIds))
 
   // Fetch project names
   const projectData = await db
@@ -139,14 +141,34 @@ async function processDailyDigests(): Promise<number> {
     userDigest.projectGroups.get(notification.projectId)!.push(digestNotification)
   }
 
-  // Send digest emails
-  let emailsSent = 0
+  // Prepare batch emails with unsubscribe tokens
+  const batchEmails: Array<{
+    userId: string
+    email: {
+      to: string
+      from: string
+      subject: string
+      html: string
+      text: string
+      tags: Record<string, string>
+    }
+    queueIds: string[]
+    notificationCount: number
+  }> = []
 
   for (const [userId, digest] of userDigests) {
     if (digest.notifications.length === 0) continue
 
     try {
-      await emailService.sendDailyDigestEmail({
+      // Generate unsubscribe token for this user
+      const unsubscribeToken = await generateUnsubscribeToken(userId)
+
+      // Import email template generators
+      const { generateDailyDigestHTML, generateDailyDigestText } = await import(
+        "@/lib/notification-email-templates"
+      )
+
+      const emailData = {
         userName: digest.userName,
         recipientEmail: digest.userEmail,
         notifications: Array.from(digest.projectGroups.entries()).map(([projectId, notifs]) => ({
@@ -155,26 +177,103 @@ async function processDailyDigests(): Promise<number> {
           notifications: notifs,
         })),
         date: now,
-        unsubscribeToken: "", // TODO: Generate unsubscribe token
-      })
+        unsubscribeToken,
+      }
 
-      // Mark queue items as processed
+      const subject = `Daily Project Digest - Real Estate Portfolio`
+      const html = generateDailyDigestHTML(emailData)
+      const text = generateDailyDigestText(emailData)
+
+      // Get queue IDs for this user
       const queueIds = pendingDigests.filter((d) => d.userId === userId).map((d) => d.queueId)
 
-      await db
-        .update(digestQueue)
-        .set({
-          processed: true,
-          processedAt: now,
-        })
-        .where(eq(digestQueue.id, queueIds[0])) // TODO: Handle multiple IDs
-
-      emailsSent++
-      console.log(
-        `✓ Sent daily digest to ${digest.userEmail} (${digest.notifications.length} notifications)`
-      )
+      batchEmails.push({
+        userId,
+        email: {
+          to: digest.userEmail,
+          from: process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev",
+          subject,
+          html,
+          text,
+          tags: {
+            type: "digest",
+            digestType: "daily",
+            date: now.toISOString().split("T")[0],
+          },
+        },
+        queueIds,
+        notificationCount: digest.notifications.length,
+      })
     } catch (error) {
-      console.error(`✗ Failed to send daily digest to ${digest.userEmail}:`, error)
+      console.error(`✗ Failed to prepare digest for ${digest.userEmail}:`, error)
+    }
+  }
+
+  if (batchEmails.length === 0) {
+    console.log("No digest emails to send")
+    return 0
+  }
+
+  // Send emails in batches of 100 (Resend limit)
+  let emailsSent = 0
+  const resend = new Resend(process.env.RESEND_API_KEY)
+
+  for (let i = 0; i < batchEmails.length; i += 100) {
+    const batch = batchEmails.slice(i, i + 100)
+
+    try {
+      // Send batch
+      const result = await resend.batch.send(batch.map((b) => b.email))
+
+      // Process results
+      if (result.data) {
+        for (let j = 0; j < result.data.length; j++) {
+          const emailResult = result.data[j]
+          const emailData = batch[j]
+
+          if (!emailData) continue
+
+          // Mark queue items as processed
+          if (emailData.queueIds.length > 0) {
+            await db
+              .update(digestQueue)
+              .set({
+                processed: true,
+                processedAt: now,
+              })
+              .where(inArray(digestQueue.id, emailData.queueIds))
+          }
+
+          // Log email
+          await db.insert(emailLogs).values({
+            userId: emailData.userId,
+            emailType: "daily_digest",
+            recipientEmail: emailData.email.to,
+            subject: emailData.email.subject,
+            status: "sent",
+            resendId: emailResult?.id || null,
+            attempts: 1,
+          })
+
+          emailsSent++
+          console.log(
+            `✓ Sent daily digest to ${emailData.email.to} (${emailData.notificationCount} notifications)`
+          )
+        }
+      }
+
+      // Handle batch errors (if using permissive validation)
+      if ("errors" in result && result.errors) {
+        for (const error of result.errors) {
+          const emailData = batch[error.index]
+          if (emailData) {
+            console.error(`✗ Failed to send digest to ${emailData.email.to}:`, error.message)
+          }
+        }
+      }
+    } catch (error) {
+      console.error(`✗ Batch send failed:`, error)
+      // Continue with next batch
     }
   }
 
