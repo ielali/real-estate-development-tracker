@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Download, FileIcon, MessageSquare } from "lucide-react"
 import { api } from "@/lib/trpc/client"
 import type { Document } from "@/server/db/schema/documents"
@@ -30,6 +31,7 @@ interface DocumentListProps {
  */
 interface DocumentCardProps {
   doc: Document
+  projectId: string
   onDownload: (documentId: string) => void
 }
 
@@ -100,18 +102,30 @@ function getCategoryColor(categoryId: string): string {
 /**
  * DocumentCard - Individual document card with comment count
  */
-function DocumentCard({ doc, onDownload }: DocumentCardProps) {
+function DocumentCard({ doc, projectId, onDownload }: DocumentCardProps) {
+  const router = useRouter()
+
   // Fetch comment count for this document
   const { data: commentCount = 0 } = api.comments.getCount.useQuery({
     entityType: "document",
     entityId: doc.id,
   })
 
+  const handleCardClick = () => {
+    router.push(`/projects/${projectId}/documents/${doc.id}` as never)
+  }
+
+  const handleDownloadClick = (e: React.MouseEvent) => {
+    e.stopPropagation() // Prevent card navigation
+    onDownload(doc.id)
+  }
+
   return (
     <Card
-      className="group overflow-hidden transition-shadow hover:shadow-lg"
+      className="group overflow-hidden transition-shadow hover:shadow-lg cursor-pointer"
       role="listitem"
       aria-label={`${doc.fileName} - ${formatFileSize(doc.fileSize)} - ${formatRelativeTime(doc.createdAt)}`}
+      onClick={handleCardClick}
     >
       {/* Thumbnail */}
       <div className="relative aspect-square bg-gray-100">
@@ -127,7 +141,7 @@ function DocumentCard({ doc, onDownload }: DocumentCardProps) {
           <Button
             size="sm"
             variant="secondary"
-            onClick={() => onDownload(doc.id)}
+            onClick={handleDownloadClick}
             aria-label={`Download ${doc.fileName}`}
           >
             <Download className="mr-2 h-4 w-4" />
@@ -321,7 +335,7 @@ export function DocumentList({ projectId, initialCategory }: DocumentListProps) 
         aria-label="Project documents"
       >
         {documents.map((doc: Document) => (
-          <DocumentCard key={doc.id} doc={doc} onDownload={handleDownload} />
+          <DocumentCard key={doc.id} doc={doc} projectId={projectId} onDownload={handleDownload} />
         ))}
       </div>
     </div>

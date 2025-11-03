@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useRouter } from "next/navigation"
 import { format } from "date-fns"
 import {
   Calendar,
@@ -69,6 +70,7 @@ export function EventCard({
   onEdit: _onEdit,
   onDelete: _onDelete,
 }: EventCardProps) {
+  const router = useRouter()
   const [isExpanded, setIsExpanded] = React.useState(false)
   const [isDocumentsOpen, setIsDocumentsOpen] = React.useState(false)
 
@@ -93,8 +95,15 @@ export function EventCard({
   const categoryId = event.category?.id as keyof typeof categoryColor
   const badgeColor = categoryColor[categoryId] || "bg-gray-100 text-gray-800"
 
+  const handleCardClick = () => {
+    router.push(`/projects/${projectId}/events/${event.id}` as never)
+  }
+
   return (
-    <Card className="w-full hover:shadow-md transition-shadow">
+    <Card
+      className="w-full hover:shadow-md transition-shadow cursor-pointer"
+      onClick={handleCardClick}
+    >
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 space-y-1">
