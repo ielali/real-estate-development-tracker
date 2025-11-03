@@ -12,15 +12,15 @@
  * - Auto-clear on success
  */
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
 import { api } from "@/lib/trpc/client"
+import { MentionTextarea } from "./MentionTextarea"
 
 const commentFormSchema = z.object({
   content: z
@@ -57,10 +57,10 @@ export function NewCommentForm({
   const [charCount, setCharCount] = useState(0)
 
   const {
-    register,
     handleSubmit,
     reset,
     watch,
+    setValue,
     formState: { errors },
   } = useForm<CommentFormData>({
     resolver: zodResolver(commentFormSchema),
@@ -73,9 +73,9 @@ export function NewCommentForm({
   const content = watch("content")
 
   // Update character count when content changes
-  useState(() => {
+  useEffect(() => {
     setCharCount(content?.length ?? 0)
-  })
+  }, [content])
 
   const createComment = api.comments.create.useMutation({
     onSuccess: () => {
@@ -126,10 +126,12 @@ export function NewCommentForm({
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
       <div className="space-y-2">
-        <Textarea
-          {...register("content", {
-            onChange: (e) => setCharCount(e.target.value.length),
-          })}
+        <MentionTextarea
+          projectId={projectId}
+          value={content || ""}
+          onValueChange={(value) => {
+            setValue("content", value, { shouldValidate: true })
+          }}
           placeholder={placeholder}
           rows={3}
           disabled={isSubmitting}

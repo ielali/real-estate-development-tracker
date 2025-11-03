@@ -195,6 +195,7 @@ export const projectRouter = createTRPCRouter({
 
     // Get addresses in a single query
     const addressResults = await ctx.db.query.addresses.findMany({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       where: (addresses: any, { inArray }: any) =>
         inArray(
           addresses.id,
@@ -205,6 +206,7 @@ export const projectRouter = createTRPCRouter({
     })
 
     // Create address lookup map
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const addressMap = new Map(addressResults.map((addr: any) => [addr.id, addr]))
 
     // Combine project data with addresses and permission metadata
@@ -591,5 +593,79 @@ export const projectRouter = createTRPCRouter({
       const estimate = await backupService.estimateZipSize(input.projectId)
 
       return estimate
+    }),
+
+  /**
+   * Get all members of a project for @mention autocomplete
+   *
+   * Story 8.3: Returns project owner and all accepted partners with user info.
+   *
+   * @throws {TRPCError} UNAUTHORIZED - User not authenticated
+   * @throws {TRPCError} FORBIDDEN - User does not have access to this project
+   * @returns Array of project members with id, name, and email
+   */
+  getMembers: protectedProcedure
+    .input(z.object({ projectId: z.string().uuid() }))
+    .query(async ({ ctx, input }) => {
+      // Verify user has access to the project
+      await verifyProjectAccess(ctx, input.projectId, "read")
+
+      // Import necessary schemas
+      const { projectAccess } = await import("@/server/db/schema/projectAccess")
+      const { users } = await import("@/server/db/schema/users")
+      const { isNull, isNotNull } = await import("drizzle-orm")
+
+      // Get project owner
+      const [project] = await ctx.db
+        .select({
+          ownerId: projects.ownerId,
+        })
+        .from(projects)
+        .where(eq(projects.id, input.projectId))
+        .limit(1)
+
+      if (!project) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Project not found",
+        })
+      }
+
+      // Get owner user info
+      const [owner] = await ctx.db
+        .select({
+          id: users.id,
+          name: users.name,
+          email: users.email,
+        })
+        .from(users)
+        .where(eq(users.id, project.ownerId))
+        .limit(1)
+
+      // Get all accepted partners
+      const partners = await ctx.db
+        .select({
+          id: users.id,
+          name: users.name,
+          email: users.email,
+        })
+        .from(projectAccess)
+        .innerJoin(users, eq(projectAccess.userId, users.id))
+        .where(
+          eq(projectAccess.projectId, input.projectId),
+          isNotNull(projectAccess.acceptedAt),
+          isNull(projectAccess.deletedAt)
+        )
+
+      // Combine and deduplicate (in case owner is also in partners list)
+      const membersMap = new Map()
+      if (owner) {
+        membersMap.set(owner.id, owner)
+      }
+      partners.forEach((partner: { id: string; name: string; email: string }) => {
+        membersMap.set(partner.id, partner)
+      })
+
+      return Array.from(membersMap.values())
     }),
 })
