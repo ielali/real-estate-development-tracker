@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Download, FileIcon } from "lucide-react"
+import { Download, FileIcon, MessageSquare } from "lucide-react"
 import { api } from "@/lib/trpc/client"
 import type { Document } from "@/server/db/schema/documents"
 import { Button } from "@/components/ui/button"
@@ -23,6 +23,14 @@ import { ThumbnailImage } from "./ThumbnailImage"
 interface DocumentListProps {
   projectId: string
   initialCategory?: string
+}
+
+/**
+ * DocumentCard component props
+ */
+interface DocumentCardProps {
+  doc: Document
+  onDownload: (documentId: string) => void
 }
 
 /**
@@ -87,6 +95,72 @@ function getCategoryColor(categoryId: string): string {
     correspondence: "bg-gray-100 text-gray-800",
   }
   return colors[categoryId] || "bg-gray-100 text-gray-800"
+}
+
+/**
+ * DocumentCard - Individual document card with comment count
+ */
+function DocumentCard({ doc, onDownload }: DocumentCardProps) {
+  // Fetch comment count for this document
+  const { data: commentCount = 0 } = api.comments.getCount.useQuery({
+    entityType: "document",
+    entityId: doc.id,
+  })
+
+  return (
+    <Card
+      className="group overflow-hidden transition-shadow hover:shadow-lg"
+      role="listitem"
+      aria-label={`${doc.fileName} - ${formatFileSize(doc.fileSize)} - ${formatRelativeTime(doc.createdAt)}`}
+    >
+      {/* Thumbnail */}
+      <div className="relative aspect-square bg-gray-100">
+        <ThumbnailImage
+          documentId={doc.id}
+          fileName={doc.fileName}
+          mimeType={doc.mimeType}
+          thumbnailUrl={doc.thumbnailUrl}
+        />
+
+        {/* Download button overlay */}
+        <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => onDownload(doc.id)}
+            aria-label={`Download ${doc.fileName}`}
+          >
+            <Download className="mr-2 h-4 w-4" />
+            Download
+          </Button>
+        </div>
+      </div>
+
+      {/* Metadata */}
+      <div className="space-y-2 p-3">
+        <p className="truncate text-sm font-medium" title={doc.fileName}>
+          {doc.fileName}
+        </p>
+
+        <div className="flex items-center justify-between gap-2">
+          <Badge className={getCategoryColor(doc.categoryId)} variant="secondary">
+            {getCategoryLabel(doc.categoryId)}
+          </Badge>
+          <span className="text-xs text-gray-500">{formatFileSize(doc.fileSize)}</span>
+        </div>
+
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-xs text-gray-500">{formatRelativeTime(doc.createdAt)}</p>
+          {commentCount > 0 && (
+            <span className="flex items-center gap-1 text-xs text-muted-foreground">
+              <MessageSquare className="h-3 w-3" />
+              {commentCount}
+            </span>
+          )}
+        </div>
+      </div>
+    </Card>
+  )
 }
 
 /**
@@ -247,51 +321,7 @@ export function DocumentList({ projectId, initialCategory }: DocumentListProps) 
         aria-label="Project documents"
       >
         {documents.map((doc: Document) => (
-          <Card
-            key={doc.id}
-            className="group overflow-hidden transition-shadow hover:shadow-lg"
-            role="listitem"
-            aria-label={`${doc.fileName} - ${formatFileSize(doc.fileSize)} - ${formatRelativeTime(doc.createdAt)}`}
-          >
-            {/* Thumbnail */}
-            <div className="relative aspect-square bg-gray-100">
-              <ThumbnailImage
-                documentId={doc.id}
-                fileName={doc.fileName}
-                mimeType={doc.mimeType}
-                thumbnailUrl={doc.thumbnailUrl}
-              />
-
-              {/* Download button overlay */}
-              <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  onClick={() => handleDownload(doc.id)}
-                  aria-label={`Download ${doc.fileName}`}
-                >
-                  <Download className="mr-2 h-4 w-4" />
-                  Download
-                </Button>
-              </div>
-            </div>
-
-            {/* Metadata */}
-            <div className="space-y-2 p-3">
-              <p className="truncate text-sm font-medium" title={doc.fileName}>
-                {doc.fileName}
-              </p>
-
-              <div className="flex items-center justify-between gap-2">
-                <Badge className={getCategoryColor(doc.categoryId)} variant="secondary">
-                  {getCategoryLabel(doc.categoryId)}
-                </Badge>
-                <span className="text-xs text-gray-500">{formatFileSize(doc.fileSize)}</span>
-              </div>
-
-              <p className="text-xs text-gray-500">{formatRelativeTime(doc.createdAt)}</p>
-            </div>
-          </Card>
+          <DocumentCard key={doc.id} doc={doc} onDownload={handleDownload} />
         ))}
       </div>
     </div>

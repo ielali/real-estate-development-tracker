@@ -26,7 +26,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { toast } from "sonner"
-import { Pencil, Trash2, UserPlus } from "lucide-react"
+import { Pencil, Trash2, UserPlus, MessageSquare } from "lucide-react"
 import { CostListSkeleton } from "@/components/skeletons/cost-list-skeleton"
 import { EmptyState } from "@/components/ui/empty-state"
 import { ContactSelector } from "./ContactSelector"
@@ -41,6 +41,103 @@ interface CostsListProps {
   sortDirection?: SortDirection
   showSearch?: boolean
   highlightCostId?: string // For notification navigation (Story 8.1)
+}
+
+interface CostItemProps {
+  cost: any
+  projectId: string
+  isHighlighted: boolean
+  isSelected: boolean
+  onToggleSelection: () => void
+  onDelete: () => void
+  highlightedCostRef: React.RefObject<HTMLDivElement> | null
+}
+
+/**
+ * CostItem - Individual cost row with comment count
+ */
+function CostItem({
+  cost,
+  projectId,
+  isHighlighted,
+  isSelected,
+  onToggleSelection,
+  onDelete,
+  highlightedCostRef,
+}: CostItemProps) {
+  // Fetch comment count for this cost
+  const { data: commentCount = 0 } = api.comments.getCount.useQuery({
+    entityType: "cost",
+    entityId: cost.id,
+  })
+
+  return (
+    <div
+      ref={highlightedCostRef}
+      className={`flex items-center gap-3 py-3 border-b last:border-b-0 transition-all ${
+        isHighlighted ? "bg-primary/10 border-primary/30 rounded-md px-2 -mx-2 shadow-sm" : ""
+      }`}
+    >
+      <Checkbox
+        id={`cost-${cost.id}`}
+        checked={isSelected}
+        onCheckedChange={onToggleSelection}
+        aria-label={`Select ${cost.description}`}
+      />
+      <div className="flex-1 flex items-center justify-between">
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="font-medium">{cost.description}</span>
+            {cost.category && (
+              <Badge variant="outline" className="text-xs">
+                {cost.category.displayName}
+              </Badge>
+            )}
+          </div>
+          <div className="flex items-center gap-3 text-sm text-gray-600">
+            <span>{new Date(cost.date).toLocaleDateString()}</span>
+            {commentCount > 0 && (
+              <span className="flex items-center gap-1 text-muted-foreground">
+                <MessageSquare className="h-4 w-4" />
+                {commentCount}
+              </span>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          <div className="text-right">
+            <p className="font-semibold">
+              {new Intl.NumberFormat("en-AU", {
+                style: "currency",
+                currency: "AUD",
+              }).format(cost.amount / 100)}
+            </p>
+          </div>
+          <div className="flex gap-1">
+            <Link href={`/projects/${projectId}/costs/${cost.id}/edit` as never}>
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Pencil className="h-4 w-4" />
+                <span className="sr-only">Edit</span>
+              </Button>
+            </Link>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                  onClick={onDelete}
+                >
+                  <Trash2 className="h-4 w-4" />
+                  <span className="sr-only">Delete</span>
+                </Button>
+              </AlertDialogTrigger>
+            </AlertDialog>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 /**
@@ -253,93 +350,44 @@ export function CostsList({
           {costsData.map((cost: any) => {
             const isHighlighted = highlightCostId === cost.id
             return (
-              <div
+              <CostItem
                 key={cost.id}
-                ref={isHighlighted ? highlightedCostRef : null}
-                className={`flex items-center gap-3 py-3 border-b last:border-b-0 transition-all ${
-                  isHighlighted
-                    ? "bg-primary/10 border-primary/30 rounded-md px-2 -mx-2 shadow-sm"
-                    : ""
-                }`}
-              >
-                <Checkbox
-                  id={`cost-${cost.id}`}
-                  checked={selectedCostIds.has(cost.id)}
-                  onCheckedChange={() => toggleCostSelection(cost.id)}
-                  aria-label={`Select ${cost.description}`}
-                />
-                <div className="flex-1 flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-medium">{cost.description}</span>
-                      {cost.category && (
-                        <Badge variant="outline" className="text-xs">
-                          {cost.category.displayName}
-                        </Badge>
-                      )}
-                    </div>
-                    <p className="text-sm text-gray-600">
-                      {new Date(cost.date).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <p className="font-semibold">
-                        {new Intl.NumberFormat("en-AU", {
-                          style: "currency",
-                          currency: "AUD",
-                        }).format(cost.amount / 100)}
-                      </p>
-                    </div>
-                    <div className="flex gap-1">
-                      <Link href={`/projects/${projectId}/costs/${cost.id}/edit` as never}>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <Pencil className="h-4 w-4" />
-                          <span className="sr-only">Edit</span>
-                        </Button>
-                      </Link>
-                      <AlertDialog
-                        open={costToDelete === cost.id}
-                        onOpenChange={(open) => !open && setCostToDelete(null)}
-                      >
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
-                            onClick={() => setCostToDelete(cost.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                            <span className="sr-only">Delete</span>
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete Cost</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Are you sure you want to delete this cost? This action cannot be
-                              undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={handleDeleteCost}
-                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            >
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                cost={cost}
+                projectId={projectId}
+                isHighlighted={isHighlighted}
+                isSelected={selectedCostIds.has(cost.id)}
+                onToggleSelection={() => toggleCostSelection(cost.id)}
+                onDelete={() => setCostToDelete(cost.id)}
+                highlightedCostRef={isHighlighted ? highlightedCostRef : null}
+              />
             )
           })}
         </div>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog
+        open={costToDelete !== null}
+        onOpenChange={(open) => !open && setCostToDelete(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Cost</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this cost? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteCost}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Running Total */}
       {costsData && costsData.length > 0 && (
