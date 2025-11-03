@@ -1,8 +1,8 @@
 "use client"
 
-import { useParams, useRouter } from "next/navigation"
+import { useParams, useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
-import { Suspense, lazy } from "react"
+import { Suspense, lazy, useEffect } from "react"
 import { api } from "@/lib/trpc/client"
 import { Navbar } from "@/components/layout/Navbar"
 import { Button } from "@/components/ui/button"
@@ -73,6 +73,7 @@ const CategoryExportButton = lazy(() =>
 export default function ProjectDetailPage() {
   const params = useParams()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { toast } = useToast()
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [costsViewMode, setCostsViewMode] = useState<"list" | "contact" | "category">("list")
@@ -86,6 +87,18 @@ export default function ProjectDetailPage() {
   const utils = api.useUtils()
   const { role } = useUserRole()
   const isPartner = role === "partner"
+
+  // Get tab and costId from URL query params (for notification navigation - Story 8.1)
+  const tabParam = searchParams?.get("tab")
+  const costIdParam = searchParams?.get("costId")
+  const [activeTab, setActiveTab] = useState(isPartner ? "dashboard" : "details")
+
+  // Update active tab when URL query param changes
+  useEffect(() => {
+    if (tabParam) {
+      setActiveTab(tabParam)
+    }
+  }, [tabParam])
 
   // Load saved filters from sessionStorage on mount
   const savedFilters = loadSavedFilters(projectId)
@@ -331,12 +344,12 @@ export default function ProjectDetailPage() {
         </div>
 
         {/* Tabs for Project Details, Costs, Events, and Dashboard (for partners) */}
-        <Tabs defaultValue={isPartner ? "dashboard" : "details"} className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className={`grid w-full ${isPartner ? "grid-cols-4" : "grid-cols-3"}`}>
             {isPartner && <TabsTrigger value="dashboard">Dashboard</TabsTrigger>}
             <TabsTrigger value="details">Project Details</TabsTrigger>
             <TabsTrigger value="costs">Costs</TabsTrigger>
-            <TabsTrigger value="events">Events</TabsTrigger>
+            <TabsTrigger value="timeline">Timeline</TabsTrigger>
           </TabsList>
 
           {/* Dashboard Tab (Partners only) */}
@@ -493,6 +506,7 @@ export default function ProjectDetailPage() {
                       searchText={searchText}
                       sortBy={sortBy}
                       sortDirection={sortDirection}
+                      highlightCostId={costIdParam || undefined}
                     />
                   ) : costsViewMode === "contact" ? (
                     <ContactGroupedCosts projectId={project.id} />
@@ -504,8 +518,8 @@ export default function ProjectDetailPage() {
             </Card>
           </TabsContent>
 
-          {/* Events Tab */}
-          <TabsContent value="events" className="mt-6">
+          {/* Timeline Tab */}
+          <TabsContent value="timeline" className="mt-6">
             <div className="space-y-6">
               {/* Add Event Button */}
               <div className="flex justify-end">

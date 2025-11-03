@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import Link from "next/link"
 import { api } from "@/lib/trpc/client"
 import { Button } from "@/components/ui/button"
@@ -40,6 +40,7 @@ interface CostsListProps {
   sortBy?: SortOption
   sortDirection?: SortDirection
   showSearch?: boolean
+  highlightCostId?: string // For notification navigation (Story 8.1)
 }
 
 /**
@@ -56,12 +57,14 @@ export function CostsList({
   searchText = "",
   sortBy = "date",
   sortDirection = "desc",
+  highlightCostId,
 }: CostsListProps) {
   const [costToDelete, setCostToDelete] = useState<string | null>(null)
   const [selectedCostIds, setSelectedCostIds] = useState<Set<string>>(new Set())
   const [bulkAssignDialogOpen, setBulkAssignDialogOpen] = useState(false)
   const [selectedContactId, setSelectedContactId] = useState<string | null>(null)
   const utils = api.useUtils()
+  const highlightedCostRef = useRef<HTMLDivElement>(null)
 
   // Build query input (needed for cache key matching)
   const queryInput = {
@@ -74,6 +77,19 @@ export function CostsList({
 
   // Fetch costs for this project with filters
   const { data: costsData, isLoading: costsLoading } = api.costs.list.useQuery(queryInput)
+
+  // Scroll to highlighted cost when component mounts (Story 8.1 - notification navigation)
+  useEffect(() => {
+    if (highlightCostId && highlightedCostRef.current) {
+      // Small delay to ensure DOM is rendered
+      setTimeout(() => {
+        highlightedCostRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        })
+      }, 100)
+    }
+  }, [highlightCostId, costsData])
 
   // Calculate total costs
   const totalCosts = costsData?.reduce((sum: number, cost: any) => sum + cost.amount, 0) ?? 0
@@ -234,82 +250,94 @@ export function CostsList({
       {/* Costs List */}
       {costsData && costsData.length > 0 && (
         <div className="space-y-3">
-          {costsData.map((cost: any) => (
-            <div key={cost.id} className="flex items-center gap-3 py-3 border-b last:border-b-0">
-              <Checkbox
-                id={`cost-${cost.id}`}
-                checked={selectedCostIds.has(cost.id)}
-                onCheckedChange={() => toggleCostSelection(cost.id)}
-                aria-label={`Select ${cost.description}`}
-              />
-              <div className="flex-1 flex items-center justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="font-medium">{cost.description}</span>
-                    {cost.category && (
-                      <Badge variant="outline" className="text-xs">
-                        {cost.category.displayName}
-                      </Badge>
-                    )}
-                  </div>
-                  <p className="text-sm text-gray-600">
-                    {new Date(cost.date).toLocaleDateString()}
-                  </p>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="text-right">
-                    <p className="font-semibold">
-                      {new Intl.NumberFormat("en-AU", {
-                        style: "currency",
-                        currency: "AUD",
-                      }).format(cost.amount / 100)}
+          {costsData.map((cost: any) => {
+            const isHighlighted = highlightCostId === cost.id
+            return (
+              <div
+                key={cost.id}
+                ref={isHighlighted ? highlightedCostRef : null}
+                className={`flex items-center gap-3 py-3 border-b last:border-b-0 transition-all ${
+                  isHighlighted
+                    ? "bg-primary/10 border-primary/30 rounded-md px-2 -mx-2 shadow-sm"
+                    : ""
+                }`}
+              >
+                <Checkbox
+                  id={`cost-${cost.id}`}
+                  checked={selectedCostIds.has(cost.id)}
+                  onCheckedChange={() => toggleCostSelection(cost.id)}
+                  aria-label={`Select ${cost.description}`}
+                />
+                <div className="flex-1 flex items-center justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-medium">{cost.description}</span>
+                      {cost.category && (
+                        <Badge variant="outline" className="text-xs">
+                          {cost.category.displayName}
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-sm text-gray-600">
+                      {new Date(cost.date).toLocaleDateString()}
                     </p>
                   </div>
-                  <div className="flex gap-1">
-                    <Link href={`/projects/${projectId}/costs/${cost.id}/edit` as never}>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <Pencil className="h-4 w-4" />
-                        <span className="sr-only">Edit</span>
-                      </Button>
-                    </Link>
-                    <AlertDialog
-                      open={costToDelete === cost.id}
-                      onOpenChange={(open) => !open && setCostToDelete(null)}
-                    >
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
-                          onClick={() => setCostToDelete(cost.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          <span className="sr-only">Delete</span>
+                  <div className="flex items-center gap-4">
+                    <div className="text-right">
+                      <p className="font-semibold">
+                        {new Intl.NumberFormat("en-AU", {
+                          style: "currency",
+                          currency: "AUD",
+                        }).format(cost.amount / 100)}
+                      </p>
+                    </div>
+                    <div className="flex gap-1">
+                      <Link href={`/projects/${projectId}/costs/${cost.id}/edit` as never}>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <Pencil className="h-4 w-4" />
+                          <span className="sr-only">Edit</span>
                         </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete Cost</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Are you sure you want to delete this cost? This action cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={handleDeleteCost}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      </Link>
+                      <AlertDialog
+                        open={costToDelete === cost.id}
+                        onOpenChange={(open) => !open && setCostToDelete(null)}
+                      >
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                            onClick={() => setCostToDelete(cost.id)}
                           >
-                            Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                            <Trash2 className="h-4 w-4" />
+                            <span className="sr-only">Delete</span>
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Cost</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete this cost? This action cannot be
+                              undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={handleDeleteCost}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
 
