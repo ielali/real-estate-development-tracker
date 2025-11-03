@@ -1,6 +1,7 @@
 /**
  * Notification generation utilities
  * Story 8.1: In-App Notification System
+ * Story 8.2: Email Notifications with User Preferences
  *
  * Provides functions for creating and sending notifications to users
  */
@@ -9,8 +10,15 @@ import { db } from "@/server/db"
 import { notifications } from "@/server/db/schema/notifications"
 import { projectAccess } from "@/server/db/schema/projectAccess"
 import { projects } from "@/server/db/schema/projects"
+import { users } from "@/server/db/schema/users"
 import { eq, and, isNull, isNotNull } from "drizzle-orm"
 import { NotificationType, NotificationEntityType } from "@/server/db/schema/notifications"
+import {
+  sendCostAddedEmailNotification,
+  sendLargeExpenseEmailNotification,
+  sendDocumentUploadedEmailNotification,
+  sendTimelineEventEmailNotification,
+} from "./email-notifications"
 
 /**
  * Message templates for different notification types
@@ -149,7 +157,75 @@ export async function notifyProjectMembers(params: {
   }))
 
   if (notificationValues.length > 0) {
-    await db.insert(notifications).values(notificationValues)
+    const createdNotifications = await db
+      .insert(notifications)
+      .values(notificationValues)
+      .returning()
+
+    // Story 8.2: Trigger email notifications (fire-and-forget)
+    // Get user names for email personalization
+    const userRecords = await db
+      .select({ id: users.id, name: users.name, email: users.email })
+      .from(users)
+      .where(eq(users.id, userIds.values().next().value))
+
+    for (const notification of createdNotifications) {
+      const userRecord = userRecords.find((u) => u.id === notification.userId) ?? {
+        name: "User",
+      }
+
+      // Fire-and-forget email sending based on notification type
+      if (params.type === NotificationType.COST_ADDED && "amount" in params.messageData) {
+        sendCostAddedEmailNotification({
+          userId: notification.userId,
+          notificationId: notification.id,
+          projectId: params.projectId,
+          projectName: project.name,
+          costId: params.entityId,
+          costDescription: (params.messageData as { description: string }).description,
+          amount: (params.messageData as { amount: number }).amount,
+          userName: userRecord.name,
+        }).catch((err) => console.error("Email notification error:", err))
+      } else if (params.type === NotificationType.LARGE_EXPENSE && "amount" in params.messageData) {
+        sendLargeExpenseEmailNotification({
+          userId: notification.userId,
+          notificationId: notification.id,
+          projectId: params.projectId,
+          projectName: project.name,
+          costId: params.entityId,
+          costDescription: (params.messageData as { description: string }).description,
+          amount: (params.messageData as { amount: number }).amount,
+          userName: userRecord.name,
+        }).catch((err) => console.error("Email notification error:", err))
+      } else if (
+        params.type === NotificationType.DOCUMENT_UPLOADED &&
+        "fileName" in params.messageData
+      ) {
+        sendDocumentUploadedEmailNotification({
+          userId: notification.userId,
+          notificationId: notification.id,
+          projectId: params.projectId,
+          projectName: project.name,
+          documentId: params.entityId,
+          fileName: (params.messageData as { fileName: string }).fileName,
+          userName: userRecord.name,
+        }).catch((err) => console.error("Email notification error:", err))
+      } else if (
+        params.type === NotificationType.TIMELINE_EVENT &&
+        "eventTitle" in params.messageData
+      ) {
+        sendTimelineEventEmailNotification({
+          userId: notification.userId,
+          notificationId: notification.id,
+          projectId: params.projectId,
+          projectName: project.name,
+          eventId: params.entityId,
+          eventTitle: (params.messageData as { eventTitle: string }).eventTitle,
+          eventDate: new Date(), // TODO: Pass actual event date
+          userName: userRecord.name,
+        }).catch((err) => console.error("Email notification error:", err))
+      }
+    }
   }
 }
 
