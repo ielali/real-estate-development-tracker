@@ -24,6 +24,7 @@ export * from "./notifications"
 export * from "./notification_preferences"
 export * from "./email_logs"
 export * from "./digest_queue"
+export * from "./revoked_tokens"
 
 import { relations } from "drizzle-orm"
 import { users } from "./users"

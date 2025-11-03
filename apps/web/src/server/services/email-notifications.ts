@@ -30,6 +30,7 @@ import type {
 
 /**
  * Log email attempt to database
+ * Story 8.2: QA Fix - Record retry attempts
  */
 async function logEmailAttempt(params: {
   userId: string
@@ -40,6 +41,7 @@ async function logEmailAttempt(params: {
   status: "sent" | "failed"
   error?: string
   resendId?: string
+  attempts?: number
 }): Promise<void> {
   try {
     await db.insert(emailLogs).values({
@@ -50,7 +52,7 @@ async function logEmailAttempt(params: {
       subject: params.subject,
       status: params.status,
       resendId: params.resendId ?? null,
-      attempts: 1,
+      attempts: params.attempts ?? 1,
       lastError: params.error ?? null,
     })
   } catch (error) {
@@ -231,18 +233,20 @@ export async function sendCostAddedEmailNotification(params: {
       unsubscribeToken,
     }
 
-    // Send email and capture Resend ID
-    const resendId = await emailService.sendCostAddedEmail(emailData)
+    // Send email with retry logic
+    const result = await emailService.sendCostAddedEmailWithRetry(emailData)
 
-    // Log success with Resend ID
+    // Log attempt with retry count
     await logEmailAttempt({
       userId: params.userId,
       notificationId: params.notificationId,
       emailType: "cost_added",
       recipientEmail: user.email,
       subject: `New Cost Added to ${params.projectName} - Real Estate Portfolio`,
-      status: "sent",
-      resendId: resendId ?? undefined,
+      status: result.error ? "failed" : "sent",
+      resendId: result.resendId ?? undefined,
+      error: result.error,
+      attempts: result.attempts,
     })
   } catch (error) {
     console.error("Failed to send cost added email:", error)
@@ -314,18 +318,20 @@ export async function sendLargeExpenseEmailNotification(params: {
       unsubscribeToken,
     }
 
-    // Send email and capture Resend ID
-    const resendId = await emailService.sendLargeExpenseEmail(emailData)
+    // Send email with retry logic (large expense always sends immediately)
+    const result = await emailService.sendLargeExpenseEmailWithRetry(emailData)
 
-    // Log success with Resend ID
+    // Log attempt with retry count
     await logEmailAttempt({
       userId: params.userId,
       notificationId: params.notificationId,
       emailType: "large_expense",
       recipientEmail: user.email,
       subject: `🚨 Large Expense Alert: ${params.projectName} - Real Estate Portfolio`,
-      status: "sent",
-      resendId: resendId ?? undefined,
+      status: result.error ? "failed" : "sent",
+      resendId: result.resendId ?? undefined,
+      error: result.error,
+      attempts: result.attempts,
     })
   } catch (error) {
     console.error("Failed to send large expense email:", error)
@@ -408,7 +414,7 @@ export async function sendDocumentUploadedEmailNotification(params: {
       unsubscribeToken,
     }
 
-    const resendId = await emailService.sendDocumentUploadedEmail(emailData)
+    const result = await emailService.sendDocumentUploadedEmailWithRetry(emailData)
 
     await logEmailAttempt({
       userId: params.userId,
@@ -416,8 +422,10 @@ export async function sendDocumentUploadedEmailNotification(params: {
       emailType: "document_uploaded",
       recipientEmail: user.email,
       subject: `New Document Uploaded to ${params.projectName} - Real Estate Portfolio`,
-      status: "sent",
-      resendId: resendId ?? undefined,
+      status: result.error ? "failed" : "sent",
+      resendId: result.resendId ?? undefined,
+      error: result.error,
+      attempts: result.attempts,
     })
   } catch (error) {
     console.error("Failed to send document uploaded email:", error)
@@ -496,7 +504,7 @@ export async function sendTimelineEventEmailNotification(params: {
       unsubscribeToken,
     }
 
-    const resendId = await emailService.sendTimelineEventEmail(emailData)
+    const result = await emailService.sendTimelineEventEmailWithRetry(emailData)
 
     await logEmailAttempt({
       userId: params.userId,
@@ -504,8 +512,10 @@ export async function sendTimelineEventEmailNotification(params: {
       emailType: "timeline_event",
       recipientEmail: user.email,
       subject: `New Timeline Event: ${params.projectName} - Real Estate Portfolio`,
-      status: "sent",
-      resendId: resendId ?? undefined,
+      status: result.error ? "failed" : "sent",
+      resendId: result.resendId ?? undefined,
+      error: result.error,
+      attempts: result.attempts,
     })
   } catch (error) {
     console.error("Failed to send timeline event email:", error)

@@ -56,6 +56,55 @@ export class EmailService {
     return this.resend
   }
 
+  /**
+   * Sleep utility for retry delays
+   */
+  private sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms))
+  }
+
+  /**
+   * Send email with retry logic and exponential backoff
+   * Story 8.2: QA Fix - Implement email retry mechanism
+   *
+   * @param maxRetries - Maximum number of retry attempts (default: 3)
+   * @param baseDelay - Base delay in milliseconds for exponential backoff (default: 1000ms)
+   */
+  async sendEmailWithRetry(
+    options: SendEmailOptions,
+    maxRetries: number = 3,
+    baseDelay: number = 1000
+  ): Promise<{ resendId: string | null; attempts: number; error?: string }> {
+    let lastError: Error | null = null
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const resendId = await this.sendEmail(options)
+        return { resendId, attempts: attempt }
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error("Unknown error")
+        console.warn(`Email send attempt ${attempt}/${maxRetries} failed:`, lastError.message)
+
+        // Don't retry on the last attempt
+        if (attempt < maxRetries) {
+          // Exponential backoff: 1s, 2s, 4s, etc.
+          const delay = baseDelay * Math.pow(2, attempt - 1)
+          console.log(`Retrying in ${delay}ms...`)
+          await this.sleep(delay)
+        }
+      }
+    }
+
+    // All retries exhausted
+    const errorMessage = lastError?.message || "Unknown error after all retries"
+    console.error(`❌ Email failed after ${maxRetries} attempts:`, errorMessage)
+    return {
+      resendId: null,
+      attempts: maxRetries,
+      error: errorMessage,
+    }
+  }
+
   async sendEmail({ to, subject, html, text, tags }: SendEmailOptions): Promise<string | null> {
     if (this.isDevelopment) {
       // Development: Log email to console
@@ -1286,6 +1335,136 @@ This is an automated security notification for your account.
         type: "digest",
         digestType: "weekly",
         weekStart: data.weekStart.toISOString().split("T")[0],
+      },
+    })
+  }
+
+  /**
+   * Email retry wrapper methods
+   * Story 8.2: QA Fix - Implement email retry for notification emails
+   */
+
+  async sendCostAddedEmailWithRetry(
+    data: import("./notification-email-templates").CostEmailData
+  ): Promise<{ resendId: string | null; attempts: number; error?: string }> {
+    const { generateCostAddedHTML, generateCostAddedText } = await import(
+      "./notification-email-templates"
+    )
+
+    const subject = `New Cost Added to ${data.projectName} - Real Estate Portfolio`
+    const html = generateCostAddedHTML(data)
+    const text = generateCostAddedText(data)
+
+    return await this.sendEmailWithRetry({
+      to: data.recipientEmail,
+      subject,
+      html,
+      text,
+      tags: {
+        type: "notification",
+        notificationType: "cost-added",
+        projectId: data.projectId,
+        projectName: data.projectName,
+      },
+    })
+  }
+
+  async sendLargeExpenseEmailWithRetry(
+    data: import("./notification-email-templates").LargeExpenseEmailData
+  ): Promise<{ resendId: string | null; attempts: number; error?: string }> {
+    const { generateLargeExpenseHTML, generateLargeExpenseText } = await import(
+      "./notification-email-templates"
+    )
+
+    const subject = `🚨 Large Expense Alert: ${data.projectName} - Real Estate Portfolio`
+    const html = generateLargeExpenseHTML(data)
+    const text = generateLargeExpenseText(data)
+
+    return await this.sendEmailWithRetry({
+      to: data.recipientEmail,
+      subject,
+      html,
+      text,
+      tags: {
+        type: "notification",
+        notificationType: "large-expense",
+        projectId: data.projectId,
+        projectName: data.projectName,
+      },
+    })
+  }
+
+  async sendDocumentUploadedEmailWithRetry(
+    data: import("./notification-email-templates").DocumentEmailData
+  ): Promise<{ resendId: string | null; attempts: number; error?: string }> {
+    const { generateDocumentUploadedHTML, generateDocumentUploadedText } = await import(
+      "./notification-email-templates"
+    )
+
+    const subject = `New Document Uploaded to ${data.projectName} - Real Estate Portfolio`
+    const html = generateDocumentUploadedHTML(data)
+    const text = generateDocumentUploadedText(data)
+
+    return await this.sendEmailWithRetry({
+      to: data.recipientEmail,
+      subject,
+      html,
+      text,
+      tags: {
+        type: "notification",
+        notificationType: "document-uploaded",
+        projectId: data.projectId,
+        projectName: data.projectName,
+      },
+    })
+  }
+
+  async sendTimelineEventEmailWithRetry(
+    data: import("./notification-email-templates").TimelineEventEmailData
+  ): Promise<{ resendId: string | null; attempts: number; error?: string }> {
+    const { generateTimelineEventHTML, generateTimelineEventText } = await import(
+      "./notification-email-templates"
+    )
+
+    const subject = `New Timeline Event: ${data.projectName} - Real Estate Portfolio`
+    const html = generateTimelineEventHTML(data)
+    const text = generateTimelineEventText(data)
+
+    return await this.sendEmailWithRetry({
+      to: data.recipientEmail,
+      subject,
+      html,
+      text,
+      tags: {
+        type: "notification",
+        notificationType: "timeline-event",
+        projectId: data.projectId,
+        projectName: data.projectName,
+      },
+    })
+  }
+
+  async sendCommentAddedEmailWithRetry(
+    data: import("./notification-email-templates").CommentEmailData
+  ): Promise<{ resendId: string | null; attempts: number; error?: string }> {
+    const { generateCommentAddedHTML, generateCommentAddedText } = await import(
+      "./notification-email-templates"
+    )
+
+    const subject = `New Comment on ${data.projectName} - Real Estate Portfolio`
+    const html = generateCommentAddedHTML(data)
+    const text = generateCommentAddedText(data)
+
+    return await this.sendEmailWithRetry({
+      to: data.recipientEmail,
+      subject,
+      html,
+      text,
+      tags: {
+        type: "notification",
+        notificationType: "comment-added",
+        projectId: data.projectId,
+        projectName: data.projectName,
       },
     })
   }

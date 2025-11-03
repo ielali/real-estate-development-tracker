@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm"
 import { TRPCError } from "@trpc/server"
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc"
 import { notificationPreferences } from "@/server/db/schema/notification_preferences"
-import { verifyUnsubscribeToken } from "@/server/utils/jwt"
+import { verifyUnsubscribeToken, revokeToken } from "@/server/utils/jwt"
 
 /**
  * Notification Preferences Router
@@ -109,6 +109,56 @@ export const notificationPreferencesRouter = createTRPCRouter({
         throw new TRPCError({
           code: "UNAUTHORIZED",
           message: error instanceof Error ? error.message : "Invalid or expired unsubscribe link",
+        })
+      }
+    }),
+
+  /**
+   * Unsubscribe from emails using unsubscribe token
+   * QA Fix: Revokes token after successful unsubscribe
+   * Public endpoint (no auth required) for one-click unsubscribe
+   */
+  unsubscribeWithToken: publicProcedure
+    .input(
+      z.object({
+        token: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      try {
+        // Verify the token and get user ID
+        const userId = await verifyUnsubscribeToken(input.token)
+
+        // Update preferences to disable all emails
+        const [updated] = await ctx.db
+          .insert(notificationPreferences)
+          .values({
+            userId,
+            emailDigestFrequency: "never",
+            updatedAt: new Date(),
+          })
+          .onConflictDoUpdate({
+            target: notificationPreferences.userId,
+            set: {
+              emailDigestFrequency: "never",
+              updatedAt: new Date(),
+            },
+          })
+          .returning()
+
+        // Revoke the token to prevent reuse
+        try {
+          await revokeToken(input.token, "User unsubscribed from emails")
+        } catch (revokeError) {
+          // Log but don't fail the unsubscribe if revocation fails
+          console.error("Failed to revoke token after unsubscribe:", revokeError)
+        }
+
+        return { success: true, preferences: updated }
+      } catch (error) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: error instanceof Error ? error.message : "Failed to unsubscribe",
         })
       }
     }),

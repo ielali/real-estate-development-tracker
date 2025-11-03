@@ -321,11 +321,216 @@ async function processWeeklyDigests(): Promise<number> {
     return 0
   }
 
-  // Similar logic to daily digests
-  // (Implementation would be similar to processDailyDigests)
-  console.log(`Found ${pendingDigests.length} weekly digest queue items`)
+  // Group by user
+  const userDigests = new Map<string, GroupedDigest>()
 
-  return 0 // TODO: Implement full weekly digest logic
+  for (const digest of pendingDigests) {
+    if (!userDigests.has(digest.userId)) {
+      userDigests.set(digest.userId, {
+        userId: digest.userId,
+        userName: digest.userName,
+        userEmail: digest.userEmail,
+        digestType: "weekly",
+        notifications: [],
+        projectGroups: new Map(),
+      })
+    }
+  }
+
+  // Fetch full notification details for all notifications
+  const notificationIds = pendingDigests.map((d) => d.notificationId)
+  const notificationDetails = await db
+    .select({
+      id: notifications.id,
+      userId: notifications.userId,
+      type: notifications.type,
+      message: notifications.message,
+      entityId: notifications.entityId,
+      projectId: notifications.projectId,
+      createdAt: notifications.createdAt,
+    })
+    .from(notifications)
+    .where(inArray(notifications.id, notificationIds))
+
+  // Fetch project names
+  const projectData = await db
+    .select({
+      id: projects.id,
+      name: projects.name,
+    })
+    .from(projects)
+
+  const projectMap = new Map(projectData.map((p) => [p.id, p.name]))
+
+  // Group notifications by user and project
+  for (const notification of notificationDetails) {
+    const userDigest = userDigests.get(notification.userId)
+    if (!userDigest) continue
+
+    const digestNotification: DigestNotification = {
+      id: notification.id,
+      type: notification.type,
+      message: notification.message,
+      entityId: notification.entityId,
+      projectId: notification.projectId,
+      projectName: projectMap.get(notification.projectId) ?? "Unknown Project",
+      createdAt: notification.createdAt,
+    }
+
+    userDigest.notifications.push(digestNotification)
+
+    // Group by project
+    if (!userDigest.projectGroups.has(notification.projectId)) {
+      userDigest.projectGroups.set(notification.projectId, [])
+    }
+    userDigest.projectGroups.get(notification.projectId)!.push(digestNotification)
+  }
+
+  // Calculate week date range (Monday to Sunday)
+  const weekStart = new Date(now)
+  weekStart.setDate(now.getDate() - 7) // Last Monday
+  const weekEnd = new Date(now)
+  weekEnd.setDate(now.getDate() - 1) // Last Sunday
+
+  // Prepare batch emails with unsubscribe tokens
+  const batchEmails: Array<{
+    userId: string
+    email: {
+      to: string
+      from: string
+      subject: string
+      html: string
+      text: string
+      tags: Record<string, string>
+    }
+    queueIds: string[]
+    notificationCount: number
+  }> = []
+
+  for (const [userId, digest] of userDigests) {
+    if (digest.notifications.length === 0) continue
+
+    try {
+      // Generate unsubscribe token for this user
+      const unsubscribeToken = await generateUnsubscribeToken(userId)
+
+      // Import email template generators
+      const { generateWeeklyDigestHTML, generateWeeklyDigestText } = await import(
+        "@/lib/notification-email-templates"
+      )
+
+      const emailData = {
+        userName: digest.userName,
+        recipientEmail: digest.userEmail,
+        notifications: Array.from(digest.projectGroups.entries()).map(([projectId, notifs]) => ({
+          projectId,
+          projectName: notifs[0]!.projectName,
+          notifications: notifs,
+        })),
+        weekStart,
+        weekEnd,
+        unsubscribeToken,
+      }
+
+      const subject = `Weekly Project Digest - Real Estate Portfolio`
+      const html = generateWeeklyDigestHTML(emailData)
+      const text = generateWeeklyDigestText(emailData)
+
+      // Get queue IDs for this user
+      const queueIds = pendingDigests.filter((d) => d.userId === userId).map((d) => d.queueId)
+
+      batchEmails.push({
+        userId,
+        email: {
+          to: digest.userEmail,
+          from: process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev",
+          subject,
+          html,
+          text,
+          tags: {
+            type: "digest",
+            digestType: "weekly",
+            weekStart: weekStart.toISOString().split("T")[0],
+            weekEnd: weekEnd.toISOString().split("T")[0],
+          },
+        },
+        queueIds,
+        notificationCount: digest.notifications.length,
+      })
+    } catch (error) {
+      console.error(`✗ Failed to prepare weekly digest for ${digest.userEmail}:`, error)
+    }
+  }
+
+  if (batchEmails.length === 0) {
+    console.log("No weekly digest emails to send")
+    return 0
+  }
+
+  // Send emails in batches of 100 (Resend limit)
+  let emailsSent = 0
+  const resend = new Resend(process.env.RESEND_API_KEY)
+
+  for (let i = 0; i < batchEmails.length; i += 100) {
+    const batch = batchEmails.slice(i, i + 100)
+
+    try {
+      // Send batch
+      const result = await resend.batch.send(batch.map((b) => b.email))
+
+      // Process results
+      if (result.data) {
+        for (let j = 0; j < result.data.length; j++) {
+          const emailResult = result.data[j]
+          const emailData = batch[j]
+
+          if (!emailData) continue
+
+          // Mark queue items as processed
+          if (emailData.queueIds.length > 0) {
+            await db
+              .update(digestQueue)
+              .set({
+                processed: true,
+                processedAt: now,
+              })
+              .where(inArray(digestQueue.id, emailData.queueIds))
+          }
+
+          // Log email
+          await db.insert(emailLogs).values({
+            userId: emailData.userId,
+            emailType: "weekly_digest",
+            recipientEmail: emailData.email.to,
+            subject: emailData.email.subject,
+            status: "sent",
+            resendId: emailResult?.id || null,
+            attempts: 1,
+          })
+
+          emailsSent++
+          console.log(
+            `✓ Sent weekly digest to ${emailData.email.to} (${emailData.notificationCount} notifications)`
+          )
+        }
+      }
+
+      // Handle batch errors (if using permissive validation)
+      if ("errors" in result && result.errors) {
+        for (const error of result.errors) {
+          const emailData = batch[error.index]
+          if (emailData) {
+            console.error(`✗ Failed to send weekly digest to ${emailData.email.to}:`, error.message)
+          }
+        }
+      }
+    } catch (error) {
+      console.error(`✗ Weekly batch send failed:`, error)
+      // Continue with next batch
+    }
+  }
+
+  return emailsSent
 }
 
 /**
