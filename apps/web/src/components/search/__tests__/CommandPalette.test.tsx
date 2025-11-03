@@ -3,6 +3,8 @@
  *
  * Tests global search command palette with keyboard shortcuts,
  * search functionality, navigation, and accessibility features.
+ *
+ * @vitest-environment jsdom
  */
 
 import React from "react"
@@ -92,12 +94,18 @@ const mockSearchData = {
   totalCount: 4,
 }
 
-const mockUseQuery = vi.fn()
+const mockSearchQuery = vi.fn()
+const mockProjectsListQuery = vi.fn()
 vi.mock("@/lib/trpc/client", () => ({
   api: {
     search: {
       globalSearch: {
-        useQuery: (...args: unknown[]) => mockUseQuery(...args),
+        useQuery: (...args: unknown[]) => mockSearchQuery(...args),
+      },
+    },
+    projects: {
+      list: {
+        useQuery: (...args: unknown[]) => mockProjectsListQuery(...args),
       },
     },
   },
@@ -107,8 +115,12 @@ describe("CommandPalette Component", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockGetRecentSearches.mockReturnValue([])
-    mockUseQuery.mockReturnValue({
+    mockSearchQuery.mockReturnValue({
       data: undefined,
+      isLoading: false,
+    })
+    mockProjectsListQuery.mockReturnValue({
+      data: [],
       isLoading: false,
     })
   })
@@ -211,7 +223,7 @@ describe("CommandPalette Component", () => {
       // Wait for debounce (300ms)
       await waitFor(
         () => {
-          expect(mockUseQuery).toHaveBeenCalledWith(
+          expect(mockSearchQuery).toHaveBeenCalledWith(
             expect.objectContaining({
               query: "kitchen",
               limit: 50,
@@ -224,7 +236,7 @@ describe("CommandPalette Component", () => {
     })
 
     test("should not search for queries < 2 characters", async () => {
-      mockUseQuery.mockReturnValue({
+      mockSearchQuery.mockReturnValue({
         data: undefined,
         isLoading: false,
       })
@@ -242,7 +254,7 @@ describe("CommandPalette Component", () => {
 
       // Should not enable query
       await waitFor(() => {
-        const lastCall = mockUseQuery.mock.calls[mockUseQuery.mock.calls.length - 1]
+        const lastCall = mockSearchQuery.mock.calls[mockSearchQuery.mock.calls.length - 1]
         if (lastCall) {
           // enabled should be false for short queries
           expect(lastCall[1]).toHaveProperty("enabled", false)
@@ -251,7 +263,7 @@ describe("CommandPalette Component", () => {
     })
 
     test("should display loading state", async () => {
-      mockUseQuery.mockReturnValue({
+      mockSearchQuery.mockReturnValue({
         data: undefined,
         isLoading: true,
       })
@@ -273,7 +285,7 @@ describe("CommandPalette Component", () => {
     })
 
     test("should display search results grouped by entity type", async () => {
-      mockUseQuery.mockReturnValue({
+      mockSearchQuery.mockReturnValue({
         data: mockSearchData,
         isLoading: false,
       })
@@ -305,7 +317,7 @@ describe("CommandPalette Component", () => {
     })
 
     test("should display project context for non-project entities", async () => {
-      mockUseQuery.mockReturnValue({
+      mockSearchQuery.mockReturnValue({
         data: mockSearchData,
         isLoading: false,
       })
@@ -330,7 +342,7 @@ describe("CommandPalette Component", () => {
     })
 
     test("should display empty state for no results", async () => {
-      mockUseQuery.mockReturnValue({
+      mockSearchQuery.mockReturnValue({
         data: { results: [], totalCount: 0 },
         isLoading: false,
       })
@@ -355,7 +367,7 @@ describe("CommandPalette Component", () => {
 
   describe("Navigation", () => {
     test("should navigate to project on selection", async () => {
-      mockUseQuery.mockReturnValue({
+      mockSearchQuery.mockReturnValue({
         data: mockSearchData,
         isLoading: false,
       })
@@ -384,7 +396,7 @@ describe("CommandPalette Component", () => {
     })
 
     test("should navigate to cost with tab and highlight", async () => {
-      mockUseQuery.mockReturnValue({
+      mockSearchQuery.mockReturnValue({
         data: mockSearchData,
         isLoading: false,
       })
@@ -413,7 +425,7 @@ describe("CommandPalette Component", () => {
     })
 
     test("should navigate to contact", async () => {
-      mockUseQuery.mockReturnValue({
+      mockSearchQuery.mockReturnValue({
         data: mockSearchData,
         isLoading: false,
       })
@@ -442,7 +454,7 @@ describe("CommandPalette Component", () => {
     })
 
     test("should navigate to document with tab and highlight", async () => {
-      mockUseQuery.mockReturnValue({
+      mockSearchQuery.mockReturnValue({
         data: mockSearchData,
         isLoading: false,
       })
@@ -471,7 +483,7 @@ describe("CommandPalette Component", () => {
     })
 
     test("should close palette after navigation", async () => {
-      mockUseQuery.mockReturnValue({
+      mockSearchQuery.mockReturnValue({
         data: mockSearchData,
         isLoading: false,
       })
@@ -500,7 +512,7 @@ describe("CommandPalette Component", () => {
     })
 
     test("should save search to history on navigation", async () => {
-      mockUseQuery.mockReturnValue({
+      mockSearchQuery.mockReturnValue({
         data: mockSearchData,
         isLoading: false,
       })
@@ -574,7 +586,7 @@ describe("CommandPalette Component", () => {
         { query: "recent search", timestamp: Date.now(), resultCount: 5 },
       ])
 
-      mockUseQuery.mockReturnValue({
+      mockSearchQuery.mockReturnValue({
         data: mockSearchData,
         isLoading: false,
       })
@@ -638,7 +650,7 @@ describe("CommandPalette Component", () => {
     })
 
     test("should have aria-label on search results list", async () => {
-      mockUseQuery.mockReturnValue({
+      mockSearchQuery.mockReturnValue({
         data: mockSearchData,
         isLoading: false,
       })
@@ -661,7 +673,7 @@ describe("CommandPalette Component", () => {
     })
 
     test("should support keyboard navigation", async () => {
-      mockUseQuery.mockReturnValue({
+      mockSearchQuery.mockReturnValue({
         data: mockSearchData,
         isLoading: false,
       })
@@ -746,7 +758,7 @@ describe("CommandPalette Component", () => {
 
     test("should handle very long result titles", async () => {
       const longTitle = "A".repeat(200)
-      mockUseQuery.mockReturnValue({
+      mockSearchQuery.mockReturnValue({
         data: {
           results: [
             {
