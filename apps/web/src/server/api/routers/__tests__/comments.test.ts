@@ -19,6 +19,7 @@ import { eq } from "drizzle-orm"
 // Mock the notification service
 vi.mock("@/server/services/notifications", () => ({
   notifyCommentAdded: vi.fn(),
+  notifyPartnerInvited: vi.fn(),
 }))
 
 describe("Comments Router", () => {
