@@ -132,7 +132,7 @@ describe("Comments Router", () => {
     projectId = project.id
 
     // Invite and accept otherUser as partner
-    await caller.partners.invite({
+    await caller.partners.invitePartner({
       projectId,
       email: otherUser.email,
       permission: "write",
