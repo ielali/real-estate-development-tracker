@@ -59,7 +59,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 return (
                   <Link
                     key={item.href}
-                    href={item.href}
+                    href={item.href as never}
                     className={cn(
                       "flex items-start gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
                       isActive ? "bg-primary text-primary-foreground" : "hover:bg-muted"
@@ -102,7 +102,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 return (
                   <Link
                     key={item.href}
-                    href={item.href}
+                    href={item.href as never}
                     className={cn(
                       "flex items-center gap-2 rounded-lg px-4 py-2 text-sm whitespace-nowrap transition-colors",
                       isActive ? "bg-primary text-primary-foreground" : "bg-muted hover:bg-muted/80"
