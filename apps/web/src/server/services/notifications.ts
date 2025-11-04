@@ -334,3 +334,138 @@ export async function notifyPartnerInvited(params: {
     }),
   })
 }
+
+/**
+ * Notify users about a new comment
+ * Story 8.3: Threaded Comments on Entities
+ *
+ * Recipients (deduplicated):
+ * - Entity owner (cost/document/event creator)
+ * - All previous commenters in the thread
+ * - @mentioned users
+ *
+ * Excludes the comment author (no self-notification)
+ */
+export async function notifyCommentAdded(params: {
+  commentId: string
+  entityType: "cost" | "document" | "event"
+  entityId: string
+  projectId: string
+  projectName: string
+  commenterName: string
+  commentAuthorId: string
+  content: string
+}): Promise<void> {
+  const recipientIds = new Set<string>()
+
+  // Import comments schema
+  const { comments } = await import("@/server/db/schema/comments")
+
+  // 1. Get all previous commenters in this thread (distinct user IDs)
+  const previousComments = await db
+    .select({ userId: comments.userId })
+    .from(comments)
+    .where(and(eq(comments.entityType, params.entityType), eq(comments.entityId, params.entityId)))
+
+  previousComments.forEach((comment: any) => {
+    recipientIds.add(comment.userId)
+  })
+
+  // 2. Get entity owner based on entity type
+  try {
+    let entityOwnerId: string | null = null
+
+    if (params.entityType === "cost") {
+      const { costs } = await import("@/server/db/schema/costs")
+      const [cost] = await db
+        .select({ createdById: costs.createdById })
+        .from(costs)
+        .where(eq(costs.id, params.entityId))
+        .limit(1)
+
+      entityOwnerId = cost?.createdById ?? null
+    } else if (params.entityType === "document") {
+      const { documents } = await import("@/server/db/schema/documents")
+      const [document] = await db
+        .select({ uploadedById: documents.uploadedById })
+        .from(documents)
+        .where(eq(documents.id, params.entityId))
+        .limit(1)
+
+      entityOwnerId = document?.uploadedById ?? null
+    } else if (params.entityType === "event") {
+      const { events } = await import("@/server/db/schema/events")
+      const [event] = await db
+        .select({ createdById: events.createdById })
+        .from(events)
+        .where(eq(events.id, params.entityId))
+        .limit(1)
+
+      entityOwnerId = event?.createdById ?? null
+    }
+
+    if (entityOwnerId) {
+      recipientIds.add(entityOwnerId)
+    }
+  } catch (error) {
+    console.error("Error fetching entity owner for comment notification:", error)
+  }
+
+  // 3. Parse @mentions from comment content
+  // Extract @username patterns (alphanumeric + underscore)
+  const mentionRegex = /@(\w+)/g
+  const mentions = Array.from(params.content.matchAll(mentionRegex), (m) => m[1])
+
+  if (mentions.length > 0) {
+    try {
+      // Query users by name (mentions use underscored names like @John_Doe)
+      // Convert @mention format to match user names
+      const mentionNames = mentions.map((mention) => mention.replace(/_/g, " "))
+
+      // Query all mentioned users by name
+      const mentionedUsers = await db.select({ id: users.id, name: users.name }).from(users)
+
+      // Match mentioned names (case-insensitive)
+      const matchedUsers = mentionedUsers.filter((user: { id: string; name: string }) =>
+        mentionNames.some((mentionName) => user.name.toLowerCase() === mentionName.toLowerCase())
+      )
+
+      matchedUsers.forEach((user: { id: string; name: string }) => {
+        recipientIds.add(user.id)
+      })
+    } catch (error) {
+      console.error("Error fetching mentioned users:", error)
+    }
+  }
+
+  // 4. Exclude comment author (no self-notification)
+  recipientIds.delete(params.commentAuthorId)
+
+  // 5. Create notifications for all unique recipients
+  if (recipientIds.size === 0) {
+    return // No one to notify
+  }
+
+  const message = MESSAGE_TEMPLATES[NotificationType.COMMENT_ADDED]({
+    commenterName: params.commenterName,
+    entityType: params.entityType,
+    projectName: params.projectName,
+  })
+
+  const notificationValues = Array.from(recipientIds).map((userId) => ({
+    userId,
+    type: NotificationType.COMMENT_ADDED,
+    entityType:
+      params.entityType as (typeof NotificationEntityType)[keyof typeof NotificationEntityType],
+    entityId: params.commentId,
+    projectId: params.projectId,
+    message,
+    read: false,
+  }))
+
+  await db.insert(notifications).values(notificationValues)
+
+  console.log(
+    `Created ${notificationValues.length} comment notifications for comment ${params.commentId}`
+  )
+}

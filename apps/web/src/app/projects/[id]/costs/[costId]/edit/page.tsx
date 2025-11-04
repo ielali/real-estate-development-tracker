@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Navbar } from "@/components/layout/Navbar"
 import { Breadcrumb } from "@/components/ui/breadcrumb"
 import { api } from "@/lib/trpc/client"
+import { CommentThread } from "@/components/comments/CommentThread"
 
 /**
  * Cost Edit Page
@@ -52,6 +53,20 @@ export default function EditCostPage() {
             </Suspense>
           </CardContent>
         </Card>
+
+        {/* Comments Section */}
+        {project && (
+          <Card className="mt-6">
+            <CardContent className="pt-6">
+              <CommentThread
+                entityType="cost"
+                entityId={costId}
+                projectId={projectId}
+                projectOwnerId={project.ownerId}
+              />
+            </CardContent>
+          </Card>
+        )}
       </div>
     </>
   )

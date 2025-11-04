@@ -380,15 +380,15 @@ export function CommandPalette() {
               )}
 
               <CommandGroup heading="Quick Actions">
-                <CommandItem onSelect={() => router.push("/projects/new")}>
+                <CommandItem onSelect={() => router.push("/projects/new" as never)}>
                   <span className="mr-2">🏗️</span>
                   Create Project
                 </CommandItem>
-                <CommandItem onSelect={() => router.push("/costs/new")}>
+                <CommandItem onSelect={() => router.push("/costs/new" as never)}>
                   <span className="mr-2">💰</span>
                   Add Cost
                 </CommandItem>
-                <CommandItem onSelect={() => router.push("/contacts/new")}>
+                <CommandItem onSelect={() => router.push("/contacts/new" as never)}>
                   <span className="mr-2">👥</span>
                   Add Contact
                 </CommandItem>

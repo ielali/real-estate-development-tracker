@@ -1,13 +1,23 @@
 "use client"
 
 import * as React from "react"
+import { useRouter } from "next/navigation"
 import { format } from "date-fns"
-import { Calendar, Clock, User, ChevronDown, ChevronUp, FileText } from "lucide-react"
+import {
+  Calendar,
+  Clock,
+  User,
+  ChevronDown,
+  ChevronUp,
+  FileText,
+  MessageSquare,
+} from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { RelatedDocuments } from "@/components/documents/RelatedDocuments"
 import { DocumentLinkSelector } from "@/components/documents/DocumentLinkSelector"
+import { api } from "@/lib/trpc/client"
 
 interface EventContact {
   id: string
@@ -60,8 +70,15 @@ export function EventCard({
   onEdit: _onEdit,
   onDelete: _onDelete,
 }: EventCardProps) {
+  const router = useRouter()
   const [isExpanded, setIsExpanded] = React.useState(false)
   const [isDocumentsOpen, setIsDocumentsOpen] = React.useState(false)
+
+  // Fetch comment count
+  const { data: commentCount = 0 } = api.comments.getCount.useQuery({
+    entityType: "event",
+    entityId: event.id,
+  })
 
   // Format date and time
   const eventDate = new Date(event.date)
@@ -78,8 +95,15 @@ export function EventCard({
   const categoryId = event.category?.id as keyof typeof categoryColor
   const badgeColor = categoryColor[categoryId] || "bg-gray-100 text-gray-800"
 
+  const handleCardClick = () => {
+    router.push(`/projects/${projectId}/events/${event.id}` as never)
+  }
+
   return (
-    <Card className="w-full hover:shadow-md transition-shadow">
+    <Card
+      className="w-full hover:shadow-md transition-shadow cursor-pointer"
+      onClick={handleCardClick}
+    >
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 space-y-1">
@@ -100,6 +124,12 @@ export function EventCard({
                 <Clock className="h-4 w-4" />
                 {timeStr}
               </span>
+              {commentCount > 0 && (
+                <span className="flex items-center gap-1 text-muted-foreground">
+                  <MessageSquare className="h-4 w-4" />
+                  {commentCount}
+                </span>
+              )}
             </CardDescription>
           </div>
         </div>
