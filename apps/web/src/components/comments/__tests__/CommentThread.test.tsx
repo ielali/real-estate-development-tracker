@@ -129,7 +129,7 @@ describe("CommentThread Component - Structure Tests", () => {
       id: string
       parentCommentId: string | null
     }
-    const comments: Comment[] | undefined = undefined
+    const comments = undefined as Comment[] | undefined
 
     const topLevelComments = comments?.filter((c: Comment) => !c.parentCommentId) ?? []
 

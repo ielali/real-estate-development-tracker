@@ -88,7 +88,7 @@ export default function DocumentDetailPage() {
     limit: 1000,
   })
 
-  const document = documentsData?.documents.find((d) => d.id === documentId)
+  const document = documentsData?.documents.find((d: any) => d.id === documentId)
 
   const isLoading = projectLoading || documentsLoading
 

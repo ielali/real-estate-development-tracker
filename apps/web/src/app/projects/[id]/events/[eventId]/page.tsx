@@ -37,7 +37,7 @@ export default function EventDetailPage() {
     projectId,
   })
 
-  const event = events?.find((e) => e.id === eventId)
+  const event = events?.events.find((e: any) => e.id === eventId)
 
   const isLoading = projectLoading || eventsLoading
 
@@ -156,7 +156,7 @@ export default function EventDetailPage() {
                   Contacts
                 </h3>
                 <div className="flex flex-wrap gap-2">
-                  {event.eventContacts.map(({ contact }) => (
+                  {event.eventContacts.map(({ contact }: any) => (
                     <Badge key={contact.id} variant="outline">
                       {contact.firstName} {contact.lastName}
                       {contact.company && ` (${contact.company})`}
