@@ -418,14 +418,19 @@ export async function notifyCommentAdded(params: {
 
   if (mentions.length > 0) {
     try {
-      // Query users by username (assuming email is the username for now)
-      // Note: This may need adjustment based on your user model
-      const mentionedUsers = await db
-        .select({ id: users.id })
-        .from(users)
-        .where(eq(users.email, mentions[0])) // Simplified - in production, handle multiple mentions
+      // Query users by name (mentions use underscored names like @John_Doe)
+      // Convert @mention format to match user names
+      const mentionNames = mentions.map((mention) => mention.replace(/_/g, " "))
 
-      mentionedUsers.forEach((user) => {
+      // Query all mentioned users by name
+      const mentionedUsers = await db.select({ id: users.id, name: users.name }).from(users)
+
+      // Match mentioned names (case-insensitive)
+      const matchedUsers = mentionedUsers.filter((user: { id: string; name: string }) =>
+        mentionNames.some((mentionName) => user.name.toLowerCase() === mentionName.toLowerCase())
+      )
+
+      matchedUsers.forEach((user: { id: string; name: string }) => {
         recipientIds.add(user.id)
       })
     } catch (error) {
