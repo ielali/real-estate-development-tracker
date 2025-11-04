@@ -53,7 +53,7 @@ export const commentsRouter = createTRPCRouter({
             },
           },
         },
-        orderBy: (comments, { asc }) => [asc(comments.createdAt)],
+        orderBy: (comments: any, { asc }: any) => [asc(comments.createdAt)],
       })
 
       return commentsList

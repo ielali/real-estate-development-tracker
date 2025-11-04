@@ -64,10 +64,10 @@ export function CommentThread({
   }
 
   // Group comments by parent/child
-  const topLevelComments = comments?.filter((c) => !c.parentCommentId) ?? []
+  const topLevelComments = comments?.filter((c: any) => !c.parentCommentId) ?? []
   const replyMap = new Map<string, typeof comments>()
 
-  comments?.forEach((comment) => {
+  comments?.forEach((comment: any) => {
     if (comment.parentCommentId) {
       const existing = replyMap.get(comment.parentCommentId) ?? []
       replyMap.set(comment.parentCommentId, [...existing, comment])
@@ -94,7 +94,7 @@ export function CommentThread({
       ) : (
         /* Comments list */
         <div className="space-y-6">
-          {topLevelComments.map((comment) => (
+          {topLevelComments.map((comment: any) => (
             <div key={comment.id} className="space-y-4">
               {/* Top-level comment */}
               <CommentItem
@@ -108,7 +108,7 @@ export function CommentThread({
               />
 
               {/* Replies to this comment */}
-              {replyMap.get(comment.id)?.map((reply) => (
+              {replyMap.get(comment.id)?.map((reply: any) => (
                 <CommentItem
                   key={reply.id}
                   comment={reply}

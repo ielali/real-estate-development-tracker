@@ -26,7 +26,7 @@ export type CommentEntityType = (typeof CommentEntityType)[keyof typeof CommentE
  * Comments table
  * Supports threaded discussions on project entities
  */
-export const comments = pgTable(
+export const comments: any = pgTable(
   "comments",
   {
     id: uuid("id").defaultRandom().primaryKey(),

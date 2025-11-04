@@ -131,7 +131,7 @@ describe("CommentThread Component - Structure Tests", () => {
     }
     const comments: Comment[] | undefined = undefined
 
-    const topLevelComments = comments?.filter((c) => !c.parentCommentId) ?? []
+    const topLevelComments = comments?.filter((c: Comment) => !c.parentCommentId) ?? []
 
     expect(topLevelComments).toHaveLength(0)
     expect(Array.isArray(topLevelComments)).toBe(true)

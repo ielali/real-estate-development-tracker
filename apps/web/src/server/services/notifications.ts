@@ -367,7 +367,7 @@ export async function notifyCommentAdded(params: {
     .from(comments)
     .where(and(eq(comments.entityType, params.entityType), eq(comments.entityId, params.entityId)))
 
-  previousComments.forEach((comment) => {
+  previousComments.forEach((comment: any) => {
     recipientIds.add(comment.userId)
   })
 
