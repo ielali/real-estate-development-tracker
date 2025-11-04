@@ -20,6 +20,7 @@ import { eq } from "drizzle-orm"
 vi.mock("@/server/services/notifications", () => ({
   notifyCommentAdded: vi.fn(),
   notifyPartnerInvited: vi.fn(),
+  notifyCostAdded: vi.fn(),
 }))
 
 describe("Comments Router", () => {
@@ -152,7 +153,7 @@ describe("Comments Router", () => {
       description: "Test Cost",
       amount: 10000,
       date: new Date("2025-01-15"),
-      categoryId: "materials",
+      categoryId: "cost_materials",
     })
     costId = cost.id
 

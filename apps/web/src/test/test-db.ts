@@ -129,6 +129,14 @@ function createCleanupFunction(db: any) {
       // Table doesn't exist yet - this is fine during migration periods
       // Silently skip
     }
+
+    // Separately truncate comments if it exists (handles migration state)
+    try {
+      await db.execute(sql`TRUNCATE TABLE comments CASCADE`)
+    } catch (error) {
+      // Table doesn't exist yet - this is fine during migration periods
+      // Silently skip
+    }
   }
 }
 
