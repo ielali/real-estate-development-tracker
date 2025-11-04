@@ -85,14 +85,12 @@ export const createTestDb = async () => {
 /**
  * Creates cleanup function that deletes all test data.
  * Uses TRUNCATE CASCADE for reliable cleanup that handles FK constraints automatically.
- * NOTE: Categories table is NOT truncated because it contains static reference data.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function createCleanupFunction(db: any) {
   return async () => {
     // TRUNCATE CASCADE automatically handles foreign key dependencies
     // Much more reliable than manual DELETE ordering
-    // NOTE: categories table is excluded - it contains static reference data that's seeded once
     await db.execute(sql`
       TRUNCATE TABLE
         audit_log,
@@ -118,7 +116,8 @@ function createCleanupFunction(db: any) {
         revoked_tokens,
         security_events,
         project_backups,
-        cost_templates
+        cost_templates,
+        categories
       CASCADE
     `)
 

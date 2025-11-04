@@ -21,6 +21,7 @@ vi.mock("@/server/services/notifications", () => ({
   notifyCommentAdded: vi.fn(),
   notifyPartnerInvited: vi.fn(),
   notifyCostAdded: vi.fn(),
+  notifyDocumentUploaded: vi.fn(),
 }))
 
 describe("Comments Router", () => {
@@ -159,11 +160,13 @@ describe("Comments Router", () => {
 
     const doc = await caller.documents.upload({
       projectId,
-      fileName: "test.pdf",
-      mimeType: "application/pdf",
-      fileSize: 1024,
       categoryId: "receipts",
-      data: Buffer.from("test").toString("base64"),
+      file: {
+        name: "test.pdf",
+        size: 1024,
+        type: "application/pdf",
+        data: Buffer.from("test").toString("base64"),
+      },
     })
     documentId = doc.id
 
