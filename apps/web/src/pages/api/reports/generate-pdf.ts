@@ -80,6 +80,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const endDate = dateRange?.end ? new Date(dateRange.end) : null
 
     // Generate PDF
+    console.log(
+      `🎨 Generating PDF for project ${projectId} (${isPartner ? "partner" : "owner"} view)`
+    )
+
     const pdfBuffer = await generateProjectPdf(db, {
       projectId,
       userId: session.user.id,
@@ -89,6 +93,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       },
       isPartnerView: isPartner,
     })
+
+    console.log(`✅ PDF generated successfully: ${pdfBuffer.length} bytes`)
 
     // Set response headers for PDF
     res.setHeader("Content-Type", "application/pdf")

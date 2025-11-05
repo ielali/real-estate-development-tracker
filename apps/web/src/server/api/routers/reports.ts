@@ -64,7 +64,7 @@ function getReportStore() {
 
   // Local development: Use file system local store
   // This allows testing without Netlify credentials and enables manual inspection
-  return getLocalStore({ name: "reports" }) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+  return getLocalStore({ name: "reports" }) as any
 }
 
 /**
@@ -147,8 +147,7 @@ export const reportsRouter = createTRPCRouter({
         if (format === "pdf") {
           // PDF generation must happen in dedicated API route to avoid RSC compilation issues
           // Call the internal API route which runs in Node.js runtime
-          // Use Netlify environment variables: DEPLOY_PRIME_URL for previews, URL for production
-          const baseUrl = process.env.DEPLOY_PRIME_URL || process.env.URL || "http://localhost:3000"
+          const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000"
 
           // Forward authentication cookies from the original request
           const cookieHeader = ctx.headers.get("cookie") || ""
@@ -275,7 +274,7 @@ export const reportsRouter = createTRPCRouter({
         }
 
         // Check if report has expired
-        const metadataObj = metadata as any // eslint-disable-line @typescript-eslint/no-explicit-any
+        const metadataObj = metadata as any
         const expiresAt = new Date(metadataObj.expiresAt as string)
         const now = new Date()
 
@@ -333,7 +332,7 @@ export const reportsRouter = createTRPCRouter({
         }
 
         // Verify the report belongs to this user
-        const metadataObj = metadata as any // eslint-disable-line @typescript-eslint/no-explicit-any
+        const metadataObj = metadata as any
         if (metadataObj.userId !== ctx.session.user.id) {
           throw new TRPCError({
             code: "FORBIDDEN",

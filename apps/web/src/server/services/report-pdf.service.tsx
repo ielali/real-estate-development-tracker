@@ -60,53 +60,21 @@ import * as path from "path"
  * Load logo as base64 data URI for React-PDF
  * React-PDF cannot use relative web paths on server side, so we load the file
  * from filesystem and convert to data URI
- *
- * Serverless compatibility: In Netlify Functions, public/ directory is not
- * accessible via filesystem. We try filesystem first (local dev), then fall back
- * to fetching from deployed URL (serverless).
  */
-async function getLogoDataUri(): Promise<string | null> {
+function getLogoDataUri(): string | null {
   try {
-    // Try filesystem first (works in local development)
     // process.cwd() is already in apps/web when running from the web app
     const logoPath = path.join(process.cwd(), "public", "logo.png")
 
-    if (fs.existsSync(logoPath)) {
-      const logoBuffer = fs.readFileSync(logoPath)
-      const logoBase64 = logoBuffer.toString("base64")
-      const dataUri = `data:image/png;base64,${logoBase64}`
-      return dataUri
+    if (!fs.existsSync(logoPath)) {
+      console.warn("Logo file not found at:", logoPath)
+      return null
     }
 
-    // Fallback: Fetch from deployed URL (works in serverless environments)
-    const deployUrl = process.env.DEPLOY_PRIME_URL || process.env.URL
-    if (deployUrl) {
-      console.log("🖼️  Logo not found in filesystem, fetching from deployed URL...")
-      console.log("   Deploy URL:", deployUrl)
-      const logoUrl = `${deployUrl}/logo.png`
-      console.log("   Fetching logo from:", logoUrl)
-
-      const response = await fetch(logoUrl)
-      console.log("   Response status:", response.status)
-
-      if (response.ok) {
-        const arrayBuffer = await response.arrayBuffer()
-        const logoBuffer = Buffer.from(arrayBuffer)
-        const logoBase64 = logoBuffer.toString("base64")
-        const dataUri = `data:image/png;base64,${logoBase64}`
-        console.log("   ✅ Logo loaded successfully from URL")
-        return dataUri
-      } else {
-        console.warn(`   ❌ Failed to fetch logo from ${logoUrl}: ${response.status}`)
-      }
-    } else {
-      console.warn("   ⚠️  No DEPLOY_PRIME_URL or URL environment variable available")
-    }
-
-    console.warn(
-      "⚠️  Logo file not found in filesystem or deployed URL - PDF will be generated without logo"
-    )
-    return null
+    const logoBuffer = fs.readFileSync(logoPath)
+    const logoBase64 = logoBuffer.toString("base64")
+    const dataUri = `data:image/png;base64,${logoBase64}`
+    return dataUri
   } catch (error) {
     console.error("Failed to load logo:", error)
     return null // Return null if logo can't be loaded
@@ -352,9 +320,9 @@ async function fetchReportData(db: Database, input: PdfReportInput): Promise<Rep
 
   // Calculate summary metrics
   // Note: cost.amount should be number (schema has mode: "number"), but ensure it's converted
-  const totalCost = costsData.reduce((sum: number, cost: any) => sum + Number(cost.amount), 0) // eslint-disable-line @typescript-eslint/no-explicit-any
+  const totalCost = costsData.reduce((sum: number, cost: any) => sum + Number(cost.amount), 0)
   const uniqueVendors = new Set(
-    costsData.filter((c: any) => c.contactId).map((c: any) => c.contactId) // eslint-disable-line @typescript-eslint/no-explicit-any
+    costsData.filter((c: any) => c.contactId).map((c: any) => c.contactId)
   )
 
   // Fetch cost breakdown by category
@@ -374,7 +342,6 @@ async function fetchReportData(db: Database, input: PdfReportInput): Promise<Rep
   // Calculate percentages for cost breakdown
   // Note: PostgreSQL BIGINT is returned as string to avoid precision loss
   // Convert to number for calculations
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const costsByCategory = costsByCategoryData.map((item: any) => ({
     categoryId: item.categoryId,
     categoryName: item.categoryName,
@@ -472,7 +439,6 @@ async function fetchReportData(db: Database, input: PdfReportInput): Promise<Rep
     },
     costsByCategory,
     // Convert BIGINT strings to numbers for topVendors
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     topVendors: topVendorsData.map((vendor: any) => ({
       vendorId: vendor.vendorId,
       vendorName: vendor.vendorName,
@@ -483,7 +449,6 @@ async function fetchReportData(db: Database, input: PdfReportInput): Promise<Rep
         typeof vendor.costCount === "string" ? parseInt(vendor.costCount, 10) : vendor.costCount,
     })),
     // Map timeline data to match TimelineChart expected structure
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     timeline: timelineData.map((event: any) => ({
       ...event,
       category: event.categoryName, // TimelineChart expects 'category' not 'categoryName'
@@ -743,10 +708,9 @@ const TimelineChart: React.FC<TimelineChartProps> = ({ data }) => {
 /**
  * PDF Report Document Component
  */
-const ProjectReportPDF: React.FC<{ data: ReportData; logoDataUri: string | null }> = ({
-  data,
-  logoDataUri,
-}) => {
+const ProjectReportPDF: React.FC<{ data: ReportData }> = ({ data }) => {
+  const logoDataUri = getLogoDataUri()
+
   return (
     <Document>
       {/* Cover Page */}
@@ -1094,9 +1058,6 @@ export async function generateProjectPdf(db: Database, input: PdfReportInput): P
     // Fetch all report data
     const reportData = await fetchReportData(db, input)
 
-    // Load logo (handles both local filesystem and serverless URL fetching)
-    const logoDataUri = await getLogoDataUri()
-
     // Serialize and deserialize data to ensure no unexpected objects
     // This prevents React Error #31 by cleaning complex objects
     const serialized = JSON.stringify(reportData, (key, value) => {
@@ -1120,8 +1081,8 @@ export async function generateProjectPdf(db: Database, input: PdfReportInput): P
       return value
     })
 
-    // Generate PDF using React-PDF with clean data and logo
-    const pdfElement = <ProjectReportPDF data={cleanData as ReportData} logoDataUri={logoDataUri} />
+    // Generate PDF using React-PDF with clean data
+    const pdfElement = <ProjectReportPDF data={cleanData as ReportData} />
     const pdfBuffer = await renderToBuffer(pdfElement)
 
     return pdfBuffer
