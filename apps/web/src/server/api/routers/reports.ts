@@ -38,19 +38,9 @@ import crypto from "crypto"
  * Note: Local store saves files to .blobs/reports/ directory (gitignored) with 24-hour auto-cleanup
  */
 function getReportStore() {
-  const isProduction = process.env.CONTEXT === "production"
   const isNetlifyEnvironment = process.env.NETLIFY === "true"
+  const isProduction = process.env.CONTEXT === "production"
   const isTest = process.env.NODE_ENV === "test"
-
-  // Production environment
-  if (isProduction) {
-    return getStore({ name: "reports", consistency: "strong" })
-  }
-
-  // Netlify deploy preview environment (has DEPLOY_ID)
-  if (isNetlifyEnvironment && process.env.DEPLOY_ID) {
-    return getDeployStore("reports")
-  }
 
   // Test environment: mocks handle the configuration
   if (isTest) {
@@ -60,6 +50,16 @@ function getReportStore() {
       siteID: "test-site-id",
       token: "test-token",
     })
+  }
+
+  // Netlify environments (production, deploy-preview, branch-deploy)
+  if (isNetlifyEnvironment) {
+    // Production uses main store
+    if (isProduction) {
+      return getStore({ name: "reports", consistency: "strong" })
+    }
+    // Deploy previews and branch deploys use deploy-specific store
+    return getDeployStore("reports")
   }
 
   // Local development: Use file system local store
