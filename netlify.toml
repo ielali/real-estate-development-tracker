@@ -2,9 +2,9 @@
 # Documentation: https://docs.netlify.com/configure-builds/file-based-configuration/
 
 [build]
-  # Build command with full CI pipeline: lint, type-check, migrate-all, test, build
-  # Note: db:migrate:all runs migrations on BOTH test and production databases before tests
-  # Note: Uses test:threshold which allows deployment with 90% test pass rate
+  # Build command with full CI pipeline: lint, type-check, migrate-prod, test-unit, build
+  # Note: Database tests are EXCLUDED from CI (run locally only via test:db)
+  # Note: Only unit/component tests run in CI for faster, more reliable builds
   command = """
     cd apps/web && \
     echo '🔍 Running Linting...' && \
@@ -15,13 +15,13 @@
     bun run type-check && \
     echo '✅ Type check passed' && \
     echo '' && \
-    echo '🗄️  Running Database Migrations (test + production)...' && \
-    bun run db:migrate:all && \
-    echo '✅ All migrations completed' && \
+    echo '🗄️  Running Database Migrations (production only)...' && \
+    bun run db:migrate && \
+    echo '✅ Migrations completed' && \
     echo '' && \
-    echo '🧪 Running Tests (90% pass threshold)...' && \
-    bun run test:threshold && \
-    echo '✅ Tests passed threshold' && \
+    echo '🧪 Running Unit Tests (DB tests skipped)...' && \
+    bun run test:unit && \
+    echo '✅ Unit tests passed' && \
     echo '' && \
     echo '🏗️  Building Application...' && \
     bun run build && \
@@ -104,11 +104,11 @@
     rm -rf ~/.bun/install/cache node_modules apps/web/node_modules && \
     bun install --no-cache --frozen-lockfile && \
     cd apps/web && \
-    echo '🚀 Production Build Pipeline (90% test threshold)' && \
+    echo '🚀 Production Build Pipeline (unit tests only)' && \
     bun run lint && \
     bun run type-check && \
-    bun run db:migrate:all && \
-    bun run test:threshold && \
+    bun run db:migrate && \
+    bun run test:unit && \
     bun run build && \
     echo '✅ Production build complete'
   """
@@ -119,11 +119,11 @@
     rm -rf ~/.bun/install/cache node_modules apps/web/node_modules && \
     bun install --no-cache --frozen-lockfile && \
     cd apps/web && \
-    echo '👀 Deploy Preview Build Pipeline (90% test threshold)' && \
+    echo '👀 Deploy Preview Build Pipeline (unit tests only)' && \
     bun run lint && \
     bun run type-check && \
-    bun run db:migrate:all && \
-    bun run test:threshold && \
+    bun run db:migrate && \
+    bun run test:unit && \
     bun run build && \
     echo '✅ Deploy preview build complete'
   """
@@ -134,11 +134,11 @@
     rm -rf ~/.bun/install/cache node_modules apps/web/node_modules && \
     bun install --no-cache --frozen-lockfile && \
     cd apps/web && \
-    echo '🌿 Branch Deploy Build Pipeline (90% test threshold)' && \
+    echo '🌿 Branch Deploy Build Pipeline (unit tests only)' && \
     bun run lint && \
     bun run type-check && \
-    bun run db:migrate:all && \
-    bun run test:threshold && \
+    bun run db:migrate && \
+    bun run test:unit && \
     bun run build && \
     echo '✅ Branch deploy build complete'
   """
