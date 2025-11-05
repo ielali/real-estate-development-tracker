@@ -45,6 +45,10 @@
   # Use Bun as package manager
   NPM_FLAGS = "--version"
 
+  # Enable detailed logging
+  LOG_LEVEL = "debug"
+  DEBUG = "*"
+
 # Install command override
 [build.processing]
   skip_processing = false
@@ -88,6 +92,9 @@
 [functions]
   directory = "apps/web/.netlify/functions"
   node_bundler = "esbuild"
+  # Enable detailed function logs
+  [functions.node_bundler_config]
+    node_version = "22"
 
 # Dev server configuration
 [dev]
