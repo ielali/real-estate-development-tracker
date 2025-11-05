@@ -208,7 +208,8 @@ export const projectRouter = createTRPCRouter({
     })
 
     // Create address lookup map
-    const addressMap = new Map(addressResults.map((addr: any) => [addr.id, addr])) // eslint-disable-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const addressMap = new Map(addressResults.map((addr: any) => [addr.id, addr]))
 
     // Combine project data with addresses and permission metadata
     return accessibleProjects.map((item) => ({

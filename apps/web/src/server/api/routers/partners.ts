@@ -619,8 +619,8 @@ export const partnersRouter = createTRPCRouter({
 
       // Calculate status and days remaining
       const now = new Date()
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const enrichedInvitations = invitations.map((inv: any) => {
-        // eslint-disable-line @typescript-eslint/no-explicit-any
         let status: "pending" | "accepted" | "expired"
         let daysRemaining: number | null = null
 

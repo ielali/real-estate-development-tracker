@@ -185,8 +185,8 @@ async function generateSummarySheet(
   const headerRow = sheet.addRow(["Category", "Total Amount", "Cost Count", "% of Total"])
   styleHeaderRow(headerRow)
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   costsByCategory.forEach((item: any) => {
-    // eslint-disable-line @typescript-eslint/no-explicit-any
     const percentage = totalCost > 0 ? item.total / totalCost : 0
     sheet.addRow([
       item.categoryName,
@@ -256,8 +256,8 @@ async function generateDetailedCostsSheet(
   styleHeaderRow(sheet.getRow(1))
 
   // Add data rows
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   costsData.forEach((cost: any) => {
-    // eslint-disable-line @typescript-eslint/no-explicit-any
     sheet.addRow({
       date: cost.date,
       description: cost.description,
@@ -356,8 +356,8 @@ async function generateVendorsSheet(
   styleHeaderRow(sheet.getRow(1))
 
   // Add data rows
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   vendorsData.forEach((vendor: any) => {
-    // eslint-disable-line @typescript-eslint/no-explicit-any
     sheet.addRow({
       vendorName: vendor.vendorName,
       company: vendor.company || "N/A",
@@ -421,8 +421,8 @@ async function generateTimelineSheet(
   styleHeaderRow(sheet.getRow(1))
 
   // Add data rows
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   timelineData.forEach((event: any) => {
-    // eslint-disable-line @typescript-eslint/no-explicit-any
     sheet.addRow({
       date: event.date,
       title: event.title,
@@ -483,8 +483,8 @@ async function generateDocumentsSheet(
   styleHeaderRow(sheet.getRow(1))
 
   // Add data rows
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   documentsData.forEach((doc: any) => {
-    // eslint-disable-line @typescript-eslint/no-explicit-any
     sheet.addRow({
       uploadedAt: doc.uploadedAt,
       fileName: doc.fileName,

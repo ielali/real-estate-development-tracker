@@ -109,8 +109,8 @@ export function ContactGroupedCosts({ projectId }: ContactGroupedCostsProps) {
 
       {/* Contact groups */}
       <div className="space-y-3">
+        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
         {(data as any[]).map(
-          // eslint-disable-line @typescript-eslint/no-explicit-any
           (group: {
             contactId: string | null
             contactName: string

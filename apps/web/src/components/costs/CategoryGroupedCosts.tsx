@@ -105,8 +105,8 @@ export function CategoryGroupedCosts({ projectId }: CategoryGroupedCostsProps) {
     )
 
     // Convert to array and sort by total (descending)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return (Object.values(groups) as any[]).sort(
-      // eslint-disable-line @typescript-eslint/no-explicit-any
       (a: { total: number }, b: { total: number }) => b.total - a.total
     )
   }, [costsData])
@@ -158,8 +158,8 @@ export function CategoryGroupedCosts({ projectId }: CategoryGroupedCostsProps) {
 
       {/* Category groups */}
       <div className="space-y-3">
+        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
         {(groupedCosts as any[]).map(
-          // eslint-disable-line @typescript-eslint/no-explicit-any
           (group: {
             categoryId: string
             categoryName: string

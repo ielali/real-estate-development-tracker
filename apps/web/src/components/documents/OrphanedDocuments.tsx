@@ -444,8 +444,8 @@ export function OrphanedDocuments({ projectId }: OrphanedDocumentsProps) {
                   {entities.length === 0 ? (
                     <div className="p-2 text-sm text-muted-foreground">No {entityType}s found</div>
                   ) : (
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     entities.map((entity: any) => {
-                      // eslint-disable-line @typescript-eslint/no-explicit-any
                       // Get id and display text based on entity type
                       let entityId = ""
                       let displayText = ""

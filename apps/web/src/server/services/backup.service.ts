@@ -243,8 +243,8 @@ export class BackupService {
         createdAt: projectData.createdAt.toISOString(),
         updatedAt: projectData.updatedAt.toISOString(),
       },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       costs: projectData.costs.map((cost: any) => ({
-        // eslint-disable-line @typescript-eslint/no-explicit-any
         id: cost.id,
         amount: cost.amount,
         description: cost.description,
@@ -280,8 +280,8 @@ export class BackupService {
         },
         createdAt: cost.createdAt.toISOString(),
       })),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       contacts: projectContacts.map((contact: any) => ({
-        // eslint-disable-line @typescript-eslint/no-explicit-any
         id: contact.id,
         firstName: contact.firstName,
         lastName: contact.lastName,
@@ -309,8 +309,8 @@ export class BackupService {
           : null,
         createdAt: contact.createdAt.toISOString(),
       })),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       events: projectData.events.map((event: any) => ({
-        // eslint-disable-line @typescript-eslint/no-explicit-any
         id: event.id,
         title: event.title,
         description: event.description,
@@ -328,8 +328,8 @@ export class BackupService {
         },
         createdAt: event.createdAt.toISOString(),
       })),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       documents: projectData.documents.map((doc: any) => ({
-        // eslint-disable-line @typescript-eslint/no-explicit-any
         id: doc.id,
         fileName: doc.fileName,
         fileSize: doc.fileSize,

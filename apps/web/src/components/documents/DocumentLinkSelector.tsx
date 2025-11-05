@@ -163,8 +163,8 @@ export function DocumentLinkSelector({
   const filteredDocuments = useMemo(() => {
     if (!allDocuments?.documents) return []
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return allDocuments.documents.filter((doc: any) => {
-      // eslint-disable-line @typescript-eslint/no-explicit-any
       const matchesSearch = doc.fileName.toLowerCase().includes(search.toLowerCase())
       const matchesCategory = categoryFilter === "all" || doc.categoryId === categoryFilter
       return matchesSearch && matchesCategory
@@ -308,8 +308,8 @@ export function DocumentLinkSelector({
             </div>
           ) : (
             // Document list
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             filteredDocuments.map((doc: any) => {
-              // eslint-disable-line @typescript-eslint/no-explicit-any
               const isSelected = selectedDocs.has(doc.id)
               return (
                 <Card

@@ -347,8 +347,8 @@ export function CostsList({
       {/* Costs List */}
       {costsData && costsData.length > 0 && (
         <div className="space-y-3">
+          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
           {costsData.map((cost: any) => {
-            // eslint-disable-line @typescript-eslint/no-explicit-any
             const isHighlighted = highlightCostId === cost.id
             return (
               <CostItem

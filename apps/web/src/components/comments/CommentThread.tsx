@@ -67,8 +67,8 @@ export function CommentThread({
   const topLevelComments = comments?.filter((c: any) => !c.parentCommentId) ?? [] // eslint-disable-line @typescript-eslint/no-explicit-any
   const replyMap = new Map<string, typeof comments>()
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   comments?.forEach((comment: any) => {
-    // eslint-disable-line @typescript-eslint/no-explicit-any
     if (comment.parentCommentId) {
       const existing = replyMap.get(comment.parentCommentId) ?? []
       replyMap.set(comment.parentCommentId, [...existing, comment])

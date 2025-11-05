@@ -342,8 +342,8 @@ async function fetchReportData(db: Database, input: PdfReportInput): Promise<Rep
   // Calculate percentages for cost breakdown
   // Note: PostgreSQL BIGINT is returned as string to avoid precision loss
   // Convert to number for calculations
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const costsByCategory = costsByCategoryData.map((item: any) => ({
-    // eslint-disable-line @typescript-eslint/no-explicit-any
     categoryId: item.categoryId,
     categoryName: item.categoryName,
     total: typeof item.total === "string" ? parseInt(item.total, 10) : item.total,
@@ -440,8 +440,8 @@ async function fetchReportData(db: Database, input: PdfReportInput): Promise<Rep
     },
     costsByCategory,
     // Convert BIGINT strings to numbers for topVendors
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     topVendors: topVendorsData.map((vendor: any) => ({
-      // eslint-disable-line @typescript-eslint/no-explicit-any
       vendorId: vendor.vendorId,
       vendorName: vendor.vendorName,
       company: vendor.company,
@@ -451,8 +451,8 @@ async function fetchReportData(db: Database, input: PdfReportInput): Promise<Rep
         typeof vendor.costCount === "string" ? parseInt(vendor.costCount, 10) : vendor.costCount,
     })),
     // Map timeline data to match TimelineChart expected structure
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     timeline: timelineData.map((event: any) => ({
-      // eslint-disable-line @typescript-eslint/no-explicit-any
       ...event,
       category: event.categoryName, // TimelineChart expects 'category' not 'categoryName'
     })),

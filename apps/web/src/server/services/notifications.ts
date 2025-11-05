@@ -169,8 +169,8 @@ export async function notifyProjectMembers(params: {
       .from(users)
 
     for (const notification of createdNotifications) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const userRecord = userRecords.find((u: { id: string }) => u.id === notification.userId) ?? {
-        // eslint-disable-line @typescript-eslint/no-explicit-any
         name: "User",
       }
 
@@ -368,8 +368,8 @@ export async function notifyCommentAdded(params: {
     .from(comments)
     .where(and(eq(comments.entityType, params.entityType), eq(comments.entityId, params.entityId)))
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   previousComments.forEach((comment: any) => {
-    // eslint-disable-line @typescript-eslint/no-explicit-any
     recipientIds.add(comment.userId)
   })
 
@@ -428,15 +428,13 @@ export async function notifyCommentAdded(params: {
       const mentionedUsers = await db.select({ id: users.id, name: users.name }).from(users)
 
       // Match mentioned names (case-insensitive)
-      const matchedUsers = mentionedUsers.filter(
-        (
-          user: { id: string; name: string } // eslint-disable-line @typescript-eslint/no-explicit-any
-        ) =>
-          mentionNames.some((mentionName) => user.name.toLowerCase() === mentionName.toLowerCase())
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const matchedUsers = mentionedUsers.filter((user: { id: string; name: string }) =>
+        mentionNames.some((mentionName) => user.name.toLowerCase() === mentionName.toLowerCase())
       )
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       matchedUsers.forEach((user: { id: string; name: string }) => {
-        // eslint-disable-line @typescript-eslint/no-explicit-any
         recipientIds.add(user.id)
       })
     } catch (error) {
