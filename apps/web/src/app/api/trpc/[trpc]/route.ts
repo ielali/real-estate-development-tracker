@@ -3,6 +3,11 @@ import { type NextRequest } from "next/server"
 import { appRouter } from "@/server/api/root"
 import { createTRPCContext } from "@/server/api/trpc"
 
+// Force Node.js runtime for @react-pdf/renderer compatibility
+// Edge runtime doesn't support React reconciler used by @react-pdf/renderer
+export const runtime = "nodejs"
+export const dynamic = "force-dynamic"
+
 const handler = (req: NextRequest) =>
   fetchRequestHandler({
     endpoint: "/api/trpc",

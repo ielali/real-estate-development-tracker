@@ -37,6 +37,9 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 data/
 backups/
 
+# Local blob storage for development (reports, documents, etc.)
+.blobs/
+
 # Scratchpad for debugging utilities and temporary scripts
 scratchpad/
 

@@ -10,6 +10,11 @@ const nextConfig = {
       fullUrl: true,
     },
   },
+  // Exclude @react-pdf/renderer from Server Component bundling
+  // This allows it to work properly in Node.js runtime API routes
+  // See: https://github.com/diegomura/react-pdf/issues/2460
+  // Note: In Next.js 15, this was renamed from serverComponentsExternalPackages
+  serverExternalPackages: ["@react-pdf/renderer", "@react-pdf/reconciler", "@react-pdf/primitives"],
 }
 
 // Enable bundle analyzer when ANALYZE=true

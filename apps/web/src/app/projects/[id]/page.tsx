@@ -32,12 +32,13 @@ import { SearchAndFilter } from "@/components/costs/SearchAndFilter"
 import { useCostFilters } from "@/hooks/useCostFilters"
 import { useFilterPersistence, loadSavedFilters } from "@/hooks/useFilterPersistence"
 import { Timeline, EventEntryForm, TimelineFilter } from "@/components/events"
-import { Plus, Users, Settings as SettingsIcon } from "lucide-react"
+import { Plus, Users, Settings as SettingsIcon, FileDown } from "lucide-react"
 import { useUserRole } from "@/hooks/useUserRole"
 import { PartnerProjectDashboard } from "@/components/partner/PartnerProjectDashboard"
 import { Breadcrumb, breadcrumbHelpers } from "@/components/ui/breadcrumb"
 import { ProjectQuickActions } from "@/components/navigation/quick-actions"
 import { ProjectSwitcher } from "@/components/navigation/project-switcher"
+import { ReportOptionsModal } from "@/components/reports/ReportOptionsModal"
 
 // Lazy load the costs components
 const CostsList = lazy(() =>
@@ -78,6 +79,7 @@ export default function ProjectDetailPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [costsViewMode, setCostsViewMode] = useState<"list" | "contact" | "category">("list")
   const [eventDialogOpen, setEventDialogOpen] = useState(false)
+  const [reportModalOpen, setReportModalOpen] = useState(false)
   const [categoryFilter, setCategoryFilter] = useState<string | undefined>()
   const [contactFilter, setContactFilter] = useState<string | undefined>()
   const [dateRangeStart, setDateRangeStart] = useState<Date | undefined>()
@@ -289,6 +291,10 @@ export default function ProjectDetailPage() {
           </div>
           <div className="flex gap-2">
             <ProjectQuickActions projectId={project.id} />
+            <Button variant="outline" onClick={() => setReportModalOpen(true)}>
+              <FileDown className="mr-2 h-4 w-4" />
+              Generate Report
+            </Button>
             <Link href={`/projects/${project.id}/documents` as never}>
               <Button variant="outline">Documents</Button>
             </Link>
@@ -587,6 +593,14 @@ export default function ProjectDetailPage() {
             </div>
           </TabsContent>
         </Tabs>
+
+        {/* Report Options Modal */}
+        <ReportOptionsModal
+          isOpen={reportModalOpen}
+          onClose={() => setReportModalOpen(false)}
+          projectId={project.id}
+          projectName={project.name}
+        />
       </div>
     </>
   )
