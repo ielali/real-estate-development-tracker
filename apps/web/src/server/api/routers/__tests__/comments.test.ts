@@ -6,17 +6,9 @@
  */
 
 import { describe, test, expect, beforeAll, afterAll, beforeEach, vi } from "vitest"
-import { sql } from "drizzle-orm"
-import { appRouter } from "../../root"
-import { createTestDb, cleanupAllTestDatabases } from "@/test/test-db"
-import type { User } from "@/server/db/schema/users"
-import { users } from "@/server/db/schema/users"
-import { categories } from "@/server/db/schema/categories"
-import { CATEGORIES } from "@/server/db/types"
-import { comments } from "@/server/db/schema/comments"
-import { eq } from "drizzle-orm"
 
 // Mock the notification service
+// IMPORTANT: Mocks must be defined BEFORE importing modules that use them
 vi.mock("@/server/services/notifications", () => ({
   notifyCommentAdded: vi.fn(),
   notifyPartnerInvited: vi.fn(),
@@ -25,6 +17,7 @@ vi.mock("@/server/services/notifications", () => ({
 }))
 
 // Mock the document service to avoid Netlify Blobs dependency in tests
+// IMPORTANT: This mock must be defined BEFORE importing appRouter
 vi.mock("@/server/services/document.service", () => {
   const mockDocumentService = {
     // upload returns blob key (string), not object
@@ -53,6 +46,17 @@ vi.mock("@/server/services/document.service", () => {
     },
   }
 })
+
+// Import all other modules AFTER mocks are defined
+import { sql } from "drizzle-orm"
+import { appRouter } from "../../root"
+import { createTestDb, cleanupAllTestDatabases } from "@/test/test-db"
+import type { User } from "@/server/db/schema/users"
+import { users } from "@/server/db/schema/users"
+import { categories } from "@/server/db/schema/categories"
+import { CATEGORIES } from "@/server/db/types"
+import { comments } from "@/server/db/schema/comments"
+import { eq } from "drizzle-orm"
 
 describe("Comments Router", () => {
   let testDbInstance: Awaited<ReturnType<typeof createTestDb>>
