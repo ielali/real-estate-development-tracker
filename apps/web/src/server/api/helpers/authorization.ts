@@ -504,8 +504,9 @@ export async function getAccessibleProjects(ctx: Context): Promise<ProjectWithAc
 
   // Map partner projects (filter out deleted projects)
   const partnerProjectsWithAccess: ProjectWithAccess[] = partnerAccessRecords
-    .filter((record: any) => record.project && !record.project.deletedAt)
+    .filter((record: any) => record.project && !record.project.deletedAt) // eslint-disable-line @typescript-eslint/no-explicit-any
     .map((record: any) => ({
+      // eslint-disable-line @typescript-eslint/no-explicit-any
       project: record.project!,
       access: "partner" as const,
       permission: record.permission as "read" | "write",

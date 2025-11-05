@@ -81,6 +81,7 @@ async function getAllCategories(
 
   // Convert custom categories to Category interface format
   const custom: Category[] = customCategories.map((cat: any) => ({
+    // eslint-disable-line @typescript-eslint/no-explicit-any
     id: cat.id,
     type: cat.type as CategoryType,
     displayName: cat.displayName,

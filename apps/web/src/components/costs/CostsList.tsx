@@ -44,7 +44,7 @@ interface CostsListProps {
 }
 
 interface CostItemProps {
-  cost: any
+  cost: any // eslint-disable-line @typescript-eslint/no-explicit-any
   projectId: string
   isHighlighted: boolean
   isSelected: boolean
@@ -189,7 +189,7 @@ export function CostsList({
   }, [highlightCostId, costsData])
 
   // Calculate total costs
-  const totalCosts = costsData?.reduce((sum: number, cost: any) => sum + cost.amount, 0) ?? 0
+  const totalCosts = costsData?.reduce((sum: number, cost: any) => sum + cost.amount, 0) ?? 0 // eslint-disable-line @typescript-eslint/no-explicit-any
 
   const deleteCostMutation = api.costs.softDelete.useMutation({
     // Optimistic update: Remove cost from UI immediately
@@ -204,7 +204,7 @@ export function CostsList({
       if (previousCosts) {
         utils.costs.list.setData(
           queryInput,
-          previousCosts.filter((cost: any) => cost.id !== variables.id)
+          previousCosts.filter((cost: any) => cost.id !== variables.id) // eslint-disable-line @typescript-eslint/no-explicit-any
         )
       }
 
@@ -273,7 +273,7 @@ export function CostsList({
     if (selectedCostIds.size === costsData.length) {
       setSelectedCostIds(new Set())
     } else {
-      setSelectedCostIds(new Set(costsData.map((c: any) => c.id)))
+      setSelectedCostIds(new Set(costsData.map((c: any) => c.id))) // eslint-disable-line @typescript-eslint/no-explicit-any
     }
   }
 
@@ -348,6 +348,7 @@ export function CostsList({
       {costsData && costsData.length > 0 && (
         <div className="space-y-3">
           {costsData.map((cost: any) => {
+            // eslint-disable-line @typescript-eslint/no-explicit-any
             const isHighlighted = highlightCostId === cost.id
             return (
               <CostItem

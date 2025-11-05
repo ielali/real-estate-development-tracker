@@ -154,7 +154,7 @@ async function generateSummarySheet(
     .groupBy(categories.displayName)
     .orderBy(desc(sql`SUM(${costs.amount})`))
 
-  const totalCost = costsByCategory.reduce((sum: number, item: any) => sum + item.total, 0)
+  const totalCost = costsByCategory.reduce((sum: number, item: any) => sum + item.total, 0) // eslint-disable-line @typescript-eslint/no-explicit-any
 
   // Add partner view notice if applicable
   if (isPartnerView) {
@@ -173,7 +173,7 @@ async function generateSummarySheet(
   sheet.addRow(["Total Project Cost", parseFloat(centsToDollars(totalCost))])
   sheet.addRow([
     "Total Cost Entries",
-    costsByCategory.reduce((s: number, c: any) => s + c.count, 0),
+    costsByCategory.reduce((s: number, c: any) => s + c.count, 0), // eslint-disable-line @typescript-eslint/no-explicit-any
   ])
   sheet.addRow(["Project Status", projectData.status])
   sheet.addRow(["Project Type", projectData.projectType])
@@ -186,6 +186,7 @@ async function generateSummarySheet(
   styleHeaderRow(headerRow)
 
   costsByCategory.forEach((item: any) => {
+    // eslint-disable-line @typescript-eslint/no-explicit-any
     const percentage = totalCost > 0 ? item.total / totalCost : 0
     sheet.addRow([
       item.categoryName,
@@ -256,6 +257,7 @@ async function generateDetailedCostsSheet(
 
   // Add data rows
   costsData.forEach((cost: any) => {
+    // eslint-disable-line @typescript-eslint/no-explicit-any
     sheet.addRow({
       date: cost.date,
       description: cost.description,
@@ -266,7 +268,7 @@ async function generateDetailedCostsSheet(
   })
 
   // Add totals row
-  const totalAmount = costsData.reduce((sum: number, c: any) => sum + c.amount, 0)
+  const totalAmount = costsData.reduce((sum: number, c: any) => sum + c.amount, 0) // eslint-disable-line @typescript-eslint/no-explicit-any
   const totalsRow = sheet.addRow({
     date: "",
     description: "",
@@ -355,6 +357,7 @@ async function generateVendorsSheet(
 
   // Add data rows
   vendorsData.forEach((vendor: any) => {
+    // eslint-disable-line @typescript-eslint/no-explicit-any
     sheet.addRow({
       vendorName: vendor.vendorName,
       company: vendor.company || "N/A",
@@ -419,6 +422,7 @@ async function generateTimelineSheet(
 
   // Add data rows
   timelineData.forEach((event: any) => {
+    // eslint-disable-line @typescript-eslint/no-explicit-any
     sheet.addRow({
       date: event.date,
       title: event.title,
@@ -480,6 +484,7 @@ async function generateDocumentsSheet(
 
   // Add data rows
   documentsData.forEach((doc: any) => {
+    // eslint-disable-line @typescript-eslint/no-explicit-any
     sheet.addRow({
       uploadedAt: doc.uploadedAt,
       fileName: doc.fileName,

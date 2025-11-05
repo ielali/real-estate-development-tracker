@@ -131,7 +131,7 @@ export default function ContactDetailPage({ params }: ContactDetailPageProps): J
 
   // Calculate total spending
   const totalSpending = data.costs.reduce(
-    (sum: number, row: any) => sum + (row.cost.amount || 0),
+    (sum: number, row: any) => sum + (row.cost.amount || 0), // eslint-disable-line @typescript-eslint/no-explicit-any
     0
   )
 
@@ -324,24 +324,28 @@ export default function ContactDetailPage({ params }: ContactDetailPageProps): J
                 />
               ) : (
                 <div className="space-y-3">
-                  {data.projects.map((row: any) => (
-                    <div
-                      key={row.projectContact.id}
-                      className="flex items-center justify-between rounded-lg border p-3 hover:bg-accent"
-                    >
-                      <div>
-                        <p className="font-medium">{row.project.name}</p>
-                        <p className="text-sm text-muted-foreground">{row.project.projectType}</p>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => router.push(`/projects/${row.project.id}`)}
+                  {data.projects.map(
+                    (
+                      row: any // eslint-disable-line @typescript-eslint/no-explicit-any
+                    ) => (
+                      <div
+                        key={row.projectContact.id}
+                        className="flex items-center justify-between rounded-lg border p-3 hover:bg-accent"
                       >
-                        View
-                      </Button>
-                    </div>
-                  ))}
+                        <div>
+                          <p className="font-medium">{row.project.name}</p>
+                          <p className="text-sm text-muted-foreground">{row.project.projectType}</p>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => router.push(`/projects/${row.project.id}`)}
+                        >
+                          View
+                        </Button>
+                      </div>
+                    )
+                  )}
                 </div>
               )}
             </CardContent>
@@ -368,21 +372,25 @@ export default function ContactDetailPage({ params }: ContactDetailPageProps): J
                 />
               ) : (
                 <div className="space-y-3">
-                  {data.costs.map((row: any) => (
-                    <div
-                      key={row.cost.id}
-                      className="flex items-center justify-between rounded-lg border p-3"
-                    >
-                      <div className="flex-1">
-                        <p className="font-medium">{row.cost.description}</p>
-                        <p className="text-sm text-muted-foreground">{row.project.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {new Date(row.cost.date).toLocaleDateString()}
-                        </p>
+                  {data.costs.map(
+                    (
+                      row: any // eslint-disable-line @typescript-eslint/no-explicit-any
+                    ) => (
+                      <div
+                        key={row.cost.id}
+                        className="flex items-center justify-between rounded-lg border p-3"
+                      >
+                        <div className="flex-1">
+                          <p className="font-medium">{row.cost.description}</p>
+                          <p className="text-sm text-muted-foreground">{row.project.name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(row.cost.date).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <p className="font-semibold">{formatCurrency(row.cost.amount)}</p>
                       </div>
-                      <p className="font-semibold">{formatCurrency(row.cost.amount)}</p>
-                    </div>
-                  ))}
+                    )
+                  )}
                 </div>
               )}
             </CardContent>

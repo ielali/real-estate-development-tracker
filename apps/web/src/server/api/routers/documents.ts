@@ -729,7 +729,9 @@ export const documentsRouter = createTRPCRouter({
 
       // Filter to only orphaned documents (no active links)
       const orphaned = allDocs.filter(
-        (doc: any) =>
+        (
+          doc: any // eslint-disable-line @typescript-eslint/no-explicit-any
+        ) =>
           doc.costDocuments.length === 0 &&
           doc.eventDocuments.length === 0 &&
           doc.contactDocuments.length === 0

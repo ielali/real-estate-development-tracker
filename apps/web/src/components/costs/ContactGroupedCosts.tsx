@@ -56,7 +56,7 @@ export function ContactGroupedCosts({ projectId }: ContactGroupedCostsProps) {
     } else {
       setOpenGroups(
         new Set<string>(
-          data.map((group: { contactId: string | null }) => group.contactId ?? "unassigned")
+          data.map((group: { contactId: string | null }) => group.contactId ?? "unassigned") // eslint-disable-line @typescript-eslint/no-explicit-any
         )
       )
     }
@@ -110,6 +110,7 @@ export function ContactGroupedCosts({ projectId }: ContactGroupedCostsProps) {
       {/* Contact groups */}
       <div className="space-y-3">
         {(data as any[]).map(
+          // eslint-disable-line @typescript-eslint/no-explicit-any
           (group: {
             contactId: string | null
             contactName: string

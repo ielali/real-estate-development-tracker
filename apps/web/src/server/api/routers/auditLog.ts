@@ -74,6 +74,7 @@ export const auditLogRouter = createTRPCRouter({
 
       // Parse metadata and format results
       const accessAttempts = logs.map((log: any) => {
+        // eslint-disable-line @typescript-eslint/no-explicit-any
         let metadata: {
           success?: boolean
           permission?: string

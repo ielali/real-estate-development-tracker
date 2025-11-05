@@ -64,10 +64,11 @@ export function CommentThread({
   }
 
   // Group comments by parent/child
-  const topLevelComments = comments?.filter((c: any) => !c.parentCommentId) ?? []
+  const topLevelComments = comments?.filter((c: any) => !c.parentCommentId) ?? [] // eslint-disable-line @typescript-eslint/no-explicit-any
   const replyMap = new Map<string, typeof comments>()
 
   comments?.forEach((comment: any) => {
+    // eslint-disable-line @typescript-eslint/no-explicit-any
     if (comment.parentCommentId) {
       const existing = replyMap.get(comment.parentCommentId) ?? []
       replyMap.set(comment.parentCommentId, [...existing, comment])
@@ -94,34 +95,42 @@ export function CommentThread({
       ) : (
         /* Comments list */
         <div className="space-y-6">
-          {topLevelComments.map((comment: any) => (
-            <div key={comment.id} className="space-y-4">
-              {/* Top-level comment */}
-              <CommentItem
-                comment={comment}
-                entityType={entityType}
-                entityId={entityId}
-                projectId={projectId}
-                currentUserId={session.user.id}
-                projectOwnerId={projectOwnerId}
-                isReply={false}
-              />
-
-              {/* Replies to this comment */}
-              {replyMap.get(comment.id)?.map((reply: any) => (
+          {topLevelComments.map(
+            (
+              comment: any // eslint-disable-line @typescript-eslint/no-explicit-any
+            ) => (
+              <div key={comment.id} className="space-y-4">
+                {/* Top-level comment */}
                 <CommentItem
-                  key={reply.id}
-                  comment={reply}
+                  comment={comment}
                   entityType={entityType}
                   entityId={entityId}
                   projectId={projectId}
                   currentUserId={session.user.id}
                   projectOwnerId={projectOwnerId}
-                  isReply={true}
+                  isReply={false}
                 />
-              ))}
-            </div>
-          ))}
+
+                {/* Replies to this comment */}
+                {replyMap.get(comment.id)?.map(
+                  (
+                    reply: any // eslint-disable-line @typescript-eslint/no-explicit-any
+                  ) => (
+                    <CommentItem
+                      key={reply.id}
+                      comment={reply}
+                      entityType={entityType}
+                      entityId={entityId}
+                      projectId={projectId}
+                      currentUserId={session.user.id}
+                      projectOwnerId={projectOwnerId}
+                      isReply={true}
+                    />
+                  )
+                )}
+              </div>
+            )
+          )}
         </div>
       )}
 

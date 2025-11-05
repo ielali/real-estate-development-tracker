@@ -159,7 +159,7 @@ export function OrphanedDocuments({ projectId }: OrphanedDocumentsProps) {
   // Handle select all / deselect all
   const handleSelectAll = (checked: boolean) => {
     if (checked && orphanedDocs) {
-      setSelectedIds(new Set(orphanedDocs.map((doc: any) => doc.id)))
+      setSelectedIds(new Set(orphanedDocs.map((doc: any) => doc.id))) // eslint-disable-line @typescript-eslint/no-explicit-any
     } else {
       setSelectedIds(new Set())
     }
@@ -323,54 +323,58 @@ export function OrphanedDocuments({ projectId }: OrphanedDocumentsProps) {
 
       {/* Document grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {orphanedDocs.map((doc: any) => (
-          <Card
-            key={doc.id}
-            className={`relative transition-all ${
-              selectedIds.has(doc.id) ? "ring-2 ring-primary shadow-md" : ""
-            }`}
-          >
-            <CardContent className="p-4">
-              {/* Checkbox */}
-              <div className="absolute top-3 left-3 z-10">
-                <Checkbox
-                  checked={selectedIds.has(doc.id)}
-                  onCheckedChange={() => handleToggle(doc.id)}
-                  aria-label={`Select ${doc.fileName}`}
-                  className="bg-white shadow-sm"
-                />
-              </div>
-
-              {/* Thumbnail */}
-              <div className="aspect-square mb-3 bg-gray-100 rounded-lg overflow-hidden">
-                <ThumbnailImage
-                  documentId={doc.id}
-                  thumbnailUrl={doc.thumbnailUrl}
-                  fileName={doc.fileName}
-                  mimeType={doc.mimeType}
-                />
-              </div>
-
-              {/* File info */}
-              <div className="space-y-2">
-                <p className="text-sm font-medium truncate" title={doc.fileName}>
-                  {doc.fileName}
-                </p>
-                <div className="flex items-center justify-between">
-                  <Badge className={getCategoryColor(doc.categoryId)}>
-                    {getCategoryLabel(doc.categoryId)}
-                  </Badge>
-                  <span className="text-xs text-muted-foreground">
-                    {formatFileSize(doc.fileSize)}
-                  </span>
+        {orphanedDocs.map(
+          (
+            doc: any // eslint-disable-line @typescript-eslint/no-explicit-any
+          ) => (
+            <Card
+              key={doc.id}
+              className={`relative transition-all ${
+                selectedIds.has(doc.id) ? "ring-2 ring-primary shadow-md" : ""
+              }`}
+            >
+              <CardContent className="p-4">
+                {/* Checkbox */}
+                <div className="absolute top-3 left-3 z-10">
+                  <Checkbox
+                    checked={selectedIds.has(doc.id)}
+                    onCheckedChange={() => handleToggle(doc.id)}
+                    aria-label={`Select ${doc.fileName}`}
+                    className="bg-white shadow-sm"
+                  />
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Uploaded {new Date(doc.createdAt).toLocaleDateString()}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+
+                {/* Thumbnail */}
+                <div className="aspect-square mb-3 bg-gray-100 rounded-lg overflow-hidden">
+                  <ThumbnailImage
+                    documentId={doc.id}
+                    thumbnailUrl={doc.thumbnailUrl}
+                    fileName={doc.fileName}
+                    mimeType={doc.mimeType}
+                  />
+                </div>
+
+                {/* File info */}
+                <div className="space-y-2">
+                  <p className="text-sm font-medium truncate" title={doc.fileName}>
+                    {doc.fileName}
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <Badge className={getCategoryColor(doc.categoryId)}>
+                      {getCategoryLabel(doc.categoryId)}
+                    </Badge>
+                    <span className="text-xs text-muted-foreground">
+                      {formatFileSize(doc.fileSize)}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Uploaded {new Date(doc.createdAt).toLocaleDateString()}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )
+        )}
       </div>
 
       {/* Delete confirmation dialog */}
@@ -441,6 +445,7 @@ export function OrphanedDocuments({ projectId }: OrphanedDocumentsProps) {
                     <div className="p-2 text-sm text-muted-foreground">No {entityType}s found</div>
                   ) : (
                     entities.map((entity: any) => {
+                      // eslint-disable-line @typescript-eslint/no-explicit-any
                       // Get id and display text based on entity type
                       let entityId = ""
                       let displayText = ""

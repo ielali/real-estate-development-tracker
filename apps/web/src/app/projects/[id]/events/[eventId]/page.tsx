@@ -38,7 +38,7 @@ export default function EventDetailPage() {
     projectId,
   })
 
-  const event = events?.events.find((e: any) => e.id === eventId)
+  const event = events?.events.find((e: any) => e.id === eventId) // eslint-disable-line @typescript-eslint/no-explicit-any
 
   const isLoading = projectLoading || eventsLoading
 
@@ -157,12 +157,16 @@ export default function EventDetailPage() {
                   Contacts
                 </h3>
                 <div className="flex flex-wrap gap-2">
-                  {event.eventContacts.map(({ contact }: any) => (
-                    <Badge key={contact.id} variant="outline">
-                      {contact.firstName} {contact.lastName}
-                      {contact.company && ` (${contact.company})`}
-                    </Badge>
-                  ))}
+                  {event.eventContacts.map(
+                    (
+                      { contact }: any // eslint-disable-line @typescript-eslint/no-explicit-any
+                    ) => (
+                      <Badge key={contact.id} variant="outline">
+                        {contact.firstName} {contact.lastName}
+                        {contact.company && ` (${contact.company})`}
+                      </Badge>
+                    )
+                  )}
                 </div>
               </div>
             )}

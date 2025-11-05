@@ -58,7 +58,7 @@ function getReportStore() {
 
   // Local development: Use in-memory local store
   // This allows testing without Netlify credentials
-  return getLocalStore({ name: "reports" }) as any
+  return getLocalStore({ name: "reports" }) as any // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
 /**

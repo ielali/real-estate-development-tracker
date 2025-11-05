@@ -195,8 +195,10 @@ export const projectRouter = createTRPCRouter({
 
     // Get addresses in a single query
     const addressResults = await ctx.db.query.addresses.findMany({
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      where: (addresses: any, { inArray }: any) =>
+      where: (
+        addresses: any,
+        { inArray }: any // eslint-disable-line @typescript-eslint/no-explicit-any
+      ) =>
         inArray(
           addresses.id,
           accessibleProjects
@@ -206,8 +208,7 @@ export const projectRouter = createTRPCRouter({
     })
 
     // Create address lookup map
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const addressMap = new Map(addressResults.map((addr: any) => [addr.id, addr]))
+    const addressMap = new Map(addressResults.map((addr: any) => [addr.id, addr])) // eslint-disable-line @typescript-eslint/no-explicit-any
 
     // Combine project data with addresses and permission metadata
     return accessibleProjects.map((item) => ({

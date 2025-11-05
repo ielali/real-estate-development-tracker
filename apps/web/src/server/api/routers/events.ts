@@ -217,13 +217,14 @@ export const eventsRouter = createTRPCRouter({
 
     // Filter out deleted contacts from eventContacts
     const eventsWithActiveContacts = eventsList.map((event: any) => ({
+      // eslint-disable-line @typescript-eslint/no-explicit-any
       ...event,
-      eventContacts: event.eventContacts.filter((ec: any) => !ec.contact.deletedAt),
+      eventContacts: event.eventContacts.filter((ec: any) => !ec.contact.deletedAt), // eslint-disable-line @typescript-eslint/no-explicit-any
     }))
 
     // Filter events that have the specified contact (if contactId provided)
     const filteredEvents = input.contactId
-      ? eventsWithActiveContacts.filter((event: any) => event.eventContacts.length > 0)
+      ? eventsWithActiveContacts.filter((event: any) => event.eventContacts.length > 0) // eslint-disable-line @typescript-eslint/no-explicit-any
       : eventsWithActiveContacts
 
     // Determine next cursor for pagination
@@ -422,6 +423,6 @@ export const eventsRouter = createTRPCRouter({
         )
         .orderBy(desc(eventDocuments.createdAt))
 
-      return links.map((link: any) => link.document)
+      return links.map((link: any) => link.document) // eslint-disable-line @typescript-eslint/no-explicit-any
     }),
 })

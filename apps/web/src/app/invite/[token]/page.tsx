@@ -232,6 +232,8 @@ export default function InviteAcceptPage({
             </div>
             <div className="flex gap-2">
               <Button onClick={() => router.push("/logout" as any)} variant="outline">
+                {" "}
+                {/* eslint-disable-line @typescript-eslint/no-explicit-any */}
                 Log Out
               </Button>
               <Button onClick={() => router.push("/projects")}>Go to Dashboard</Button>

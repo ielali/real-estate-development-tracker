@@ -51,7 +51,7 @@ export function CategoryGroupedCosts({ projectId }: CategoryGroupedCostsProps) {
   const toggleAll = () => {
     if (!costsData) return
     const allCategories = [
-      ...new Set(costsData.map((cost: { categoryId: string }) => cost.categoryId)),
+      ...new Set(costsData.map((cost: { categoryId: string }) => cost.categoryId)), // eslint-disable-line @typescript-eslint/no-explicit-any
     ]
     if (openGroups.size === allCategories.length) {
       setOpenGroups(new Set())
@@ -106,6 +106,7 @@ export function CategoryGroupedCosts({ projectId }: CategoryGroupedCostsProps) {
 
     // Convert to array and sort by total (descending)
     return (Object.values(groups) as any[]).sort(
+      // eslint-disable-line @typescript-eslint/no-explicit-any
       (a: { total: number }, b: { total: number }) => b.total - a.total
     )
   }, [costsData])
@@ -158,6 +159,7 @@ export function CategoryGroupedCosts({ projectId }: CategoryGroupedCostsProps) {
       {/* Category groups */}
       <div className="space-y-3">
         {(groupedCosts as any[]).map(
+          // eslint-disable-line @typescript-eslint/no-explicit-any
           (group: {
             categoryId: string
             categoryName: string

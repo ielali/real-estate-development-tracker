@@ -114,7 +114,7 @@ export function ContactSpending({ contactId }: ContactSpendingProps) {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {(data.projectBreakdown as any[])
+              {(data.projectBreakdown as any[]) // eslint-disable-line @typescript-eslint/no-explicit-any
                 .sort((a: { total: number }, b: { total: number }) => b.total - a.total)
                 .map((project: { projectId: string; projectName: string; total: number }) => (
                   <div
@@ -142,7 +142,7 @@ export function ContactSpending({ contactId }: ContactSpendingProps) {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {(data.categoryBreakdown as any[])
+              {(data.categoryBreakdown as any[]) // eslint-disable-line @typescript-eslint/no-explicit-any
                 .sort((a: { total: number }, b: { total: number }) => b.total - a.total)
                 .map((category: { categoryId: string; categoryName: string; total: number }) => (
                   <div

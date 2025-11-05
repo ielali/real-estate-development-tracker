@@ -51,7 +51,7 @@ function getReportStore() {
 
   // Local development: Use in-memory local store
   // This allows testing without Netlify credentials
-  return getLocalStore({ name: "reports" }) as any
+  return getLocalStore({ name: "reports" }) as any // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
 /**
@@ -106,7 +106,7 @@ export async function cleanupExpiredReports(): Promise<CleanupResult> {
           continue
         }
 
-        const metadataObj = metadata as any
+        const metadataObj = metadata as any // eslint-disable-line @typescript-eslint/no-explicit-any
         if (!metadataObj.expiresAt) {
           // No expiry info - skip (shouldn't happen)
           console.warn(`Report ${blob.key} has no expiry metadata`)
@@ -168,7 +168,7 @@ export async function isReportExpired(reportId: string, fileName: string): Promi
       return true
     }
 
-    const metadataObj = metadata as any
+    const metadataObj = metadata as any // eslint-disable-line @typescript-eslint/no-explicit-any
     if (!metadataObj.expiresAt) {
       // No expiry - consider expired
       return true

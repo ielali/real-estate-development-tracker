@@ -64,7 +64,7 @@ function getReportStore() {
 
   // Local development: Use file system local store
   // This allows testing without Netlify credentials and enables manual inspection
-  return getLocalStore({ name: "reports" }) as any
+  return getLocalStore({ name: "reports" }) as any // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
 /**
@@ -274,7 +274,7 @@ export const reportsRouter = createTRPCRouter({
         }
 
         // Check if report has expired
-        const metadataObj = metadata as any
+        const metadataObj = metadata as any // eslint-disable-line @typescript-eslint/no-explicit-any
         const expiresAt = new Date(metadataObj.expiresAt as string)
         const now = new Date()
 
@@ -332,7 +332,7 @@ export const reportsRouter = createTRPCRouter({
         }
 
         // Verify the report belongs to this user
-        const metadataObj = metadata as any
+        const metadataObj = metadata as any // eslint-disable-line @typescript-eslint/no-explicit-any
         if (metadataObj.userId !== ctx.session.user.id) {
           throw new TRPCError({
             code: "FORBIDDEN",

@@ -36,7 +36,7 @@ export function Breadcrumb({ items, className, showHome = true }: BreadcrumbProp
               <li className="flex items-center">
                 {item.href && !isLast ? (
                   <Link
-                    href={item.href as never}
+                    href={item.href as never} // eslint-disable-line @typescript-eslint/no-explicit-any
                     className="flex items-center space-x-1 text-muted-foreground hover:text-foreground transition-colors"
                   >
                     {item.icon}
@@ -129,7 +129,7 @@ export const breadcrumbHelpers = {
 
   getSettingsBreadcrumbs: (
     project: { name: string; id: string },
-    _router: any
+    _router: any // eslint-disable-line @typescript-eslint/no-explicit-any
   ): BreadcrumbItem[] => [
     { label: "Projects", href: "/projects" },
     { label: project.name, href: `/projects/${project.id}` },

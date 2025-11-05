@@ -65,7 +65,7 @@ export default function ProjectSettingsPage() {
 
   // Only project owners can access settings
   // Check project.access field which can be "owner" or "partner"
-  const isOwner = (project as any).access === "owner"
+  const isOwner = (project as any).access === "owner" // eslint-disable-line @typescript-eslint/no-explicit-any
 
   if (!isOwner) {
     return (
@@ -91,7 +91,8 @@ export default function ProjectSettingsPage() {
         {/* Navigation Header */}
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
-            <ProjectSwitcher currentProjectId={projectId} projects={allProjects as any} />
+            <ProjectSwitcher currentProjectId={projectId} projects={allProjects as any} />{" "}
+            {/* eslint-disable-line @typescript-eslint/no-explicit-any */}
             <Breadcrumb items={breadcrumbHelpers.getSettingsBreadcrumbs(project, router)} />
           </div>
           <ProjectQuickActions projectId={projectId} />

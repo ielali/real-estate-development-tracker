@@ -146,8 +146,9 @@ export default function ProjectDetailPage() {
     ? Array.from(
         new Map(
           costsData
-            .filter((c: any) => c.category)
+            .filter((c: any) => c.category) // eslint-disable-line @typescript-eslint/no-explicit-any
             .map((c: any) => [
+              // eslint-disable-line @typescript-eslint/no-explicit-any
               c.category!.id,
               { id: c.category!.id, displayName: c.category!.displayName },
             ])
@@ -159,8 +160,9 @@ export default function ProjectDetailPage() {
     ? Array.from(
         new Map(
           costsData
-            .filter((c: any) => c.contact)
+            .filter((c: any) => c.contact) // eslint-disable-line @typescript-eslint/no-explicit-any
             .map((c: any) => [
+              // eslint-disable-line @typescript-eslint/no-explicit-any
               c.contact!.id,
               {
                 id: c.contact!.id,
@@ -277,7 +279,7 @@ export default function ProjectDetailPage() {
             projects={allProjects.map((p) => ({
               id: p.id,
               name: p.name,
-              address: (p.address as any)?.formattedAddress,
+              address: (p.address as any)?.formattedAddress, // eslint-disable-line @typescript-eslint/no-explicit-any
             }))}
           />
         </div>
@@ -492,8 +494,8 @@ export default function ProjectDetailPage() {
                     onSearchChange={setSearchText}
                     onSortChange={handleSortChange}
                     onClearAll={handleClearAll}
-                    categories={(categories ?? []) as any[]}
-                    contacts={(contacts ?? []) as any[]}
+                    categories={(categories ?? []) as any[]} // eslint-disable-line @typescript-eslint/no-explicit-any
+                    contacts={(contacts ?? []) as any[]} // eslint-disable-line @typescript-eslint/no-explicit-any
                   />
                 )}
 

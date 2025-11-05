@@ -138,7 +138,7 @@ export class BackupService {
   async generateProjectBackup(projectId: string, userId: string): Promise<ProjectBackupData> {
     // Fetch user details
     const user = await db.query.users.findFirst({
-      where: (users: any, { eq }: any) => eq(users.id, userId),
+      where: (users: any, { eq }: any) => eq(users.id, userId), // eslint-disable-line @typescript-eslint/no-explicit-any
     })
 
     if (!user) {
@@ -150,13 +150,15 @@ export class BackupService {
 
     // Use Drizzle relational queries for efficient data fetching
     const projectData = await db.query.projects.findFirst({
-      where: (projects: any, { eq, and, isNull }: any) =>
-        and(eq(projects.id, projectId), isNull(projects.deletedAt)),
+      where: (
+        projects: any,
+        { eq, and, isNull }: any // eslint-disable-line @typescript-eslint/no-explicit-any
+      ) => and(eq(projects.id, projectId), isNull(projects.deletedAt)),
       with: {
         address: true,
         owner: true,
         costs: {
-          where: (costs: any, { isNull }: any) => isNull(costs.deletedAt),
+          where: (costs: any, { isNull }: any) => isNull(costs.deletedAt), // eslint-disable-line @typescript-eslint/no-explicit-any
           with: {
             category: true,
             contact: {
@@ -166,14 +168,14 @@ export class BackupService {
           },
         },
         events: {
-          where: (events: any, { isNull }: any) => isNull(events.deletedAt),
+          where: (events: any, { isNull }: any) => isNull(events.deletedAt), // eslint-disable-line @typescript-eslint/no-explicit-any
           with: {
             category: true,
             createdBy: true,
           },
         },
         documents: {
-          where: (documents: any, { isNull }: any) => isNull(documents.deletedAt),
+          where: (documents: any, { isNull }: any) => isNull(documents.deletedAt), // eslint-disable-line @typescript-eslint/no-explicit-any
           with: {
             category: true,
             uploadedBy: true,
@@ -191,16 +193,18 @@ export class BackupService {
 
     // Get all unique contacts referenced in costs
     const contactIdsInCosts = projectData.costs
-      .filter((cost: any) => cost.contactId)
-      .map((cost: any) => cost.contactId!)
-      .filter((id: any, index: any, self: any) => self.indexOf(id) === index) // Unique IDs
+      .filter((cost: any) => cost.contactId) // eslint-disable-line @typescript-eslint/no-explicit-any
+      .map((cost: any) => cost.contactId!) // eslint-disable-line @typescript-eslint/no-explicit-any
+      .filter((id: any, index: any, self: any) => self.indexOf(id) === index) // eslint-disable-line @typescript-eslint/no-explicit-any
 
     // Fetch full contact details if any contacts are referenced
     const projectContacts =
       contactIdsInCosts.length > 0
         ? await db.query.contacts.findMany({
-            where: (contacts: any, { and, isNull, inArray }: any) =>
-              and(isNull(contacts.deletedAt), inArray(contacts.id, contactIdsInCosts)),
+            where: (
+              contacts: any,
+              { and, isNull, inArray }: any // eslint-disable-line @typescript-eslint/no-explicit-any
+            ) => and(isNull(contacts.deletedAt), inArray(contacts.id, contactIdsInCosts)),
             with: {
               category: true,
               address: true,
@@ -240,6 +244,7 @@ export class BackupService {
         updatedAt: projectData.updatedAt.toISOString(),
       },
       costs: projectData.costs.map((cost: any) => ({
+        // eslint-disable-line @typescript-eslint/no-explicit-any
         id: cost.id,
         amount: cost.amount,
         description: cost.description,
@@ -276,6 +281,7 @@ export class BackupService {
         createdAt: cost.createdAt.toISOString(),
       })),
       contacts: projectContacts.map((contact: any) => ({
+        // eslint-disable-line @typescript-eslint/no-explicit-any
         id: contact.id,
         firstName: contact.firstName,
         lastName: contact.lastName,
@@ -304,6 +310,7 @@ export class BackupService {
         createdAt: contact.createdAt.toISOString(),
       })),
       events: projectData.events.map((event: any) => ({
+        // eslint-disable-line @typescript-eslint/no-explicit-any
         id: event.id,
         title: event.title,
         description: event.description,
@@ -322,6 +329,7 @@ export class BackupService {
         createdAt: event.createdAt.toISOString(),
       })),
       documents: projectData.documents.map((doc: any) => ({
+        // eslint-disable-line @typescript-eslint/no-explicit-any
         id: doc.id,
         fileName: doc.fileName,
         fileSize: doc.fileSize,
@@ -453,11 +461,13 @@ export class BackupService {
   async estimateZipSize(projectId: string): Promise<ZipSizeEstimate> {
     // Fetch project with documents
     const projectData = await db.query.projects.findFirst({
-      where: (projects: any, { eq, and, isNull }: any) =>
-        and(eq(projects.id, projectId), isNull(projects.deletedAt)),
+      where: (
+        projects: any,
+        { eq, and, isNull }: any // eslint-disable-line @typescript-eslint/no-explicit-any
+      ) => and(eq(projects.id, projectId), isNull(projects.deletedAt)),
       with: {
         documents: {
-          where: (documents: any, { isNull }: any) => isNull(documents.deletedAt),
+          where: (documents: any, { isNull }: any) => isNull(documents.deletedAt), // eslint-disable-line @typescript-eslint/no-explicit-any
         },
       },
     })
@@ -471,7 +481,7 @@ export class BackupService {
 
     // Calculate total document size
     const totalDocSize = projectData.documents.reduce(
-      (sum: any, doc: any) => sum + (doc.fileSize || 0),
+      (sum: any, doc: any) => sum + (doc.fileSize || 0), // eslint-disable-line @typescript-eslint/no-explicit-any
       0
     )
 
@@ -549,8 +559,8 @@ export class BackupService {
    */
   async getBackupHistory(projectId: string, limit: number = 10): Promise<ProjectBackup[]> {
     const backups = await db.query.projectBackups.findMany({
-      where: (projectBackups: any, { eq }: any) => eq(projectBackups.projectId, projectId),
-      orderBy: (projectBackups: any, { desc }: any) => [desc(projectBackups.createdAt)],
+      where: (projectBackups: any, { eq }: any) => eq(projectBackups.projectId, projectId), // eslint-disable-line @typescript-eslint/no-explicit-any
+      orderBy: (projectBackups: any, { desc }: any) => [desc(projectBackups.createdAt)], // eslint-disable-line @typescript-eslint/no-explicit-any
       limit,
     })
 

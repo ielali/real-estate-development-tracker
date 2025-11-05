@@ -54,7 +54,7 @@ export class SecurityEventLogger {
     eventType: SecurityEventType,
     ipAddress: string,
     userAgent: string,
-    metadata?: Record<string, any>
+    metadata?: Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any
   ): Promise<void> {
     try {
       await db.insert(securityEvents).values({

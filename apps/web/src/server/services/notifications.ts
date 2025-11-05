@@ -134,7 +134,7 @@ export async function notifyProjectMembers(params: {
   // Collect all user IDs to notify
   const userIds = new Set<string>()
   userIds.add(project.ownerId)
-  partners.forEach((partner: { userId: string }) => userIds.add(partner.userId))
+  partners.forEach((partner: { userId: string }) => userIds.add(partner.userId)) // eslint-disable-line @typescript-eslint/no-explicit-any
 
   // Remove excluded user
   if (params.excludeUserId) {
@@ -170,6 +170,7 @@ export async function notifyProjectMembers(params: {
 
     for (const notification of createdNotifications) {
       const userRecord = userRecords.find((u: { id: string }) => u.id === notification.userId) ?? {
+        // eslint-disable-line @typescript-eslint/no-explicit-any
         name: "User",
       }
 
@@ -368,6 +369,7 @@ export async function notifyCommentAdded(params: {
     .where(and(eq(comments.entityType, params.entityType), eq(comments.entityId, params.entityId)))
 
   previousComments.forEach((comment: any) => {
+    // eslint-disable-line @typescript-eslint/no-explicit-any
     recipientIds.add(comment.userId)
   })
 
@@ -426,11 +428,15 @@ export async function notifyCommentAdded(params: {
       const mentionedUsers = await db.select({ id: users.id, name: users.name }).from(users)
 
       // Match mentioned names (case-insensitive)
-      const matchedUsers = mentionedUsers.filter((user: { id: string; name: string }) =>
-        mentionNames.some((mentionName) => user.name.toLowerCase() === mentionName.toLowerCase())
+      const matchedUsers = mentionedUsers.filter(
+        (
+          user: { id: string; name: string } // eslint-disable-line @typescript-eslint/no-explicit-any
+        ) =>
+          mentionNames.some((mentionName) => user.name.toLowerCase() === mentionName.toLowerCase())
       )
 
       matchedUsers.forEach((user: { id: string; name: string }) => {
+        // eslint-disable-line @typescript-eslint/no-explicit-any
         recipientIds.add(user.id)
       })
     } catch (error) {

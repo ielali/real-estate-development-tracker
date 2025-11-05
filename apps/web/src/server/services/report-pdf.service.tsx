@@ -320,9 +320,9 @@ async function fetchReportData(db: Database, input: PdfReportInput): Promise<Rep
 
   // Calculate summary metrics
   // Note: cost.amount should be number (schema has mode: "number"), but ensure it's converted
-  const totalCost = costsData.reduce((sum: number, cost: any) => sum + Number(cost.amount), 0)
+  const totalCost = costsData.reduce((sum: number, cost: any) => sum + Number(cost.amount), 0) // eslint-disable-line @typescript-eslint/no-explicit-any
   const uniqueVendors = new Set(
-    costsData.filter((c: any) => c.contactId).map((c: any) => c.contactId)
+    costsData.filter((c: any) => c.contactId).map((c: any) => c.contactId) // eslint-disable-line @typescript-eslint/no-explicit-any
   )
 
   // Fetch cost breakdown by category
@@ -343,6 +343,7 @@ async function fetchReportData(db: Database, input: PdfReportInput): Promise<Rep
   // Note: PostgreSQL BIGINT is returned as string to avoid precision loss
   // Convert to number for calculations
   const costsByCategory = costsByCategoryData.map((item: any) => ({
+    // eslint-disable-line @typescript-eslint/no-explicit-any
     categoryId: item.categoryId,
     categoryName: item.categoryName,
     total: typeof item.total === "string" ? parseInt(item.total, 10) : item.total,
@@ -440,6 +441,7 @@ async function fetchReportData(db: Database, input: PdfReportInput): Promise<Rep
     costsByCategory,
     // Convert BIGINT strings to numbers for topVendors
     topVendors: topVendorsData.map((vendor: any) => ({
+      // eslint-disable-line @typescript-eslint/no-explicit-any
       vendorId: vendor.vendorId,
       vendorName: vendor.vendorName,
       company: vendor.company,
@@ -450,6 +452,7 @@ async function fetchReportData(db: Database, input: PdfReportInput): Promise<Rep
     })),
     // Map timeline data to match TimelineChart expected structure
     timeline: timelineData.map((event: any) => ({
+      // eslint-disable-line @typescript-eslint/no-explicit-any
       ...event,
       category: event.categoryName, // TimelineChart expects 'category' not 'categoryName'
     })),

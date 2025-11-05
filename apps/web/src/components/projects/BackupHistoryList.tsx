@@ -99,35 +99,39 @@ export function BackupHistoryList({ projectId }: BackupHistoryListProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {backups.map((backup: any) => (
-              <TableRow key={backup.id}>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    {backup.backupType === "json" ? (
-                      <>
-                        <FileJson className="h-4 w-4 text-blue-500" />
-                        <Badge variant="secondary">JSON</Badge>
-                      </>
-                    ) : (
-                      <>
-                        <FileArchive className="h-4 w-4 text-green-500" />
-                        <Badge variant="default">ZIP</Badge>
-                      </>
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {formatDate(backup.createdAt)}
-                </TableCell>
-                <TableCell className="text-sm">{formatFileSize(backup.fileSize)}</TableCell>
-                <TableCell className="text-sm">
-                  {backup.documentCount > 0 ? backup.documentCount : "-"}
-                </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {backup.schemaVersion}
-                </TableCell>
-              </TableRow>
-            ))}
+            {backups.map(
+              (
+                backup: any // eslint-disable-line @typescript-eslint/no-explicit-any
+              ) => (
+                <TableRow key={backup.id}>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      {backup.backupType === "json" ? (
+                        <>
+                          <FileJson className="h-4 w-4 text-blue-500" />
+                          <Badge variant="secondary">JSON</Badge>
+                        </>
+                      ) : (
+                        <>
+                          <FileArchive className="h-4 w-4 text-green-500" />
+                          <Badge variant="default">ZIP</Badge>
+                        </>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {formatDate(backup.createdAt)}
+                  </TableCell>
+                  <TableCell className="text-sm">{formatFileSize(backup.fileSize)}</TableCell>
+                  <TableCell className="text-sm">
+                    {backup.documentCount > 0 ? backup.documentCount : "-"}
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {backup.schemaVersion}
+                  </TableCell>
+                </TableRow>
+              )
+            )}
           </TableBody>
         </Table>
       </CardContent>
