@@ -24,6 +24,23 @@ vi.mock("@/server/services/notifications", () => ({
   notifyDocumentUploaded: vi.fn(),
 }))
 
+// Mock the document service to avoid Netlify Blobs dependency in tests
+vi.mock("@/server/services/document.service", () => ({
+  documentService: {
+    upload: vi.fn().mockResolvedValue({
+      id: "mock-document-id",
+      projectId: "mock-project-id",
+      blobUrl: "mock://blob/url",
+      fileName: "test.pdf",
+      fileSize: 1024,
+      mimeType: "application/pdf",
+    }),
+    download: vi.fn(),
+    delete: vi.fn(),
+    list: vi.fn(),
+  },
+}))
+
 describe("Comments Router", () => {
   let testDbInstance: Awaited<ReturnType<typeof createTestDb>>
   let testUser: User
