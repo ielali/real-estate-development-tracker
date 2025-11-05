@@ -60,21 +60,53 @@ import * as path from "path"
  * Load logo as base64 data URI for React-PDF
  * React-PDF cannot use relative web paths on server side, so we load the file
  * from filesystem and convert to data URI
+ *
+ * Serverless compatibility: In Netlify Functions, public/ directory is not
+ * accessible via filesystem. We try filesystem first (local dev), then fall back
+ * to fetching from deployed URL (serverless).
  */
-function getLogoDataUri(): string | null {
+async function getLogoDataUri(): Promise<string | null> {
   try {
+    // Try filesystem first (works in local development)
     // process.cwd() is already in apps/web when running from the web app
     const logoPath = path.join(process.cwd(), "public", "logo.png")
 
-    if (!fs.existsSync(logoPath)) {
-      console.warn("Logo file not found at:", logoPath)
-      return null
+    if (fs.existsSync(logoPath)) {
+      const logoBuffer = fs.readFileSync(logoPath)
+      const logoBase64 = logoBuffer.toString("base64")
+      const dataUri = `data:image/png;base64,${logoBase64}`
+      return dataUri
     }
 
-    const logoBuffer = fs.readFileSync(logoPath)
-    const logoBase64 = logoBuffer.toString("base64")
-    const dataUri = `data:image/png;base64,${logoBase64}`
-    return dataUri
+    // Fallback: Fetch from deployed URL (works in serverless environments)
+    const deployUrl = process.env.DEPLOY_PRIME_URL || process.env.URL
+    if (deployUrl) {
+      console.log("🖼️  Logo not found in filesystem, fetching from deployed URL...")
+      console.log("   Deploy URL:", deployUrl)
+      const logoUrl = `${deployUrl}/logo.png`
+      console.log("   Fetching logo from:", logoUrl)
+
+      const response = await fetch(logoUrl)
+      console.log("   Response status:", response.status)
+
+      if (response.ok) {
+        const arrayBuffer = await response.arrayBuffer()
+        const logoBuffer = Buffer.from(arrayBuffer)
+        const logoBase64 = logoBuffer.toString("base64")
+        const dataUri = `data:image/png;base64,${logoBase64}`
+        console.log("   ✅ Logo loaded successfully from URL")
+        return dataUri
+      } else {
+        console.warn(`   ❌ Failed to fetch logo from ${logoUrl}: ${response.status}`)
+      }
+    } else {
+      console.warn("   ⚠️  No DEPLOY_PRIME_URL or URL environment variable available")
+    }
+
+    console.warn(
+      "⚠️  Logo file not found in filesystem or deployed URL - PDF will be generated without logo"
+    )
+    return null
   } catch (error) {
     console.error("Failed to load logo:", error)
     return null // Return null if logo can't be loaded
@@ -711,9 +743,10 @@ const TimelineChart: React.FC<TimelineChartProps> = ({ data }) => {
 /**
  * PDF Report Document Component
  */
-const ProjectReportPDF: React.FC<{ data: ReportData }> = ({ data }) => {
-  const logoDataUri = getLogoDataUri()
-
+const ProjectReportPDF: React.FC<{ data: ReportData; logoDataUri: string | null }> = ({
+  data,
+  logoDataUri,
+}) => {
   return (
     <Document>
       {/* Cover Page */}
@@ -1061,6 +1094,9 @@ export async function generateProjectPdf(db: Database, input: PdfReportInput): P
     // Fetch all report data
     const reportData = await fetchReportData(db, input)
 
+    // Load logo (handles both local filesystem and serverless URL fetching)
+    const logoDataUri = await getLogoDataUri()
+
     // Serialize and deserialize data to ensure no unexpected objects
     // This prevents React Error #31 by cleaning complex objects
     const serialized = JSON.stringify(reportData, (key, value) => {
@@ -1084,8 +1120,8 @@ export async function generateProjectPdf(db: Database, input: PdfReportInput): P
       return value
     })
 
-    // Generate PDF using React-PDF with clean data
-    const pdfElement = <ProjectReportPDF data={cleanData as ReportData} />
+    // Generate PDF using React-PDF with clean data and logo
+    const pdfElement = <ProjectReportPDF data={cleanData as ReportData} logoDataUri={logoDataUri} />
     const pdfBuffer = await renderToBuffer(pdfElement)
 
     return pdfBuffer
