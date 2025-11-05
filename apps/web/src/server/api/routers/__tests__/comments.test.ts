@@ -25,23 +25,34 @@ vi.mock("@/server/services/notifications", () => ({
 }))
 
 // Mock the document service to avoid Netlify Blobs dependency in tests
-vi.mock("@/server/services/document.service", () => ({
-  documentService: {
+vi.mock("@/server/services/document.service", () => {
+  const mockDocumentService = {
     // upload returns blob key (string), not object
     upload: vi.fn().mockResolvedValue("mock-blob-key"),
-    get: vi.fn(),
-    delete: vi.fn(),
+    get: vi.fn().mockResolvedValue("mock-blob-data"),
+    delete: vi.fn().mockResolvedValue(undefined),
     generateThumbnail: vi.fn().mockResolvedValue("mock-thumbnail-key"),
-    getDocumentBlob: vi.fn(),
-  },
-  // Export the helper function used in tests
-  bufferToArrayBuffer: (buffer: Buffer): ArrayBuffer => {
-    return buffer.buffer.slice(
-      buffer.byteOffset,
-      buffer.byteOffset + buffer.byteLength
-    ) as ArrayBuffer
-  },
-}))
+    getDocumentBlob: vi.fn().mockResolvedValue("mock-blob-data"),
+    processMetadata: vi.fn().mockReturnValue({
+      fileName: "test.pdf",
+      fileSize: 1024,
+      mimeType: "application/pdf",
+      isValid: true,
+    }),
+  }
+
+  return {
+    DocumentService: vi.fn(() => mockDocumentService),
+    documentService: mockDocumentService,
+    // Export the helper function used in tests
+    bufferToArrayBuffer: (buffer: Buffer): ArrayBuffer => {
+      return buffer.buffer.slice(
+        buffer.byteOffset,
+        buffer.byteOffset + buffer.byteLength
+      ) as ArrayBuffer
+    },
+  }
+})
 
 describe("Comments Router", () => {
   let testDbInstance: Awaited<ReturnType<typeof createTestDb>>
