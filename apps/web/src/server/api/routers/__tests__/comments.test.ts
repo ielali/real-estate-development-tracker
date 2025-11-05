@@ -35,9 +35,10 @@ vi.mock("@/server/services/document.service", () => ({
       fileSize: 1024,
       mimeType: "application/pdf",
     }),
-    download: vi.fn(),
+    get: vi.fn(),
     delete: vi.fn(),
-    list: vi.fn(),
+    generateThumbnail: vi.fn().mockResolvedValue("mock-thumbnail-key"),
+    getDocumentBlob: vi.fn(),
   },
   // Export the helper function used in tests
   bufferToArrayBuffer: (buffer: Buffer): ArrayBuffer => {
