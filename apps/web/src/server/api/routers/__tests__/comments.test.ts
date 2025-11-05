@@ -27,14 +27,8 @@ vi.mock("@/server/services/notifications", () => ({
 // Mock the document service to avoid Netlify Blobs dependency in tests
 vi.mock("@/server/services/document.service", () => ({
   documentService: {
-    upload: vi.fn().mockResolvedValue({
-      id: "mock-document-id",
-      projectId: "mock-project-id",
-      blobUrl: "mock://blob/url",
-      fileName: "test.pdf",
-      fileSize: 1024,
-      mimeType: "application/pdf",
-    }),
+    // upload returns blob key (string), not object
+    upload: vi.fn().mockResolvedValue("mock-blob-key"),
     get: vi.fn(),
     delete: vi.fn(),
     generateThumbnail: vi.fn().mockResolvedValue("mock-thumbnail-key"),
