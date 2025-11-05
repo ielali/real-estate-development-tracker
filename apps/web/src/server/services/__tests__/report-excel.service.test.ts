@@ -21,6 +21,17 @@ import { events } from "@/server/db/schema/events"
 import { projectAccess } from "@/server/db/schema/projectAccess"
 import { CATEGORIES } from "@/server/db/types"
 
+/**
+ * Helper function to convert Node Buffer to ArrayBuffer for ExcelJS
+ * ExcelJS expects ArrayBuffer, not Node Buffer
+ */
+function bufferToArrayBuffer(buffer: Buffer): ArrayBuffer {
+  return buffer.buffer.slice(
+    buffer.byteOffset,
+    buffer.byteOffset + buffer.byteLength
+  ) as ArrayBuffer
+}
+
 describe("Excel Report Service", () => {
   let testDbInstance: Awaited<ReturnType<typeof createTestDb>>
   let testUser: User
@@ -63,7 +74,7 @@ describe("Excel Report Service", () => {
         lastName: "User",
       })
       .returning()
-      .then((rows: any[]) => rows[0]!)
+      .then((rows: User[]) => rows[0]!)
 
     otherUser = await testDbInstance.db
       .insert(users)
@@ -75,7 +86,7 @@ describe("Excel Report Service", () => {
         lastName: "User",
       })
       .returning()
-      .then((rows: any[]) => rows[0]!)
+      .then((rows: User[]) => rows[0]!)
 
     // Create test project
     const project = await testDbInstance.db
@@ -112,7 +123,7 @@ describe("Excel Report Service", () => {
 
       // Parse workbook to verify structure
       const workbook = new ExcelJS.Workbook()
-      await workbook.xlsx.load(buffer as any)
+      await workbook.xlsx.load(bufferToArrayBuffer(buffer))
 
       // Verify 5 sheets exist
       expect(workbook.worksheets.length).toBe(5)
@@ -152,7 +163,7 @@ describe("Excel Report Service", () => {
       })
 
       const workbook = new ExcelJS.Workbook()
-      await workbook.xlsx.load(buffer as any)
+      await workbook.xlsx.load(bufferToArrayBuffer(buffer))
 
       // Check Detailed Costs sheet has data
       const costsSheet = workbook.getWorksheet("Detailed Costs")
@@ -207,7 +218,7 @@ describe("Excel Report Service", () => {
       })
 
       const workbook = new ExcelJS.Workbook()
-      await workbook.xlsx.load(buffer as any)
+      await workbook.xlsx.load(bufferToArrayBuffer(buffer))
 
       // Check Vendors sheet exists (data population depends on query logic)
       const vendorsSheet = workbook.getWorksheet("Vendors")
@@ -242,7 +253,7 @@ describe("Excel Report Service", () => {
       })
 
       const workbook = new ExcelJS.Workbook()
-      await workbook.xlsx.load(buffer as any)
+      await workbook.xlsx.load(bufferToArrayBuffer(buffer))
 
       // Check Timeline sheet has data
       const timelineSheet = workbook.getWorksheet("Timeline")
@@ -281,7 +292,7 @@ describe("Excel Report Service", () => {
       })
 
       const workbook = new ExcelJS.Workbook()
-      await workbook.xlsx.load(buffer as any)
+      await workbook.xlsx.load(bufferToArrayBuffer(buffer))
 
       // Check Documents sheet has data
       const docsSheet = workbook.getWorksheet("Documents")
@@ -334,7 +345,7 @@ describe("Excel Report Service", () => {
 
       // Parse and verify filtering worked
       const workbook = new ExcelJS.Workbook()
-      await workbook.xlsx.load(buffer as any)
+      await workbook.xlsx.load(bufferToArrayBuffer(buffer))
 
       const costsSheet = workbook.getWorksheet("Detailed Costs")
       expect(costsSheet).toBeDefined()
@@ -367,7 +378,7 @@ describe("Excel Report Service", () => {
       expect(buffer.length).toBeGreaterThan(0)
 
       const workbook = new ExcelJS.Workbook()
-      await workbook.xlsx.load(buffer as any)
+      await workbook.xlsx.load(bufferToArrayBuffer(buffer))
 
       // Verify workbook was created (partner watermark is visual, hard to test)
       expect(workbook.worksheets.length).toBe(5)
@@ -408,7 +419,7 @@ describe("Excel Report Service", () => {
       expect(buffer.length).toBeGreaterThan(0)
 
       const workbook = new ExcelJS.Workbook()
-      await workbook.xlsx.load(buffer as any)
+      await workbook.xlsx.load(bufferToArrayBuffer(buffer))
 
       // All 5 sheets should exist even with no data
       expect(workbook.worksheets.length).toBe(5)
@@ -443,7 +454,7 @@ describe("Excel Report Service", () => {
       expect(duration).toBeLessThan(5000)
 
       const workbook = new ExcelJS.Workbook()
-      await workbook.xlsx.load(buffer as any)
+      await workbook.xlsx.load(bufferToArrayBuffer(buffer))
 
       const costsSheet = workbook.getWorksheet("Detailed Costs")
       expect(costsSheet).toBeDefined()
@@ -477,7 +488,7 @@ describe("Excel Report Service", () => {
 
       // Verify Excel can be parsed
       const workbook = new ExcelJS.Workbook()
-      await expect(workbook.xlsx.load(buffer as any)).resolves.toBeDefined()
+      await expect(workbook.xlsx.load(bufferToArrayBuffer(buffer))).resolves.toBeDefined()
     })
 
     test("handles very long text fields", async () => {
@@ -525,7 +536,7 @@ describe("Excel Report Service", () => {
 
       // Verify workbook can be parsed
       const workbook = new ExcelJS.Workbook()
-      await workbook.xlsx.load(buffer as any)
+      await workbook.xlsx.load(bufferToArrayBuffer(buffer))
 
       const summarySheet = workbook.getWorksheet("Summary")
       expect(summarySheet).toBeDefined()

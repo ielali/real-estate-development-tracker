@@ -62,7 +62,7 @@ describe("PDF Report Service - Seed Data Patterns", () => {
         lastName: "User",
       })
       .returning()
-      .then((rows: any[]) => rows[0]!)
+      .then((rows: User[]) => rows[0]!)
 
     // Create address (same pattern as seed)
     const address = await testDbInstance.db
@@ -105,7 +105,10 @@ describe("PDF Report Service - Seed Data Patterns", () => {
       .from(categories)
 
     const categoryMap = categoryRows.reduce(
-      (acc: any, cat: any) => ({ ...acc, [cat.displayName]: cat.id }),
+      (acc: Record<string, string>, cat: { id: string; displayName: string }) => ({
+        ...acc,
+        [cat.displayName]: cat.id,
+      }),
       {} as Record<string, string>
     )
 
@@ -380,7 +383,10 @@ describe("PDF Report Service - Seed Data Patterns", () => {
       .from(categories)
 
     const categoryMap = categoryRows.reduce(
-      (acc: any, cat: any) => ({ ...acc, [cat.displayName]: cat.id }),
+      (acc: Record<string, string>, cat: { id: string; displayName: string }) => ({
+        ...acc,
+        [cat.displayName]: cat.id,
+      }),
       {} as Record<string, string>
     )
 
@@ -424,7 +430,10 @@ describe("PDF Report Service - Seed Data Patterns", () => {
       .from(categories)
 
     const categoryMap = categoryRows.reduce(
-      (acc: any, cat: any) => ({ ...acc, [cat.displayName]: cat.id }),
+      (acc: Record<string, string>, cat: { id: string; displayName: string }) => ({
+        ...acc,
+        [cat.displayName]: cat.id,
+      }),
       {} as Record<string, string>
     )
 
