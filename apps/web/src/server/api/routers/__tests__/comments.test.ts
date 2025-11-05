@@ -39,6 +39,13 @@ vi.mock("@/server/services/document.service", () => ({
     delete: vi.fn(),
     list: vi.fn(),
   },
+  // Export the helper function used in tests
+  bufferToArrayBuffer: (buffer: Buffer): ArrayBuffer => {
+    return buffer.buffer.slice(
+      buffer.byteOffset,
+      buffer.byteOffset + buffer.byteLength
+    ) as ArrayBuffer
+  },
 }))
 
 describe("Comments Router", () => {
