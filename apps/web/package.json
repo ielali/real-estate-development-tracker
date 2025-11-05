@@ -25,7 +25,7 @@
     "test:ui": "NODE_OPTIONS='--experimental-vm-modules' vitest --ui",
     "test:run": "NODE_OPTIONS='--experimental-vm-modules' vitest run",
     "test:ci": "NODE_OPTIONS='--experimental-vm-modules' vitest run --reporter=verbose --bail=1",
-    "test:unit": "NODE_OPTIONS='--experimental-vm-modules' vitest run --exclude='**/__tests__/**/*.test.{ts,tsx}' --exclude='src/server/**/*.test.{ts,tsx}'",
+    "test:unit": "NODE_OPTIONS='--experimental-vm-modules' vitest run src/components src/hooks src/lib src/utils",
     "test:db": "NODE_OPTIONS='--experimental-vm-modules' vitest run src/server",
     "test:threshold": "tsx scripts/test-with-threshold.ts",
     "test:threshold:95": "tsx scripts/test-with-threshold.ts --threshold 0.95",
