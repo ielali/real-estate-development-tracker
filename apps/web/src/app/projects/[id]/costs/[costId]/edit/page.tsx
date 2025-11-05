@@ -19,6 +19,7 @@ import { CommentThread } from "@/components/comments/CommentThread"
  */
 export default function EditCostPage() {
   const params = useParams()
+  if (!params) return null
   const projectId = params.id as string
   const costId = params.costId as string
 

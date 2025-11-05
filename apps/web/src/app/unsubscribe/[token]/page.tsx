@@ -16,6 +16,7 @@ import Link from "next/link"
 export default function UnsubscribePage() {
   const params = useParams()
   const router = useRouter()
+  if (!params) return null
   const token = params.token as string
 
   const [userId, setUserId] = useState<string | null>(null)

@@ -57,7 +57,7 @@ describe("Timeline Data Mapping", () => {
         lastName: "Test",
       })
       .returning()
-      .then((rows) => rows[0]!)
+      .then((rows: any[]) => rows[0]!)
 
     // Create project
     const project = await testDbInstance.db

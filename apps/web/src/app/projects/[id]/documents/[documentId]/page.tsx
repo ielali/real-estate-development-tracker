@@ -74,6 +74,7 @@ export default function DocumentDetailPage() {
   const params = useParams()
   const router = useRouter()
   const { toast } = useToast()
+  if (!params) return null
   const projectId = params.id as string
   const documentId = params.documentId as string
 

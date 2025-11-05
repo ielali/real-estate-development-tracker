@@ -25,7 +25,7 @@ function DeepLinkHandler({ onOpenCreate }: { onOpenCreate: () => void }) {
   const searchParams = useSearchParams()
 
   useEffect(() => {
-    if (searchParams.get("action") === "add") {
+    if (searchParams?.get("action") === "add") {
       onOpenCreate()
       // Clean up URL by removing the parameter
       const newUrl = window.location.pathname

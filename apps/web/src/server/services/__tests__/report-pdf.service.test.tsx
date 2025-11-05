@@ -62,7 +62,7 @@ describe("PDF Report Service", () => {
         lastName: "User",
       })
       .returning()
-      .then((rows) => rows[0]!)
+      .then((rows: any[]) => rows[0]!)
 
     otherUser = await testDbInstance.db
       .insert(users)
@@ -74,7 +74,7 @@ describe("PDF Report Service", () => {
         lastName: "User",
       })
       .returning()
-      .then((rows) => rows[0]!)
+      .then((rows: any[]) => rows[0]!)
 
     // Create test project with all required fields
     const project = await testDbInstance.db
@@ -241,7 +241,7 @@ describe("PDF Report Service", () => {
         .from(categories)
         .limit(1)
         .offset(1)
-        .then((rows) => rows[0]!)
+        .then((rows: any[]) => rows[0]!)
 
       await testDbInstance.db.insert(costs).values([
         {

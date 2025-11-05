@@ -62,7 +62,7 @@ describe("PDF Report Service - Seed Data Patterns", () => {
         lastName: "User",
       })
       .returning()
-      .then((rows) => rows[0]!)
+      .then((rows: any[]) => rows[0]!)
 
     // Create address (same pattern as seed)
     const address = await testDbInstance.db
@@ -101,11 +101,11 @@ describe("PDF Report Service - Seed Data Patterns", () => {
 
     // Get category IDs (same pattern as seed)
     const categoryRows = await testDbInstance.db
-      .select({ id: categories.id, name: categories.name })
+      .select({ id: categories.id, displayName: categories.displayName })
       .from(categories)
 
     const categoryMap = categoryRows.reduce(
-      (acc, cat) => ({ ...acc, [cat.name]: cat.id }),
+      (acc: any, cat: any) => ({ ...acc, [cat.displayName]: cat.id }),
       {} as Record<string, string>
     )
 
@@ -376,11 +376,11 @@ describe("PDF Report Service - Seed Data Patterns", () => {
 
   test("handles contacts with null fields", async () => {
     const categoryRows = await testDbInstance.db
-      .select({ id: categories.id, name: categories.name })
+      .select({ id: categories.id, displayName: categories.displayName })
       .from(categories)
 
     const categoryMap = categoryRows.reduce(
-      (acc, cat) => ({ ...acc, [cat.name]: cat.id }),
+      (acc: any, cat: any) => ({ ...acc, [cat.displayName]: cat.id }),
       {} as Record<string, string>
     )
 
@@ -420,11 +420,11 @@ describe("PDF Report Service - Seed Data Patterns", () => {
 
   test("handles very long text fields", async () => {
     const categoryRows = await testDbInstance.db
-      .select({ id: categories.id, name: categories.name })
+      .select({ id: categories.id, displayName: categories.displayName })
       .from(categories)
 
     const categoryMap = categoryRows.reduce(
-      (acc, cat) => ({ ...acc, [cat.name]: cat.id }),
+      (acc: any, cat: any) => ({ ...acc, [cat.displayName]: cat.id }),
       {} as Record<string, string>
     )
 

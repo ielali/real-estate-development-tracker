@@ -25,6 +25,7 @@ import { useUserRole } from "@/hooks/useUserRole"
 export default function ProjectSettingsPage() {
   const params = useParams()
   const router = useRouter()
+  if (!params) return null
   const projectId = params.id as string
   const { isLoading: roleLoading } = useUserRole()
 

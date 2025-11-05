@@ -24,6 +24,7 @@ import { CommentThread } from "@/components/comments/CommentThread"
 export default function EventDetailPage() {
   const params = useParams()
   const router = useRouter()
+  if (!params) return null
   const projectId = params.id as string
   const eventId = params.eventId as string
 

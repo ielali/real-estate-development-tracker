@@ -61,7 +61,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
             <nav className="space-y-1">
               {navItems.map((item) => {
                 const Icon = item.icon
-                const isActive = pathname.startsWith(item.href)
+                const isActive = pathname?.startsWith(item.href) ?? false
 
                 return (
                   <Link
@@ -95,7 +95,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
             <nav className="flex gap-2 overflow-x-auto pb-2">
               {navItems.map((item) => {
                 const Icon = item.icon
-                const isActive = pathname.startsWith(item.href)
+                const isActive = pathname?.startsWith(item.href) ?? false
 
                 return (
                   <Link

@@ -85,6 +85,7 @@ export default function ProjectDetailPage() {
   const [dateRangeStart, setDateRangeStart] = useState<Date | undefined>()
   const [dateRangeEnd, setDateRangeEnd] = useState<Date | undefined>()
 
+  if (!params) return null
   const projectId = params.id as string
   const utils = api.useUtils()
   const { role } = useUserRole()

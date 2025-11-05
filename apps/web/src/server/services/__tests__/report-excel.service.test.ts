@@ -63,7 +63,7 @@ describe("Excel Report Service", () => {
         lastName: "User",
       })
       .returning()
-      .then((rows) => rows[0]!)
+      .then((rows: any[]) => rows[0]!)
 
     otherUser = await testDbInstance.db
       .insert(users)
@@ -75,7 +75,7 @@ describe("Excel Report Service", () => {
         lastName: "User",
       })
       .returning()
-      .then((rows) => rows[0]!)
+      .then((rows: any[]) => rows[0]!)
 
     // Create test project
     const project = await testDbInstance.db
@@ -112,7 +112,7 @@ describe("Excel Report Service", () => {
 
       // Parse workbook to verify structure
       const workbook = new ExcelJS.Workbook()
-      await workbook.xlsx.load(buffer)
+      await workbook.xlsx.load(buffer as any)
 
       // Verify 5 sheets exist
       expect(workbook.worksheets.length).toBe(5)
@@ -152,7 +152,7 @@ describe("Excel Report Service", () => {
       })
 
       const workbook = new ExcelJS.Workbook()
-      await workbook.xlsx.load(buffer)
+      await workbook.xlsx.load(buffer as any)
 
       // Check Detailed Costs sheet has data
       const costsSheet = workbook.getWorksheet("Detailed Costs")
@@ -207,7 +207,7 @@ describe("Excel Report Service", () => {
       })
 
       const workbook = new ExcelJS.Workbook()
-      await workbook.xlsx.load(buffer)
+      await workbook.xlsx.load(buffer as any)
 
       // Check Vendors sheet exists (data population depends on query logic)
       const vendorsSheet = workbook.getWorksheet("Vendors")
@@ -242,7 +242,7 @@ describe("Excel Report Service", () => {
       })
 
       const workbook = new ExcelJS.Workbook()
-      await workbook.xlsx.load(buffer)
+      await workbook.xlsx.load(buffer as any)
 
       // Check Timeline sheet has data
       const timelineSheet = workbook.getWorksheet("Timeline")
@@ -281,7 +281,7 @@ describe("Excel Report Service", () => {
       })
 
       const workbook = new ExcelJS.Workbook()
-      await workbook.xlsx.load(buffer)
+      await workbook.xlsx.load(buffer as any)
 
       // Check Documents sheet has data
       const docsSheet = workbook.getWorksheet("Documents")
@@ -334,7 +334,7 @@ describe("Excel Report Service", () => {
 
       // Parse and verify filtering worked
       const workbook = new ExcelJS.Workbook()
-      await workbook.xlsx.load(buffer)
+      await workbook.xlsx.load(buffer as any)
 
       const costsSheet = workbook.getWorksheet("Detailed Costs")
       expect(costsSheet).toBeDefined()
@@ -367,7 +367,7 @@ describe("Excel Report Service", () => {
       expect(buffer.length).toBeGreaterThan(0)
 
       const workbook = new ExcelJS.Workbook()
-      await workbook.xlsx.load(buffer)
+      await workbook.xlsx.load(buffer as any)
 
       // Verify workbook was created (partner watermark is visual, hard to test)
       expect(workbook.worksheets.length).toBe(5)
@@ -408,7 +408,7 @@ describe("Excel Report Service", () => {
       expect(buffer.length).toBeGreaterThan(0)
 
       const workbook = new ExcelJS.Workbook()
-      await workbook.xlsx.load(buffer)
+      await workbook.xlsx.load(buffer as any)
 
       // All 5 sheets should exist even with no data
       expect(workbook.worksheets.length).toBe(5)
@@ -443,7 +443,7 @@ describe("Excel Report Service", () => {
       expect(duration).toBeLessThan(5000)
 
       const workbook = new ExcelJS.Workbook()
-      await workbook.xlsx.load(buffer)
+      await workbook.xlsx.load(buffer as any)
 
       const costsSheet = workbook.getWorksheet("Detailed Costs")
       expect(costsSheet).toBeDefined()
@@ -477,7 +477,7 @@ describe("Excel Report Service", () => {
 
       // Verify Excel can be parsed
       const workbook = new ExcelJS.Workbook()
-      await expect(workbook.xlsx.load(buffer)).resolves.toBeDefined()
+      await expect(workbook.xlsx.load(buffer as any)).resolves.toBeDefined()
     })
 
     test("handles very long text fields", async () => {
@@ -525,7 +525,7 @@ describe("Excel Report Service", () => {
 
       // Verify workbook can be parsed
       const workbook = new ExcelJS.Workbook()
-      await workbook.xlsx.load(buffer)
+      await workbook.xlsx.load(buffer as any)
 
       const summarySheet = workbook.getWorksheet("Summary")
       expect(summarySheet).toBeDefined()
