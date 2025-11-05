@@ -16,12 +16,19 @@ import { projectAccess } from "@/server/db/schema/projectAccess"
 import { generateProjectPdf } from "@/server/services/report-pdf.service"
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  // Use multiple logging methods to ensure we see SOMETHING
   console.log("📥 PDF Generation API called")
+  console.error("📥 [STDERR] PDF Generation API called")
+  process.stdout.write("📥 [STDOUT] PDF Generation API called\n")
+  process.stderr.write("📥 [STDERR DIRECT] PDF Generation API called\n")
+
   console.log("   Method:", req.method)
   console.log("   Headers:", JSON.stringify(req.headers, null, 2))
   console.log("   ENV NODE_ENV:", process.env.NODE_ENV)
   console.log("   ENV DEPLOY_PRIME_URL:", process.env.DEPLOY_PRIME_URL)
   console.log("   ENV URL:", process.env.URL)
+  console.log("   ENV CONTEXT:", process.env.CONTEXT)
+  console.log("   Timestamp:", new Date().toISOString())
 
   // Only allow POST requests
   if (req.method !== "POST") {
