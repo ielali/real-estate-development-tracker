@@ -76,9 +76,23 @@ async function getLogoDataUri(): Promise<string | null> {
       return null
     }
 
-    const logoBuffer = await response.arrayBuffer()
-    const logoBase64 = Buffer.from(logoBuffer).toString("base64")
+    // Get the content as a buffer for proper base64 encoding
+    const logoBuffer = Buffer.from(await response.arrayBuffer())
+
+    // Verify we got valid data
+    if (logoBuffer.length === 0) {
+      console.warn("Logo buffer is empty")
+      return null
+    }
+
+    console.log(`Logo loaded: ${logoBuffer.length} bytes`)
+
+    // Encode as base64 with proper MIME type
+    const logoBase64 = logoBuffer.toString("base64")
     const dataUri = `data:image/png;base64,${logoBase64}`
+
+    console.log(`Logo data URI created: ${dataUri.length} characters`)
+
     return dataUri
   } catch (error) {
     console.error("Failed to load logo:", error)
