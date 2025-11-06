@@ -38,7 +38,8 @@ import crypto from "crypto"
  * Note: Local store saves files to .blobs/reports/ directory (gitignored) with 24-hour auto-cleanup
  */
 function getReportStore() {
-  const isNetlifyEnvironment = process.env.NETLIFY === "true"
+  // Netlify always sets CONTEXT to "production", "deploy-preview", or "branch-deploy"
+  const isNetlifyEnvironment = !!process.env.CONTEXT
   const isProduction = process.env.CONTEXT === "production"
   const isTest = process.env.NODE_ENV === "test"
 
@@ -48,6 +49,7 @@ function getReportStore() {
     CONTEXT: process.env.CONTEXT,
     NODE_ENV: process.env.NODE_ENV,
     DEPLOY_ID: process.env.DEPLOY_ID,
+    URL: process.env.URL,
     isNetlifyEnvironment,
     isProduction,
     isTest,
@@ -166,13 +168,16 @@ export const reportsRouter = createTRPCRouter({
           // Determine base URL for internal API calls
           // In Netlify: use DEPLOY_PRIME_URL (deploy previews) or URL (production)
           // In local dev: use NEXTAUTH_URL or localhost
-          const isNetlify = process.env.NETLIFY === "true"
+          // Netlify always sets CONTEXT environment variable
+          const isNetlify = !!process.env.CONTEXT
           const baseUrl = isNetlify
             ? process.env.DEPLOY_PRIME_URL || process.env.URL || "http://localhost:3000"
             : process.env.NEXTAUTH_URL || "http://localhost:3000"
 
           console.log("🔗 PDF generation baseUrl:", {
             isNetlify,
+            CONTEXT: process.env.CONTEXT,
+            NETLIFY: process.env.NETLIFY,
             DEPLOY_PRIME_URL: process.env.DEPLOY_PRIME_URL,
             URL: process.env.URL,
             NEXTAUTH_URL: process.env.NEXTAUTH_URL,
