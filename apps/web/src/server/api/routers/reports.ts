@@ -38,15 +38,17 @@ import crypto from "crypto"
  * Note: Local store saves files to .blobs/reports/ directory (gitignored) with 24-hour auto-cleanup
  */
 function getReportStore() {
-  const isProduction = process.env.CONTEXT === "production"
   const isTest = process.env.NODE_ENV === "test"
-  // Netlify sets NETLIFY=true in all builds and serverless functions
-  // Also check CONTEXT for reliability (production/deploy-preview/branch-deploy)
-  const isNetlify = process.env.NETLIFY === "true" || !!process.env.CONTEXT
+  // Use build-time injected environment variables for reliable detection
+  // NEXT_PUBLIC_IS_NETLIFY and NEXT_PUBLIC_NETLIFY_CONTEXT are captured at build time
+  // and available at runtime in serverless functions
+  const isNetlify = process.env.NEXT_PUBLIC_IS_NETLIFY === "true"
+  const context = process.env.NEXT_PUBLIC_NETLIFY_CONTEXT || ""
+  const isProduction = context === "production"
 
   console.log("📦 getReportStore() detection:", {
-    NETLIFY: process.env.NETLIFY,
-    CONTEXT: process.env.CONTEXT,
+    NEXT_PUBLIC_IS_NETLIFY: process.env.NEXT_PUBLIC_IS_NETLIFY,
+    NEXT_PUBLIC_NETLIFY_CONTEXT: process.env.NEXT_PUBLIC_NETLIFY_CONTEXT,
     NODE_ENV: process.env.NODE_ENV,
     isNetlify,
     isProduction,

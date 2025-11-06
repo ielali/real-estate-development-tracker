@@ -21,6 +21,10 @@ const nextConfig = {
   env: {
     NEXT_PUBLIC_SITE_URL:
       process.env.DEPLOY_PRIME_URL || process.env.URL || "http://localhost:3000",
+    // Inject Netlify environment flags for runtime detection
+    // These are captured at build time and made available at runtime
+    NEXT_PUBLIC_IS_NETLIFY: process.env.NETLIFY || "false",
+    NEXT_PUBLIC_NETLIFY_CONTEXT: process.env.CONTEXT || "",
   },
 }
 
