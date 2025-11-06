@@ -80,8 +80,8 @@ export async function GET(
     // 4. Parse and validate metadata
     // Netlify Blobs returns metadata nested under a 'metadata' property
     // Structure: { etag: "...", metadata: { ...our data } }
-    const metadataWrapper = metadata as { metadata: ReportMetadata }
-    const reportMetadata = metadataWrapper.metadata
+    const metadataWrapper = metadata as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    const reportMetadata = metadataWrapper.metadata as ReportMetadata
 
     if (!reportMetadata.expiresAt || !reportMetadata.userId) {
       return NextResponse.json({ error: "Invalid report metadata" }, { status: 500 })
