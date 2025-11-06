@@ -71,7 +71,14 @@ async function getLogoDataUri(): Promise<string | null> {
 
     console.log(`Fetching logo from: ${logoUrl}`)
 
-    const response = await fetch(logoUrl)
+    // Force PNG format via Accept header to avoid Netlify content negotiation
+    // Netlify may serve WebP/AVIF which Sharp doesn't recognize
+    const response = await fetch(logoUrl, {
+      headers: {
+        Accept: "image/png,image/*;q=0.8",
+      },
+    })
+
     if (!response.ok) {
       console.warn(`Logo not found at ${logoUrl}: ${response.status}`)
       return null
@@ -88,20 +95,32 @@ async function getLogoDataUri(): Promise<string | null> {
 
     console.log(`Logo loaded: ${logoBuffer.length} bytes`)
 
-    // Convert PNG to JPEG for better @react-pdf/renderer compatibility
-    // This eliminates "Incomplete or corrupt PNG file" warnings
-    const sharp = (await import("sharp")).default
-    const jpegBuffer = await sharp(logoBuffer).jpeg({ quality: 90 }).toBuffer()
+    // Try to convert PNG to JPEG for better @react-pdf/renderer compatibility
+    // If conversion fails (unsupported format), use the original PNG
+    try {
+      const sharp = (await import("sharp")).default
+      const jpegBuffer = await sharp(logoBuffer).jpeg({ quality: 90 }).toBuffer()
 
-    console.log(`Logo converted to JPEG: ${jpegBuffer.length} bytes`)
+      console.log(`Logo converted to JPEG: ${jpegBuffer.length} bytes`)
 
-    // Encode as base64 with JPEG MIME type
-    const logoBase64 = jpegBuffer.toString("base64")
-    const dataUri = `data:image/jpeg;base64,${logoBase64}`
+      // Encode as base64 with JPEG MIME type
+      const logoBase64 = jpegBuffer.toString("base64")
+      const dataUri = `data:image/jpeg;base64,${logoBase64}`
 
-    console.log(`Logo data URI created: ${dataUri.length} characters`)
+      console.log(`Logo data URI created: ${dataUri.length} characters`)
 
-    return dataUri
+      return dataUri
+    } catch (conversionError) {
+      // Conversion failed, use original image as PNG
+      console.warn("Logo conversion failed, using original PNG:", conversionError)
+
+      const logoBase64 = logoBuffer.toString("base64")
+      const dataUri = `data:image/png;base64,${logoBase64}`
+
+      console.log(`Logo data URI created (fallback PNG): ${dataUri.length} characters`)
+
+      return dataUri
+    }
   } catch (error) {
     console.error("Failed to load logo:", error)
     return null // Return null if logo can't be loaded
