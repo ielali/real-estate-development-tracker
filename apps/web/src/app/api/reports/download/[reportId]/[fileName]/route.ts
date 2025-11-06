@@ -78,7 +78,16 @@ export async function GET(
     }
 
     // 4. Parse and validate metadata
+    console.log("Raw metadata from blob store:", JSON.stringify(metadata, null, 2))
+
     const reportMetadata = metadata as unknown as ReportMetadata
+
+    console.log("Parsed metadata:", {
+      hasExpiresAt: !!reportMetadata.expiresAt,
+      hasUserId: !!reportMetadata.userId,
+      expiresAt: reportMetadata.expiresAt,
+      userId: reportMetadata.userId,
+    })
 
     if (!reportMetadata.expiresAt || !reportMetadata.userId) {
       return NextResponse.json({ error: "Invalid report metadata" }, { status: 500 })
