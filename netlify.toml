@@ -24,7 +24,7 @@
     echo '✅ Unit tests passed' && \
     echo '' && \
     echo '🏗️  Building Application...' && \
-    bun run build && \
+    NEXT_PUBLIC_IS_NETLIFY=$NETLIFY NEXT_PUBLIC_NETLIFY_CONTEXT=$CONTEXT NEXT_PUBLIC_SITE_URL=$DEPLOY_PRIME_URL bun run build && \
     echo '✅ Build completed' && \
     echo '' && \
     echo '📊 Analyzing Bundle Size...' && \
@@ -109,7 +109,7 @@
     bun run type-check && \
     bun run db:migrate && \
     bun run test:unit && \
-    bun run build && \
+    NEXT_PUBLIC_IS_NETLIFY=$NETLIFY NEXT_PUBLIC_NETLIFY_CONTEXT=$CONTEXT NEXT_PUBLIC_SITE_URL=$DEPLOY_PRIME_URL bun run build && \
     echo '✅ Production build complete'
   """
 
@@ -124,7 +124,7 @@
     bun run type-check && \
     bun run db:migrate && \
     bun run test:unit && \
-    bun run build && \
+    NEXT_PUBLIC_IS_NETLIFY=$NETLIFY NEXT_PUBLIC_NETLIFY_CONTEXT=$CONTEXT NEXT_PUBLIC_SITE_URL=$DEPLOY_PRIME_URL bun run build && \
     echo '✅ Deploy preview build complete'
   """
 
@@ -139,6 +139,6 @@
     bun run type-check && \
     bun run db:migrate && \
     bun run test:unit && \
-    bun run build && \
+    NEXT_PUBLIC_IS_NETLIFY=$NETLIFY NEXT_PUBLIC_NETLIFY_CONTEXT=$CONTEXT NEXT_PUBLIC_SITE_URL=$DEPLOY_PRIME_URL bun run build && \
     echo '✅ Branch deploy build complete'
   """
