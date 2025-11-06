@@ -162,7 +162,22 @@ export const reportsRouter = createTRPCRouter({
         if (format === "pdf") {
           // PDF generation must happen in dedicated API route to avoid RSC compilation issues
           // Call the internal API route which runs in Node.js runtime
-          const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000"
+
+          // Determine base URL for internal API calls
+          // In Netlify: use DEPLOY_PRIME_URL (deploy previews) or URL (production)
+          // In local dev: use NEXTAUTH_URL or localhost
+          const isNetlify = process.env.NETLIFY === "true"
+          const baseUrl = isNetlify
+            ? process.env.DEPLOY_PRIME_URL || process.env.URL || "http://localhost:3000"
+            : process.env.NEXTAUTH_URL || "http://localhost:3000"
+
+          console.log("🔗 PDF generation baseUrl:", {
+            isNetlify,
+            DEPLOY_PRIME_URL: process.env.DEPLOY_PRIME_URL,
+            URL: process.env.URL,
+            NEXTAUTH_URL: process.env.NEXTAUTH_URL,
+            selectedBaseUrl: baseUrl,
+          })
 
           // Forward authentication cookies from the original request
           const cookieHeader = ctx.headers.get("cookie") || ""
