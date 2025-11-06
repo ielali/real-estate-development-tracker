@@ -53,50 +53,30 @@ import {
 } from "@/lib/utils/pdf-config"
 import { formatCurrency } from "@/lib/utils/currency"
 import { format } from "date-fns"
+import { getEmbeddedLogo } from "@/lib/constants/logo"
 
 /**
  * Load logo as base64 data URI for React-PDF
- * React-PDF cannot use relative web paths on server side, so we fetch the logo
- * from the deployed URL and convert to data URI
  *
- * Uses pre-converted logo-pdf.jpg which is optimized for @react-pdf/renderer
- * Uses NEXT_PUBLIC_SITE_URL which is injected at build time from DEPLOY_PRIME_URL
- * This ensures the logo is fetched from the correct deployment URL
+ * Reads logo directly from filesystem to bypass Netlify's content optimization.
+ * Netlify applies aggressive content negotiation (WebP/AVIF) even for JPEG files,
+ * which breaks @react-pdf/renderer's image parser ("SOI not found in JPEG" error).
+ *
+ * By reading from the filesystem, we get the exact JPEG bytes without any
+ * optimization or conversion applied by Netlify's edge.
  */
 async function getLogoDataUri(): Promise<string | null> {
   try {
-    // Use build-time injected site URL (works in all environments)
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
-    // Use pre-converted JPEG logo for reliable PDF compatibility
-    const logoUrl = `${baseUrl}/logo-pdf.jpg`
+    const logoDataUri = getEmbeddedLogo()
 
-    console.log(`Fetching logo from: ${logoUrl}`)
-
-    const response = await fetch(logoUrl)
-
-    if (!response.ok) {
-      console.warn(`Logo not found at ${logoUrl}: ${response.status}`)
+    if (!logoDataUri) {
+      console.warn("Logo not available")
       return null
     }
 
-    // Get the content as a buffer for proper base64 encoding
-    const logoBuffer = Buffer.from(await response.arrayBuffer())
+    console.log(`Logo loaded from filesystem: ${logoDataUri.length} characters`)
 
-    // Verify we got valid data
-    if (logoBuffer.length === 0) {
-      console.warn("Logo buffer is empty")
-      return null
-    }
-
-    console.log(`Logo loaded: ${logoBuffer.length} bytes`)
-
-    // Encode as base64 with JPEG MIME type
-    const logoBase64 = logoBuffer.toString("base64")
-    const dataUri = `data:image/jpeg;base64,${logoBase64}`
-
-    console.log(`Logo data URI created: ${dataUri.length} characters`)
-
-    return dataUri
+    return logoDataUri
   } catch (error) {
     console.error("Failed to load logo:", error)
     return null // Return null if logo can't be loaded
