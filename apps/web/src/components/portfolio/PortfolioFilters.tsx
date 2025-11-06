@@ -11,6 +11,7 @@ interface PortfolioFiltersProps {
   onStatusFilterChange: (filter: Array<"active" | "on_hold" | "completed">) => void
   dateRange: { start: Date; end: Date } | undefined
   onDateRangeChange: (range: { start: Date; end: Date } | undefined) => void
+  disabled?: boolean
 }
 
 export function PortfolioFilters({
@@ -18,6 +19,7 @@ export function PortfolioFilters({
   onStatusFilterChange,
   dateRange,
   onDateRangeChange,
+  disabled = false,
 }: PortfolioFiltersProps) {
   const toggleStatus = (status: "active" | "on_hold" | "completed") => {
     if (statusFilter.includes(status)) {
@@ -45,7 +47,7 @@ export function PortfolioFilters({
             </CardDescription>
           </div>
           {hasActiveFilters && (
-            <Button variant="ghost" size="sm" onClick={clearAllFilters}>
+            <Button variant="ghost" size="sm" disabled={disabled} onClick={clearAllFilters}>
               <X className="w-4 h-4 mr-2" />
               Clear All
             </Button>
@@ -65,9 +67,13 @@ export function PortfolioFilters({
                 <Checkbox
                   id="status-active"
                   checked={statusFilter.includes("active")}
+                  disabled={disabled}
                   onCheckedChange={() => toggleStatus("active")}
                 />
-                <Label htmlFor="status-active" className="text-sm font-normal cursor-pointer">
+                <Label
+                  htmlFor="status-active"
+                  className={`text-sm font-normal ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+                >
                   Active
                 </Label>
               </div>
@@ -75,9 +81,13 @@ export function PortfolioFilters({
                 <Checkbox
                   id="status-on-hold"
                   checked={statusFilter.includes("on_hold")}
+                  disabled={disabled}
                   onCheckedChange={() => toggleStatus("on_hold")}
                 />
-                <Label htmlFor="status-on-hold" className="text-sm font-normal cursor-pointer">
+                <Label
+                  htmlFor="status-on-hold"
+                  className={`text-sm font-normal ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+                >
                   On Hold
                 </Label>
               </div>
@@ -85,9 +95,13 @@ export function PortfolioFilters({
                 <Checkbox
                   id="status-completed"
                   checked={statusFilter.includes("completed")}
+                  disabled={disabled}
                   onCheckedChange={() => toggleStatus("completed")}
                 />
-                <Label htmlFor="status-completed" className="text-sm font-normal cursor-pointer">
+                <Label
+                  htmlFor="status-completed"
+                  className={`text-sm font-normal ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+                >
                   Completed
                 </Label>
               </div>
@@ -101,6 +115,7 @@ export function PortfolioFilters({
               <Button
                 variant={!dateRange ? "default" : "outline"}
                 size="sm"
+                disabled={disabled}
                 onClick={() => onDateRangeChange(undefined)}
               >
                 All Time
@@ -108,6 +123,7 @@ export function PortfolioFilters({
               <Button
                 variant="outline"
                 size="sm"
+                disabled={disabled}
                 onClick={() => {
                   const end = new Date()
                   const start = new Date()
@@ -120,6 +136,7 @@ export function PortfolioFilters({
               <Button
                 variant="outline"
                 size="sm"
+                disabled={disabled}
                 onClick={() => {
                   const end = new Date()
                   const start = new Date()
@@ -132,6 +149,7 @@ export function PortfolioFilters({
               <Button
                 variant="outline"
                 size="sm"
+                disabled={disabled}
                 onClick={() => {
                   const end = new Date()
                   const start = new Date(end.getFullYear(), 0, 1)

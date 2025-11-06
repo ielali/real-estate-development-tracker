@@ -255,7 +255,7 @@ export default function PortfolioPage() {
               variant="outline"
               size="sm"
               onClick={() => handleExport("csv")}
-              disabled={exportMutation.isPending}
+              disabled={exportMutation.isPending || selectedProjectIds.length === 0}
             >
               {exportMutation.isPending ? (
                 <Loader2 className="w-4 h-4 animate-spin mr-2" />
@@ -330,6 +330,7 @@ export default function PortfolioPage() {
           onStatusFilterChange={setStatusFilter}
           dateRange={dateRange}
           onDateRangeChange={setDateRange}
+          disabled={selectedProjectIds.length === 0}
         />
 
         {selectedProjectIds.length === 0 ? (
