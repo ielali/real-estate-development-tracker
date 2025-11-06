@@ -53,26 +53,31 @@ import {
 } from "@/lib/utils/pdf-config"
 import { formatCurrency } from "@/lib/utils/currency"
 import { format } from "date-fns"
-import * as fs from "fs"
-import * as path from "path"
 
 /**
  * Load logo as base64 data URI for React-PDF
- * React-PDF cannot use relative web paths on server side, so we load the file
- * from filesystem and convert to data URI
+ * React-PDF cannot use relative web paths on server side, so we fetch the logo
+ * from the deployed URL and convert to data URI
+ *
+ * Uses NEXT_PUBLIC_SITE_URL which is injected at build time from DEPLOY_PRIME_URL
+ * This ensures the logo is fetched from the correct deployment URL
  */
-function getLogoDataUri(): string | null {
+async function getLogoDataUri(): Promise<string | null> {
   try {
-    // process.cwd() is already in apps/web when running from the web app
-    const logoPath = path.join(process.cwd(), "public", "logo.png")
+    // Use build-time injected site URL (works in all environments)
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
+    const logoUrl = `${baseUrl}/logo.png`
 
-    if (!fs.existsSync(logoPath)) {
-      console.warn("Logo file not found at:", logoPath)
+    console.log(`Fetching logo from: ${logoUrl}`)
+
+    const response = await fetch(logoUrl)
+    if (!response.ok) {
+      console.warn(`Logo not found at ${logoUrl}: ${response.status}`)
       return null
     }
 
-    const logoBuffer = fs.readFileSync(logoPath)
-    const logoBase64 = logoBuffer.toString("base64")
+    const logoBuffer = await response.arrayBuffer()
+    const logoBase64 = Buffer.from(logoBuffer).toString("base64")
     const dataUri = `data:image/png;base64,${logoBase64}`
     return dataUri
   } catch (error) {
@@ -160,6 +165,7 @@ interface ReportData {
   generatedAt: Date
   generatedBy: string
   isPartnerView: boolean
+  logoDataUri: string | null
 }
 
 /**
@@ -227,6 +233,9 @@ async function verifyAccessAndGetRole(
  */
 async function fetchReportData(db: Database, input: PdfReportInput): Promise<ReportData> {
   const { projectId, userId, dateRange } = input
+
+  // Fetch logo early in the process
+  const logoDataUri = await getLogoDataUri()
 
   // Build date range filters
   const dateFilters = []
@@ -457,6 +466,7 @@ async function fetchReportData(db: Database, input: PdfReportInput): Promise<Rep
     generatedAt: new Date(),
     generatedBy: currentUser?.name || "Unknown",
     isPartnerView: input.isPartnerView,
+    logoDataUri,
   }
 }
 
@@ -709,13 +719,11 @@ const TimelineChart: React.FC<TimelineChartProps> = ({ data }) => {
  * PDF Report Document Component
  */
 const ProjectReportPDF: React.FC<{ data: ReportData }> = ({ data }) => {
-  const logoDataUri = getLogoDataUri()
-
   return (
     <Document>
       {/* Cover Page */}
       <Page size="A4" style={pdfStyles.coverPage}>
-        {logoDataUri ? <Image src={logoDataUri} style={pdfStyles.coverLogo} /> : null}
+        {data.logoDataUri ? <Image src={data.logoDataUri} style={pdfStyles.coverLogo} /> : null}
         <Text style={pdfStyles.coverTitle}>{data.project.name}</Text>
         <Text style={pdfStyles.coverSubtitle}>Financial Report</Text>
         <Text style={pdfStyles.coverMeta}>Generated: {format(data.generatedAt, "dd/MM/yyyy")}</Text>
