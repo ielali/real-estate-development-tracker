@@ -59,6 +59,7 @@ import { format } from "date-fns"
  * React-PDF cannot use relative web paths on server side, so we fetch the logo
  * from the deployed URL and convert to data URI
  *
+ * Converts PNG to JPEG for better compatibility with @react-pdf/renderer
  * Uses NEXT_PUBLIC_SITE_URL which is injected at build time from DEPLOY_PRIME_URL
  * This ensures the logo is fetched from the correct deployment URL
  */
@@ -87,9 +88,16 @@ async function getLogoDataUri(): Promise<string | null> {
 
     console.log(`Logo loaded: ${logoBuffer.length} bytes`)
 
-    // Encode as base64 with proper MIME type
-    const logoBase64 = logoBuffer.toString("base64")
-    const dataUri = `data:image/png;base64,${logoBase64}`
+    // Convert PNG to JPEG for better @react-pdf/renderer compatibility
+    // This eliminates "Incomplete or corrupt PNG file" warnings
+    const sharp = (await import("sharp")).default
+    const jpegBuffer = await sharp(logoBuffer).jpeg({ quality: 90 }).toBuffer()
+
+    console.log(`Logo converted to JPEG: ${jpegBuffer.length} bytes`)
+
+    // Encode as base64 with JPEG MIME type
+    const logoBase64 = jpegBuffer.toString("base64")
+    const dataUri = `data:image/jpeg;base64,${logoBase64}`
 
     console.log(`Logo data URI created: ${dataUri.length} characters`)
 
