@@ -179,7 +179,7 @@ export const reportsRouter = createTRPCRouter({
             type: typeof process.env.NETLIFY,
             stringified: JSON.stringify(process.env.NETLIFY),
             equalTrue: process.env.NETLIFY === "true",
-            equalTrueBoolean: process.env.NETLIFY === true,
+            equalOne: process.env.NETLIFY === "1",
             truthyCheck: !!process.env.NETLIFY,
           })
 
