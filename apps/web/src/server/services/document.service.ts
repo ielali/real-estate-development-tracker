@@ -1,6 +1,7 @@
-import { getStore, getDeployStore } from "@netlify/blobs"
+import { getStore } from "@netlify/blobs"
 import { TRPCError } from "@trpc/server"
 import sharp from "sharp"
+import { getBlobStore } from "./blob-store.service"
 
 /**
  * File metadata extracted during upload validation
@@ -40,40 +41,6 @@ export function bufferToArrayBuffer(buffer: Buffer): ArrayBuffer {
     buffer.byteOffset,
     buffer.byteOffset + buffer.byteLength
   ) as ArrayBuffer
-}
-
-/**
- * Get the appropriate blob store based on environment
- *
- * - Production: Uses global store (persistent across deploys)
- * - Netlify deploy previews: Uses deploy-scoped store (isolated per branch/deploy)
- * - Local development: Uses local store with site ID fallback
- *
- * This prevents test/dev data from contaminating production storage.
- */
-function getBlobStore(storeName: string) {
-  // Check if we're in production context via Netlify environment
-  const isProduction = process.env.CONTEXT === "production"
-  const isNetlifyEnvironment = process.env.NETLIFY === "true"
-
-  if (isProduction) {
-    // Production: Use global store with strong consistency for critical data
-    return getStore({ name: storeName, consistency: "strong" })
-  }
-
-  // Netlify deploy preview environment (has DEPLOY_ID)
-  if (isNetlifyEnvironment && process.env.DEPLOY_ID) {
-    return getDeployStore(storeName)
-  }
-
-  // Local development: Use getStore with explicit configuration
-  // This works locally without requiring Netlify environment variables
-  return getStore({
-    name: storeName,
-    consistency: "strong",
-    // Optional: You can set NETLIFY_BLOBS_CONTEXT for local development
-    siteID: process.env.NETLIFY_SITE_ID || "local-dev-site",
-  })
 }
 
 /**

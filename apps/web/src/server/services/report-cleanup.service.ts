@@ -11,52 +11,7 @@
  * - Non-blocking (doesn't affect report generation performance)
  */
 
-import { getStore, getDeployStore } from "@netlify/blobs"
-import { getLocalStore } from "./local-blob-store"
-
-/**
- * Get the appropriate blob store for reports based on environment
- *
- * In production: Uses production Netlify Blobs
- * In Netlify deploy previews: Uses deploy-specific Netlify Blobs
- * In local development: Uses in-memory local store (no credentials needed)
- * In test environment: Uses mocked store
- *
- * Note: Local store data is lost when the server restarts!
- */
-function getReportStore() {
-  const isTest = process.env.NODE_ENV === "test"
-  // Use build-time injected environment variables for reliable detection
-  // NEXT_PUBLIC_IS_NETLIFY and NEXT_PUBLIC_NETLIFY_CONTEXT are captured at build time
-  // and available at runtime in serverless functions
-  const isNetlify = process.env.NEXT_PUBLIC_IS_NETLIFY === "true"
-  const context = process.env.NEXT_PUBLIC_NETLIFY_CONTEXT || ""
-  const isProduction = context === "production"
-
-  // Test environment: mocks handle the configuration
-  if (isTest) {
-    return getStore({
-      name: "reports",
-      consistency: "strong",
-      siteID: "test-site-id",
-      token: "test-token",
-    })
-  }
-
-  // Netlify environments (production, deploy-preview, branch-deploy)
-  if (isNetlify) {
-    // Production uses main store
-    if (isProduction) {
-      return getStore({ name: "reports", consistency: "strong" })
-    }
-    // Deploy previews and branch deploys use deploy-specific store
-    return getDeployStore("reports")
-  }
-
-  // Local development: Use in-memory local store
-  // This allows testing without Netlify credentials
-  return getLocalStore({ name: "reports" }) as any // eslint-disable-line @typescript-eslint/no-explicit-any
-}
+import { getBlobStore } from "./blob-store.service"
 
 /**
  * Cleanup result statistics
@@ -90,7 +45,7 @@ export async function cleanupExpiredReports(): Promise<CleanupResult> {
   }
 
   try {
-    const store = getReportStore()
+    const store = getBlobStore("reports")
     const now = new Date()
 
     // List all reports in the blob store
@@ -162,7 +117,7 @@ export async function cleanupExpiredReports(): Promise<CleanupResult> {
  */
 export async function isReportExpired(reportId: string, fileName: string): Promise<boolean> {
   try {
-    const store = getReportStore()
+    const store = getBlobStore("reports")
     const blobKey = `${reportId}/${fileName}`
 
     const metadata = await store.getMetadata(blobKey)
@@ -200,7 +155,7 @@ export async function isReportExpired(reportId: string, fileName: string): Promi
  */
 export async function deleteReport(reportId: string, fileName: string): Promise<boolean> {
   try {
-    const store = getReportStore()
+    const store = getBlobStore("reports")
     const blobKey = `${reportId}/${fileName}`
 
     await store.delete(blobKey)
@@ -226,7 +181,7 @@ export async function getReportMetadata(
   fileName: string
 ): Promise<Record<string, unknown> | null> {
   try {
-    const store = getReportStore()
+    const store = getBlobStore("reports")
     const blobKey = `${reportId}/${fileName}`
 
     const metadata = await store.getMetadata(blobKey)

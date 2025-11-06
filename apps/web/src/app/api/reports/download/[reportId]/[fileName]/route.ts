@@ -15,55 +15,10 @@
 
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/server/auth"
-import { getStore, getDeployStore } from "@netlify/blobs"
-import { getLocalStore } from "@/server/services/local-blob-store"
+import { getBlobStore } from "@/server/services/blob-store.service"
 
 export const runtime = "nodejs" // Use Node.js runtime for blob access
 export const dynamic = "force-dynamic" // Don't cache responses
-
-/**
- * Get the appropriate blob store for reports based on environment
- *
- * In production: Uses production Netlify Blobs
- * In Netlify deploy previews: Uses deploy-specific Netlify Blobs
- * In local development: Uses file system local store in .blobs/reports/ directory (no credentials needed)
- * In test environment: Uses mocked store
- *
- * Note: Local store saves files to .blobs/reports/ directory (gitignored) with 24-hour auto-cleanup
- */
-function getReportStore() {
-  const isTest = process.env.NODE_ENV === "test"
-  // Use build-time injected environment variables for reliable detection
-  // NEXT_PUBLIC_IS_NETLIFY and NEXT_PUBLIC_NETLIFY_CONTEXT are captured at build time
-  // and available at runtime in serverless functions
-  const isNetlify = process.env.NEXT_PUBLIC_IS_NETLIFY === "true"
-  const context = process.env.NEXT_PUBLIC_NETLIFY_CONTEXT || ""
-  const isProduction = context === "production"
-
-  // Test environment: mocks handle the configuration
-  if (isTest) {
-    return getStore({
-      name: "reports",
-      consistency: "strong",
-      siteID: "test-site-id",
-      token: "test-token",
-    })
-  }
-
-  // Netlify environments (production, deploy-preview, branch-deploy)
-  if (isNetlify) {
-    // Production uses main store
-    if (isProduction) {
-      return getStore({ name: "reports", consistency: "strong" })
-    }
-    // Deploy previews and branch deploys use deploy-specific store
-    return getDeployStore("reports")
-  }
-
-  // Local development: Use in-memory local store
-  // This allows testing without Netlify credentials
-  return getLocalStore({ name: "reports" }) as any // eslint-disable-line @typescript-eslint/no-explicit-any
-}
 
 /**
  * Report metadata interface
@@ -113,7 +68,7 @@ export async function GET(
     }
 
     // 3. Get blob store and retrieve metadata
-    const store = getReportStore()
+    const store = getBlobStore("reports")
     const blobKey = `${reportId}/${fileName}`
 
     const metadata = await store.getMetadata(blobKey)

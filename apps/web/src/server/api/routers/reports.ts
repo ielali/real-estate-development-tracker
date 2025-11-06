@@ -21,68 +21,10 @@ import { createTRPCRouter, protectedProcedure } from "../trpc"
 // PDF generation is handled by the dedicated /api/reports/generate-pdf route
 import { generateProjectExcel } from "@/server/services/report-excel.service"
 import { cleanupExpiredReports } from "@/server/services/report-cleanup.service"
-import { getStore, getDeployStore } from "@netlify/blobs"
 import { bufferToArrayBuffer } from "@/server/services/document.service"
 import { projects } from "@/server/db/schema/projects"
-import { getLocalStore } from "@/server/services/local-blob-store"
+import { getBlobStore, logBlobStoreEnvironment } from "@/server/services/blob-store.service"
 import crypto from "crypto"
-
-/**
- * Get the appropriate blob store for reports based on environment
- *
- * In production: Uses production Netlify Blobs
- * In Netlify deploy previews: Uses deploy-specific Netlify Blobs
- * In local development: Uses file system local store in .blobs/reports/ directory (no credentials needed)
- * In test environment: Uses mocked store
- *
- * Note: Local store saves files to .blobs/reports/ directory (gitignored) with 24-hour auto-cleanup
- */
-function getReportStore() {
-  const isTest = process.env.NODE_ENV === "test"
-  // Use build-time injected environment variables for reliable detection
-  // NEXT_PUBLIC_IS_NETLIFY and NEXT_PUBLIC_NETLIFY_CONTEXT are captured at build time
-  // and available at runtime in serverless functions
-  const isNetlify = process.env.NEXT_PUBLIC_IS_NETLIFY === "true"
-  const context = process.env.NEXT_PUBLIC_NETLIFY_CONTEXT || ""
-  const isProduction = context === "production"
-
-  console.log("📦 getReportStore() detection:", {
-    NEXT_PUBLIC_IS_NETLIFY: process.env.NEXT_PUBLIC_IS_NETLIFY,
-    NEXT_PUBLIC_NETLIFY_CONTEXT: process.env.NEXT_PUBLIC_NETLIFY_CONTEXT,
-    NODE_ENV: process.env.NODE_ENV,
-    isNetlify,
-    isProduction,
-    isTest,
-  })
-
-  // Test environment: mocks handle the configuration
-  if (isTest) {
-    console.log("→ Using TEST store (mocked)")
-    return getStore({
-      name: "reports",
-      consistency: "strong",
-      siteID: "test-site-id",
-      token: "test-token",
-    })
-  }
-
-  // Netlify environments (production, deploy-preview, branch-deploy)
-  if (isNetlify) {
-    // Production uses main store
-    if (isProduction) {
-      console.log("→ Using PRODUCTION Netlify Blobs store")
-      return getStore({ name: "reports", consistency: "strong" })
-    }
-    // Deploy previews and branch deploys use deploy-specific store
-    console.log("→ Using DEPLOY-SPECIFIC Netlify Blobs store")
-    return getDeployStore("reports")
-  }
-
-  // Local development: Use file system local store
-  // This allows testing without Netlify credentials and enables manual inspection
-  console.log("→ Using LOCAL file system store")
-  return getLocalStore({ name: "reports" }) as any
-}
 
 /**
  * Input schema for report generation
@@ -219,7 +161,8 @@ export const reportsRouter = createTRPCRouter({
         const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000)
 
         // Store report in Netlify Blobs
-        const store = getReportStore()
+        logBlobStoreEnvironment("reports")
+        const store = getBlobStore("reports")
         await store.set(blobKey, bufferToArrayBuffer(reportBuffer), {
           metadata: {
             projectId,
@@ -285,7 +228,8 @@ export const reportsRouter = createTRPCRouter({
       const blobKey = `${reportId}/${fileName}`
 
       try {
-        const store = getReportStore()
+        logBlobStoreEnvironment("reports")
+        const store = getBlobStore("reports")
 
         // Check if report exists
         const metadata = await store.getMetadata(blobKey)
@@ -343,7 +287,8 @@ export const reportsRouter = createTRPCRouter({
       const blobKey = `${reportId}/${fileName}`
 
       try {
-        const store = getReportStore()
+        logBlobStoreEnvironment("reports")
+        const store = getBlobStore("reports")
 
         // Verify user has access to this report
         const metadata = await store.getMetadata(blobKey)
