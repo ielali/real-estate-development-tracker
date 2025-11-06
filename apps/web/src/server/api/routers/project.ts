@@ -195,8 +195,10 @@ export const projectRouter = createTRPCRouter({
 
     // Get addresses in a single query
     const addressResults = await ctx.db.query.addresses.findMany({
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      where: (addresses: any, { inArray }: any) =>
+      where: (
+        addresses: any,
+        { inArray }: any // eslint-disable-line @typescript-eslint/no-explicit-any
+      ) =>
         inArray(
           addresses.id,
           accessibleProjects

@@ -53,7 +53,7 @@ export const commentsRouter = createTRPCRouter({
             },
           },
         },
-        orderBy: (comments: any, { asc }: any) => [asc(comments.createdAt)],
+        orderBy: (comments: any, { asc }: any) => [asc(comments.createdAt)], // eslint-disable-line @typescript-eslint/no-explicit-any
       })
 
       return commentsList

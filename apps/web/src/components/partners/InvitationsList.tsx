@@ -195,94 +195,98 @@ export function InvitationsList({ projectId }: InvitationsListProps): JSX.Elemen
             </TableRow>
           </TableHeader>
           <TableBody>
-            {invitations.map((invitation: any) => (
-              <TableRow key={invitation.id}>
-                <TableCell>
-                  {invitation.user ? (
-                    <div>
-                      <div className="font-medium">
-                        {invitation.user.firstName} {invitation.user.lastName}
+            {invitations.map(
+              (
+                invitation: any // eslint-disable-line @typescript-eslint/no-explicit-any
+              ) => (
+                <TableRow key={invitation.id}>
+                  <TableCell>
+                    {invitation.user ? (
+                      <div>
+                        <div className="font-medium">
+                          {invitation.user.firstName} {invitation.user.lastName}
+                        </div>
+                        <div className="text-sm text-muted-foreground">{invitation.email}</div>
                       </div>
-                      <div className="text-sm text-muted-foreground">{invitation.email}</div>
-                    </div>
-                  ) : (
-                    <div className="text-muted-foreground">{invitation.email}</div>
-                  )}
-                </TableCell>
-                <TableCell>{getPermissionBadge(invitation.permission)}</TableCell>
-                <TableCell>{getStatusBadge(invitation)}</TableCell>
-                <TableCell>
-                  {invitation.invitedAt
-                    ? formatDistance(new Date(invitation.invitedAt), new Date(), {
-                        addSuffix: true,
-                      })
-                    : "-"}
-                </TableCell>
-                <TableCell>
-                  {invitation.acceptedAt ? (
-                    <span>
-                      {formatDistance(new Date(invitation.acceptedAt), new Date(), {
-                        addSuffix: true,
-                      })}
-                    </span>
-                  ) : invitation.expiresAt ? (
-                    <span className="text-muted-foreground">
-                      {formatDistance(new Date(invitation.expiresAt), new Date(), {
-                        addSuffix: true,
-                      })}
-                    </span>
-                  ) : (
-                    "-"
-                  )}
-                </TableCell>
-                <TableCell className="text-right">
-                  <div className="flex justify-end gap-2">
-                    {invitation.status === "pending" && (
-                      <>
+                    ) : (
+                      <div className="text-muted-foreground">{invitation.email}</div>
+                    )}
+                  </TableCell>
+                  <TableCell>{getPermissionBadge(invitation.permission)}</TableCell>
+                  <TableCell>{getStatusBadge(invitation)}</TableCell>
+                  <TableCell>
+                    {invitation.invitedAt
+                      ? formatDistance(new Date(invitation.invitedAt), new Date(), {
+                          addSuffix: true,
+                        })
+                      : "-"}
+                  </TableCell>
+                  <TableCell>
+                    {invitation.acceptedAt ? (
+                      <span>
+                        {formatDistance(new Date(invitation.acceptedAt), new Date(), {
+                          addSuffix: true,
+                        })}
+                      </span>
+                    ) : invitation.expiresAt ? (
+                      <span className="text-muted-foreground">
+                        {formatDistance(new Date(invitation.expiresAt), new Date(), {
+                          addSuffix: true,
+                        })}
+                      </span>
+                    ) : (
+                      "-"
+                    )}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-2">
+                      {invitation.status === "pending" && (
+                        <>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleResend(invitation.id)}
+                            disabled={resendMutation.isPending}
+                            title="Resend invitation email"
+                          >
+                            <Send className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleCancel(invitation.id, invitation.email)}
+                            disabled={cancelMutation.isPending}
+                            title="Cancel pending invitation"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </>
+                      )}
+                      {invitation.status === "accepted" && (
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleRevoke(invitation.id, invitation.email)}
+                          disabled={revokeMutation.isPending}
+                        >
+                          Revoke
+                        </Button>
+                      )}
+                      {invitation.status === "expired" && (
                         <Button
                           size="sm"
                           variant="outline"
                           onClick={() => handleResend(invitation.id)}
                           disabled={resendMutation.isPending}
-                          title="Resend invitation email"
                         >
-                          <Send className="h-4 w-4" />
+                          Resend
                         </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => handleCancel(invitation.id, invitation.email)}
-                          disabled={cancelMutation.isPending}
-                          title="Cancel pending invitation"
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </>
-                    )}
-                    {invitation.status === "accepted" && (
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => handleRevoke(invitation.id, invitation.email)}
-                        disabled={revokeMutation.isPending}
-                      >
-                        Revoke
-                      </Button>
-                    )}
-                    {invitation.status === "expired" && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleResend(invitation.id)}
-                        disabled={resendMutation.isPending}
-                      >
-                        Resend
-                      </Button>
-                    )}
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
+                      )}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )
+            )}
           </TableBody>
         </Table>
       </div>

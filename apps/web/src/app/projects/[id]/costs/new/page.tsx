@@ -18,6 +18,7 @@ import { api } from "@/lib/trpc/client"
  */
 export default function NewCostPage() {
   const params = useParams()
+  if (!params) return null
   const projectId = params.id as string
 
   // Fetch project to get name for breadcrumb

@@ -32,12 +32,13 @@ import { SearchAndFilter } from "@/components/costs/SearchAndFilter"
 import { useCostFilters } from "@/hooks/useCostFilters"
 import { useFilterPersistence, loadSavedFilters } from "@/hooks/useFilterPersistence"
 import { Timeline, EventEntryForm, TimelineFilter } from "@/components/events"
-import { Plus, Users, Settings as SettingsIcon } from "lucide-react"
+import { Plus, Users, Settings as SettingsIcon, FileDown } from "lucide-react"
 import { useUserRole } from "@/hooks/useUserRole"
 import { PartnerProjectDashboard } from "@/components/partner/PartnerProjectDashboard"
 import { Breadcrumb, breadcrumbHelpers } from "@/components/ui/breadcrumb"
 import { ProjectQuickActions } from "@/components/navigation/quick-actions"
 import { ProjectSwitcher } from "@/components/navigation/project-switcher"
+import { ReportOptionsModal } from "@/components/reports/ReportOptionsModal"
 
 // Lazy load the costs components
 const CostsList = lazy(() =>
@@ -78,11 +79,13 @@ export default function ProjectDetailPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [costsViewMode, setCostsViewMode] = useState<"list" | "contact" | "category">("list")
   const [eventDialogOpen, setEventDialogOpen] = useState(false)
+  const [reportModalOpen, setReportModalOpen] = useState(false)
   const [categoryFilter, setCategoryFilter] = useState<string | undefined>()
   const [contactFilter, setContactFilter] = useState<string | undefined>()
   const [dateRangeStart, setDateRangeStart] = useState<Date | undefined>()
   const [dateRangeEnd, setDateRangeEnd] = useState<Date | undefined>()
 
+  if (!params) return null
   const projectId = params.id as string
   const utils = api.useUtils()
   const { role } = useUserRole()
@@ -143,8 +146,9 @@ export default function ProjectDetailPage() {
     ? Array.from(
         new Map(
           costsData
-            .filter((c: any) => c.category)
+            .filter((c: any) => c.category) // eslint-disable-line @typescript-eslint/no-explicit-any
             .map((c: any) => [
+              // eslint-disable-line @typescript-eslint/no-explicit-any
               c.category!.id,
               { id: c.category!.id, displayName: c.category!.displayName },
             ])
@@ -156,8 +160,9 @@ export default function ProjectDetailPage() {
     ? Array.from(
         new Map(
           costsData
-            .filter((c: any) => c.contact)
+            .filter((c: any) => c.contact) // eslint-disable-line @typescript-eslint/no-explicit-any
             .map((c: any) => [
+              // eslint-disable-line @typescript-eslint/no-explicit-any
               c.contact!.id,
               {
                 id: c.contact!.id,
@@ -274,7 +279,7 @@ export default function ProjectDetailPage() {
             projects={allProjects.map((p) => ({
               id: p.id,
               name: p.name,
-              address: (p.address as any)?.formattedAddress,
+              address: (p.address as any)?.formattedAddress, // eslint-disable-line @typescript-eslint/no-explicit-any
             }))}
           />
         </div>
@@ -289,6 +294,10 @@ export default function ProjectDetailPage() {
           </div>
           <div className="flex gap-2">
             <ProjectQuickActions projectId={project.id} />
+            <Button variant="outline" onClick={() => setReportModalOpen(true)}>
+              <FileDown className="mr-2 h-4 w-4" />
+              Generate Report
+            </Button>
             <Link href={`/projects/${project.id}/documents` as never}>
               <Button variant="outline">Documents</Button>
             </Link>
@@ -485,8 +494,8 @@ export default function ProjectDetailPage() {
                     onSearchChange={setSearchText}
                     onSortChange={handleSortChange}
                     onClearAll={handleClearAll}
-                    categories={(categories ?? []) as any[]}
-                    contacts={(contacts ?? []) as any[]}
+                    categories={(categories ?? []) as any[]} // eslint-disable-line @typescript-eslint/no-explicit-any
+                    contacts={(contacts ?? []) as any[]} // eslint-disable-line @typescript-eslint/no-explicit-any
                   />
                 )}
 
@@ -587,6 +596,14 @@ export default function ProjectDetailPage() {
             </div>
           </TabsContent>
         </Tabs>
+
+        {/* Report Options Modal */}
+        <ReportOptionsModal
+          isOpen={reportModalOpen}
+          onClose={() => setReportModalOpen(false)}
+          projectId={project.id}
+          projectName={project.name}
+        />
       </div>
     </>
   )

@@ -74,6 +74,7 @@ export default function DocumentDetailPage() {
   const params = useParams()
   const router = useRouter()
   const { toast } = useToast()
+  if (!params) return null
   const projectId = params.id as string
   const documentId = params.documentId as string
 
@@ -88,7 +89,7 @@ export default function DocumentDetailPage() {
     limit: 1000,
   })
 
-  const document = documentsData?.documents.find((d: any) => d.id === documentId)
+  const document = documentsData?.documents.find((d: any) => d.id === documentId) // eslint-disable-line @typescript-eslint/no-explicit-any
 
   const isLoading = projectLoading || documentsLoading
 

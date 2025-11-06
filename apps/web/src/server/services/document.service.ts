@@ -1,6 +1,7 @@
-import { getStore, getDeployStore } from "@netlify/blobs"
+import { getStore } from "@netlify/blobs"
 import { TRPCError } from "@trpc/server"
 import sharp from "sharp"
+import { getBlobStore } from "./blob-store.service"
 
 /**
  * File metadata extracted during upload validation
@@ -40,27 +41,6 @@ export function bufferToArrayBuffer(buffer: Buffer): ArrayBuffer {
     buffer.byteOffset,
     buffer.byteOffset + buffer.byteLength
   ) as ArrayBuffer
-}
-
-/**
- * Get the appropriate blob store based on environment
- *
- * - Production: Uses global store (persistent across deploys)
- * - Non-production: Uses deploy-scoped store (isolated per branch/deploy)
- *
- * This prevents test/dev data from contaminating production storage.
- */
-function getBlobStore(storeName: string) {
-  // Check if we're in production context via Netlify environment
-  const isProduction = process.env.CONTEXT === "production"
-
-  if (isProduction) {
-    // Production: Use global store with strong consistency for critical data
-    return getStore({ name: storeName, consistency: "strong" })
-  }
-
-  // Non-production: Use deploy-scoped store to isolate test data
-  return getDeployStore(storeName)
 }
 
 /**

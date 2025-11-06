@@ -61,12 +61,12 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
             <nav className="space-y-1">
               {navItems.map((item) => {
                 const Icon = item.icon
-                const isActive = pathname.startsWith(item.href)
+                const isActive = pathname?.startsWith(item.href) ?? false
 
                 return (
                   <Link
                     key={item.href}
-                    href={item.href as any}
+                    href={item.href as any} // eslint-disable-line @typescript-eslint/no-explicit-any
                     className={cn(
                       "flex items-start gap-3 rounded-lg px-3 py-2 transition-colors",
                       isActive ? "bg-primary text-primary-foreground" : "hover:bg-muted"
@@ -95,12 +95,12 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
             <nav className="flex gap-2 overflow-x-auto pb-2">
               {navItems.map((item) => {
                 const Icon = item.icon
-                const isActive = pathname.startsWith(item.href)
+                const isActive = pathname?.startsWith(item.href) ?? false
 
                 return (
                   <Link
                     key={item.href}
-                    href={item.href as any}
+                    href={item.href as any} // eslint-disable-line @typescript-eslint/no-explicit-any
                     className={cn(
                       "flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors",
                       isActive

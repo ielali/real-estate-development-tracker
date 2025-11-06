@@ -216,12 +216,15 @@ export const eventsRouter = createTRPCRouter({
     })
 
     // Filter out deleted contacts from eventContacts
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const eventsWithActiveContacts = eventsList.map((event: any) => ({
       ...event,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       eventContacts: event.eventContacts.filter((ec: any) => !ec.contact.deletedAt),
     }))
 
     // Filter events that have the specified contact (if contactId provided)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const filteredEvents = input.contactId
       ? eventsWithActiveContacts.filter((event: any) => event.eventContacts.length > 0)
       : eventsWithActiveContacts
@@ -422,6 +425,6 @@ export const eventsRouter = createTRPCRouter({
         )
         .orderBy(desc(eventDocuments.createdAt))
 
-      return links.map((link: any) => link.document)
+      return links.map((link: any) => link.document) // eslint-disable-line @typescript-eslint/no-explicit-any
     }),
 })

@@ -6,6 +6,48 @@
  */
 
 import { describe, test, expect, beforeAll, afterAll, beforeEach, vi } from "vitest"
+
+// Mock the notification service
+// IMPORTANT: Mocks must be defined BEFORE importing modules that use them
+vi.mock("@/server/services/notifications", () => ({
+  notifyCommentAdded: vi.fn(),
+  notifyPartnerInvited: vi.fn(),
+  notifyCostAdded: vi.fn(),
+  notifyDocumentUploaded: vi.fn(),
+}))
+
+// Mock the document service to avoid Netlify Blobs dependency in tests
+// IMPORTANT: This mock must be defined BEFORE importing appRouter
+vi.mock("@/server/services/document.service", () => {
+  const mockDocumentService = {
+    // upload returns blob key (string), not object
+    upload: vi.fn().mockResolvedValue("mock-blob-key"),
+    get: vi.fn().mockResolvedValue("mock-blob-data"),
+    delete: vi.fn().mockResolvedValue(undefined),
+    generateThumbnail: vi.fn().mockResolvedValue("mock-thumbnail-key"),
+    getDocumentBlob: vi.fn().mockResolvedValue("mock-blob-data"),
+    processMetadata: vi.fn().mockReturnValue({
+      fileName: "test.pdf",
+      fileSize: 1024,
+      mimeType: "application/pdf",
+      isValid: true,
+    }),
+  }
+
+  return {
+    DocumentService: vi.fn(() => mockDocumentService),
+    documentService: mockDocumentService,
+    // Export the helper function used in tests
+    bufferToArrayBuffer: (buffer: Buffer): ArrayBuffer => {
+      return buffer.buffer.slice(
+        buffer.byteOffset,
+        buffer.byteOffset + buffer.byteLength
+      ) as ArrayBuffer
+    },
+  }
+})
+
+// Import all other modules AFTER mocks are defined
 import { sql } from "drizzle-orm"
 import { appRouter } from "../../root"
 import { createTestDb, cleanupAllTestDatabases } from "@/test/test-db"
@@ -15,14 +57,6 @@ import { categories } from "@/server/db/schema/categories"
 import { CATEGORIES } from "@/server/db/types"
 import { comments } from "@/server/db/schema/comments"
 import { eq } from "drizzle-orm"
-
-// Mock the notification service
-vi.mock("@/server/services/notifications", () => ({
-  notifyCommentAdded: vi.fn(),
-  notifyPartnerInvited: vi.fn(),
-  notifyCostAdded: vi.fn(),
-  notifyDocumentUploaded: vi.fn(),
-}))
 
 describe("Comments Router", () => {
   let testDbInstance: Awaited<ReturnType<typeof createTestDb>>

@@ -27,6 +27,7 @@ export type CommentEntityType = (typeof CommentEntityType)[keyof typeof CommentE
  * Supports threaded discussions on project entities
  */
 export const comments: any = pgTable(
+  // eslint-disable-line @typescript-eslint/no-explicit-any
   "comments",
   {
     id: uuid("id").defaultRandom().primaryKey(),

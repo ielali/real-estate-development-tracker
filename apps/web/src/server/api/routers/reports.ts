@@ -1,0 +1,351 @@
+/**
+ * Reports tRPC Router
+ *
+ * Handles generation, storage, and retrieval of PDF and Excel reports.
+ * Reports are stored in Netlify Blobs with 24-hour expiry for security.
+ *
+ * Features:
+ * - PDF and Excel report generation
+ * - Date range filtering
+ * - RBAC support (owner and partner access)
+ * - Partner view watermarking
+ * - Temporary storage with auto-expiry
+ * - Signed download URLs
+ */
+
+import { z } from "zod"
+import { TRPCError } from "@trpc/server"
+import { eq } from "drizzle-orm"
+import { createTRPCRouter, protectedProcedure } from "../trpc"
+// NOTE: generateProjectPdf is NOT imported here because it must run in Node.js runtime
+// PDF generation is handled by the dedicated /api/reports/generate-pdf route
+import { generateProjectExcel } from "@/server/services/report-excel.service"
+import { cleanupExpiredReports } from "@/server/services/report-cleanup.service"
+import { bufferToArrayBuffer } from "@/server/services/document.service"
+import { projects } from "@/server/db/schema/projects"
+import { getBlobStore, logBlobStoreEnvironment } from "@/server/services/blob-store.service"
+import crypto from "crypto"
+
+/**
+ * Input schema for report generation
+ */
+const generateReportSchema = z.object({
+  projectId: z.string().uuid("Invalid project ID"),
+  format: z.enum(["pdf", "excel"], {
+    required_error: "Format is required",
+    invalid_type_error: "Format must be either 'pdf' or 'excel'",
+  }),
+  startDate: z.date().nullable().optional(),
+  endDate: z.date().nullable().optional(),
+})
+
+/**
+ * Output schema for report generation response
+ */
+type GenerateReportResponse = {
+  reportId: string
+  downloadUrl: string
+  fileName: string
+  expiresAt: Date
+  format: "pdf" | "excel"
+}
+
+/**
+ * Reports Router
+ */
+export const reportsRouter = createTRPCRouter({
+  /**
+   * Generate a PDF or Excel report for a project
+   *
+   * Flow:
+   * 1. Validate input and user access
+   * 2. Generate report (PDF or Excel)
+   * 3. Store in Netlify Blobs with 24-hour expiry
+   * 4. Return download URL and metadata
+   *
+   * Access Control:
+   * - Project owners can generate full reports
+   * - Partners can generate reports (marked as "Partner View")
+   * - Reports auto-expire after 24 hours
+   */
+  generateReport: protectedProcedure
+    .input(generateReportSchema)
+    .mutation(async ({ ctx, input }): Promise<GenerateReportResponse> => {
+      const userId = ctx.session.user.id
+      const { projectId, format, startDate, endDate } = input
+
+      try {
+        // Determine if user is owner or partner
+        // Both generateProjectPdf and generateProjectExcel will verify access
+        // and throw FORBIDDEN if user doesn't have access
+        const [project] = await ctx.db
+          .select({ ownerId: projects.ownerId })
+          .from(projects)
+          .where(eq(projects.id, projectId))
+          .limit(1)
+
+        const isOwner = project?.ownerId === userId
+        const isPartnerView = !isOwner
+
+        // Build report input
+        const reportInput = {
+          projectId,
+          userId,
+          dateRange: {
+            start: startDate || null,
+            end: endDate || null,
+          },
+          isPartnerView,
+        }
+
+        // Generate report based on format
+        let reportBuffer: Buffer
+        let mimeType: string
+        let fileExtension: string
+
+        if (format === "pdf") {
+          // PDF generation must happen in dedicated API route to avoid RSC compilation issues
+          // The @react-pdf/renderer package uses React reconciler which is incompatible
+          // with React Server Components. The Pages Router API route bypasses RSC compilation.
+          // Call the internal API route which runs in Node.js runtime
+
+          // Determine base URL for internal API calls
+          // NEXT_PUBLIC_SITE_URL is injected at build time from DEPLOY_PRIME_URL (Netlify)
+          // This ensures deploy previews use the correct preview URL, not production URL
+          // In local dev: defaults to localhost:3000
+          const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
+
+          // Forward authentication cookies from the original request
+          const cookieHeader = ctx.headers.get("cookie") || ""
+
+          const response = await fetch(`${baseUrl}/api/reports/generate-pdf`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Cookie: cookieHeader,
+            },
+            body: JSON.stringify({
+              projectId,
+              dateRange: {
+                start: startDate?.toISOString(),
+                end: endDate?.toISOString(),
+              },
+            }),
+          })
+
+          if (!response.ok) {
+            const errorText = await response.text()
+            console.error("PDF generation failed:", errorText)
+            throw new TRPCError({
+              code: "INTERNAL_SERVER_ERROR",
+              message: `Failed to generate PDF report: ${errorText}`,
+            })
+          }
+
+          const arrayBuffer = await response.arrayBuffer()
+          reportBuffer = Buffer.from(arrayBuffer)
+          mimeType = "application/pdf"
+          fileExtension = "pdf"
+        } else {
+          reportBuffer = await generateProjectExcel(ctx.db, reportInput)
+          mimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+          fileExtension = "xlsx"
+        }
+
+        // Generate unique report ID and file name
+        const reportId = crypto.randomUUID()
+        const fileName = `project-report-${Date.now()}.${fileExtension}`
+        const blobKey = `${reportId}/${fileName}`
+
+        // Calculate expiry (24 hours from now)
+        const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000)
+
+        // Store report in Netlify Blobs
+        logBlobStoreEnvironment("reports")
+        const store = getBlobStore("reports")
+        await store.set(blobKey, bufferToArrayBuffer(reportBuffer), {
+          metadata: {
+            projectId,
+            userId,
+            format,
+            fileName,
+            mimeType,
+            generatedAt: new Date().toISOString(),
+            expiresAt: expiresAt.toISOString(),
+            isPartnerView: isPartnerView.toString(),
+          },
+        })
+
+        // Trigger cleanup of expired reports (non-blocking)
+        // This lazy cleanup runs on each report generation
+        cleanupExpiredReports().catch((error) => {
+          console.error("Background report cleanup failed:", error)
+          // Don't throw - cleanup failure shouldn't block report generation
+        })
+
+        // Generate download URL
+        // Note: Netlify Blobs doesn't support signed URLs with expiry out of the box
+        // We'll return the blob key and handle download through a separate endpoint
+        // that verifies the expiry from metadata
+        const downloadUrl = `/api/reports/download/${reportId}/${fileName}`
+
+        return {
+          reportId,
+          downloadUrl,
+          fileName,
+          expiresAt,
+          format,
+        }
+      } catch (error) {
+        // Re-throw TRPCError as-is
+        if (error instanceof TRPCError) {
+          throw error
+        }
+
+        console.error("Report generation failed:", error)
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to generate report. Please try again.",
+        })
+      }
+    }),
+
+  /**
+   * Get report status and download URL
+   *
+   * Checks if a report exists and hasn't expired.
+   * Used for polling during report generation or checking validity.
+   */
+  getReportStatus: protectedProcedure
+    .input(
+      z.object({
+        reportId: z.string().uuid("Invalid report ID"),
+        fileName: z.string().min(1, "File name is required"),
+      })
+    )
+    .query(async ({ input }) => {
+      const { reportId, fileName } = input
+      const blobKey = `${reportId}/${fileName}`
+
+      try {
+        logBlobStoreEnvironment("reports")
+        const store = getBlobStore("reports")
+
+        // Check if report exists
+        const metadata = await store.getMetadata(blobKey)
+
+        if (!metadata) {
+          return {
+            status: "expired" as const,
+            downloadUrl: null,
+          }
+        }
+
+        // Netlify Blobs returns metadata nested under a 'metadata' property
+        const metadataWrapper = metadata as any
+        const reportMetadata = metadataWrapper.metadata
+
+        if (!reportMetadata || !reportMetadata.expiresAt) {
+          return {
+            status: "expired" as const,
+            downloadUrl: null,
+          }
+        }
+
+        // Check if report has expired
+        const expiresAt = new Date(reportMetadata.expiresAt as string)
+        const now = new Date()
+
+        if (expiresAt < now) {
+          // Report expired, delete it
+          await store.delete(blobKey)
+          return {
+            status: "expired" as const,
+            downloadUrl: null,
+          }
+        }
+
+        // Report is ready
+        return {
+          status: "ready" as const,
+          downloadUrl: `/api/reports/download/${reportId}/${fileName}`,
+          expiresAt,
+        }
+      } catch (error) {
+        console.error("Failed to get report status:", error)
+        return {
+          status: "expired" as const,
+          downloadUrl: null,
+        }
+      }
+    }),
+
+  /**
+   * Delete a report manually (before 24-hour expiry)
+   *
+   * Allows users to clean up reports early if needed.
+   */
+  deleteReport: protectedProcedure
+    .input(
+      z.object({
+        reportId: z.string().uuid("Invalid report ID"),
+        fileName: z.string().min(1, "File name is required"),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { reportId, fileName } = input
+      const blobKey = `${reportId}/${fileName}`
+
+      try {
+        logBlobStoreEnvironment("reports")
+        const store = getBlobStore("reports")
+
+        // Verify user has access to this report
+        const metadata = await store.getMetadata(blobKey)
+
+        if (!metadata) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Report not found",
+          })
+        }
+
+        // Netlify Blobs returns metadata nested under a 'metadata' property
+        const metadataWrapper = metadata as any
+        const reportMetadata = metadataWrapper.metadata
+
+        if (!reportMetadata || !reportMetadata.userId) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Report not found",
+          })
+        }
+
+        // Verify the report belongs to this user
+        if (reportMetadata.userId !== ctx.session.user.id) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "You do not have permission to delete this report",
+          })
+        }
+
+        // Delete the report
+        await store.delete(blobKey)
+
+        return {
+          success: true,
+          message: "Report deleted successfully",
+        }
+      } catch (error) {
+        if (error instanceof TRPCError) {
+          throw error
+        }
+
+        console.error("Failed to delete report:", error)
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to delete report",
+        })
+      }
+    }),
+})

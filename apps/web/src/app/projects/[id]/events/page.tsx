@@ -36,6 +36,7 @@ export default function EventsPage() {
   const [dateRangeStart, setDateRangeStart] = React.useState<Date | undefined>()
   const [dateRangeEnd, setDateRangeEnd] = React.useState<Date | undefined>()
 
+  if (!params) return null
   const projectId = params.id as string
 
   const { data: project, isLoading } = api.projects.getById.useQuery({ id: projectId })

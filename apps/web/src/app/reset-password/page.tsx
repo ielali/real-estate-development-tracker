@@ -12,7 +12,7 @@ function ResetPasswordContent() {
   const [isValidating, setIsValidating] = useState(true)
 
   useEffect(() => {
-    const tokenParam = searchParams.get("token")
+    const tokenParam = searchParams?.get("token")
 
     if (!tokenParam) {
       setIsValidating(false)

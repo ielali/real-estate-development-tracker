@@ -73,6 +73,7 @@ export const auditLogRouter = createTRPCRouter({
         .offset(offset)
 
       // Parse metadata and format results
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const accessAttempts = logs.map((log: any) => {
         let metadata: {
           success?: boolean

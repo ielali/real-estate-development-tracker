@@ -14,6 +14,7 @@ import { Breadcrumb, breadcrumbHelpers } from "@/components/ui/breadcrumb"
 export default function ProjectEditPage() {
   const params = useParams()
   const router = useRouter()
+  if (!params) return null
   const projectId = params.id as string
 
   const { data: project, isLoading, error } = api.projects.getById.useQuery({ id: projectId })

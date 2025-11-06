@@ -62,7 +62,7 @@ export function Navbar() {
               {navItems.map((item) => {
                 const isActive =
                   pathname === item.href ||
-                  (item.href !== "/" && pathname.startsWith(item.href + "/"))
+                  (item.href !== "/" && (pathname?.startsWith(item.href + "/") ?? false))
                 return (
                   <Link
                     key={item.href}
@@ -104,7 +104,8 @@ export function Navbar() {
         <nav className="flex sm:hidden gap-6 mt-4 pt-4 border-t">
           {navItems.map((item) => {
             const isActive =
-              pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href + "/"))
+              pathname === item.href ||
+              (item.href !== "/" && (pathname?.startsWith(item.href + "/") ?? false))
             return (
               <Link
                 key={item.href}

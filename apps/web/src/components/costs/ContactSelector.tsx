@@ -103,7 +103,7 @@ export function ContactSelector({
       enabled: recentContactIds.length > 0 && !shouldSearch,
       select: (data) => {
         // Filter to only recent contact IDs
-        return data.filter((row: any) => recentContactIds.includes(row.contact.id))
+        return data.filter((row: any) => recentContactIds.includes(row.contact.id)) // eslint-disable-line @typescript-eslint/no-explicit-any
       },
     }
   )
@@ -151,13 +151,13 @@ export function ContactSelector({
   const { data: selectedContactData } = api.contacts.list.useQuery(
     {},
     {
-      enabled: !!value && !displayContacts.find((row: any) => row.contact.id === value),
-      select: (data) => data.find((row: any) => row.contact.id === value),
+      enabled: !!value && !displayContacts.find((row: any) => row.contact.id === value), // eslint-disable-line @typescript-eslint/no-explicit-any
+      select: (data) => data.find((row: any) => row.contact.id === value), // eslint-disable-line @typescript-eslint/no-explicit-any
     }
   )
 
   const selectedContact =
-    displayContacts.find((row: any) => row.contact.id === value) || selectedContactData
+    displayContacts.find((row: any) => row.contact.id === value) || selectedContactData // eslint-disable-line @typescript-eslint/no-explicit-any
 
   const isLoading = isSearching || isLoadingRecent || isFetching
 
@@ -236,23 +236,29 @@ export function ContactSelector({
           {!shouldSearch && recentContacts.length > 0 && (
             <SelectGroup>
               <SelectLabel>Recently Used</SelectLabel>
-              {recentContacts.map((row: any) => (
-                <SelectItem key={row.contact.id} value={row.contact.id}>
-                  <div className="flex items-center gap-2">
-                    <span>
-                      {row.contact.firstName} {row.contact.lastName}
-                    </span>
-                    {row.contact.company && (
-                      <span className="text-muted-foreground text-xs">({row.contact.company})</span>
-                    )}
-                    {row.category && (
-                      <Badge variant="outline" className="text-xs">
-                        {row.category.displayName}
-                      </Badge>
-                    )}
-                  </div>
-                </SelectItem>
-              ))}
+              {recentContacts.map(
+                (
+                  row: any // eslint-disable-line @typescript-eslint/no-explicit-any
+                ) => (
+                  <SelectItem key={row.contact.id} value={row.contact.id}>
+                    <div className="flex items-center gap-2">
+                      <span>
+                        {row.contact.firstName} {row.contact.lastName}
+                      </span>
+                      {row.contact.company && (
+                        <span className="text-muted-foreground text-xs">
+                          ({row.contact.company})
+                        </span>
+                      )}
+                      {row.category && (
+                        <Badge variant="outline" className="text-xs">
+                          {row.category.displayName}
+                        </Badge>
+                      )}
+                    </div>
+                  </SelectItem>
+                )
+              )}
             </SelectGroup>
           )}
 
@@ -260,23 +266,29 @@ export function ContactSelector({
           {shouldSearch && otherContacts.length > 0 && !isLoading ? (
             <SelectGroup>
               <SelectLabel>Search Results</SelectLabel>
-              {otherContacts.map((row: any) => (
-                <SelectItem key={row.contact.id} value={row.contact.id}>
-                  <div className="flex items-center gap-2">
-                    <span>
-                      {row.contact.firstName} {row.contact.lastName}
-                    </span>
-                    {row.contact.company && (
-                      <span className="text-muted-foreground text-xs">({row.contact.company})</span>
-                    )}
-                    {row.category && (
-                      <Badge variant="outline" className="text-xs">
-                        {row.category.displayName}
-                      </Badge>
-                    )}
-                  </div>
-                </SelectItem>
-              ))}
+              {otherContacts.map(
+                (
+                  row: any // eslint-disable-line @typescript-eslint/no-explicit-any
+                ) => (
+                  <SelectItem key={row.contact.id} value={row.contact.id}>
+                    <div className="flex items-center gap-2">
+                      <span>
+                        {row.contact.firstName} {row.contact.lastName}
+                      </span>
+                      {row.contact.company && (
+                        <span className="text-muted-foreground text-xs">
+                          ({row.contact.company})
+                        </span>
+                      )}
+                      {row.category && (
+                        <Badge variant="outline" className="text-xs">
+                          {row.category.displayName}
+                        </Badge>
+                      )}
+                    </div>
+                  </SelectItem>
+                )
+              )}
             </SelectGroup>
           ) : shouldSearch && !isLoading ? (
             <div className="px-2 py-4 text-center text-sm text-muted-foreground">
