@@ -59,7 +59,7 @@ import { format } from "date-fns"
  * React-PDF cannot use relative web paths on server side, so we fetch the logo
  * from the deployed URL and convert to data URI
  *
- * Converts PNG to JPEG for better compatibility with @react-pdf/renderer
+ * Uses pre-converted logo-pdf.jpg which is optimized for @react-pdf/renderer
  * Uses NEXT_PUBLIC_SITE_URL which is injected at build time from DEPLOY_PRIME_URL
  * This ensures the logo is fetched from the correct deployment URL
  */
@@ -67,17 +67,12 @@ async function getLogoDataUri(): Promise<string | null> {
   try {
     // Use build-time injected site URL (works in all environments)
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
-    const logoUrl = `${baseUrl}/logo.png`
+    // Use pre-converted JPEG logo for reliable PDF compatibility
+    const logoUrl = `${baseUrl}/logo-pdf.jpg`
 
     console.log(`Fetching logo from: ${logoUrl}`)
 
-    // Force PNG format via Accept header to avoid Netlify content negotiation
-    // Netlify may serve WebP/AVIF which Sharp doesn't recognize
-    const response = await fetch(logoUrl, {
-      headers: {
-        Accept: "image/png,image/*;q=0.8",
-      },
-    })
+    const response = await fetch(logoUrl)
 
     if (!response.ok) {
       console.warn(`Logo not found at ${logoUrl}: ${response.status}`)
@@ -95,32 +90,13 @@ async function getLogoDataUri(): Promise<string | null> {
 
     console.log(`Logo loaded: ${logoBuffer.length} bytes`)
 
-    // Try to convert PNG to JPEG for better @react-pdf/renderer compatibility
-    // If conversion fails (unsupported format), use the original PNG
-    try {
-      const sharp = (await import("sharp")).default
-      const jpegBuffer = await sharp(logoBuffer).jpeg({ quality: 90 }).toBuffer()
+    // Encode as base64 with JPEG MIME type
+    const logoBase64 = logoBuffer.toString("base64")
+    const dataUri = `data:image/jpeg;base64,${logoBase64}`
 
-      console.log(`Logo converted to JPEG: ${jpegBuffer.length} bytes`)
+    console.log(`Logo data URI created: ${dataUri.length} characters`)
 
-      // Encode as base64 with JPEG MIME type
-      const logoBase64 = jpegBuffer.toString("base64")
-      const dataUri = `data:image/jpeg;base64,${logoBase64}`
-
-      console.log(`Logo data URI created: ${dataUri.length} characters`)
-
-      return dataUri
-    } catch (conversionError) {
-      // Conversion failed, use original image as PNG
-      console.warn("Logo conversion failed, using original PNG:", conversionError)
-
-      const logoBase64 = logoBuffer.toString("base64")
-      const dataUri = `data:image/png;base64,${logoBase64}`
-
-      console.log(`Logo data URI created (fallback PNG): ${dataUri.length} characters`)
-
-      return dataUri
-    }
+    return dataUri
   } catch (error) {
     console.error("Failed to load logo:", error)
     return null // Return null if logo can't be loaded
