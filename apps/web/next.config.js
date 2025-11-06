@@ -15,6 +15,13 @@ const nextConfig = {
   // See: https://github.com/diegomura/react-pdf/issues/2460
   // Note: In Next.js 15, this was renamed from serverComponentsExternalPackages
   serverExternalPackages: ["@react-pdf/renderer", "@react-pdf/reconciler", "@react-pdf/primitives"],
+  // Inject build-time environment variables for runtime access
+  // DEPLOY_PRIME_URL is available at build time in Netlify and contains the actual deployment URL
+  // (e.g., https://deploy-preview-123--site.netlify.app for previews)
+  env: {
+    NEXT_PUBLIC_SITE_URL:
+      process.env.DEPLOY_PRIME_URL || process.env.URL || "http://localhost:3000",
+  },
 }
 
 // Enable bundle analyzer when ANALYZE=true

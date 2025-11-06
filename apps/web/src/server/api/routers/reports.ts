@@ -38,28 +38,12 @@ import crypto from "crypto"
  * Note: Local store saves files to .blobs/reports/ directory (gitignored) with 24-hour auto-cleanup
  */
 function getReportStore() {
-  // In Netlify functions, CONTEXT may not be available, so we detect via URL
-  // Netlify always sets URL to a netlify.app domain
-  const isNetlifyEnvironment =
-    !!process.env.CONTEXT || (!!process.env.URL && process.env.URL.includes("netlify.app"))
   const isProduction = process.env.CONTEXT === "production"
   const isTest = process.env.NODE_ENV === "test"
-
-  // Debug logging for Netlify environment detection
-  console.log("🔍 getReportStore() environment detection:", {
-    NETLIFY: process.env.NETLIFY,
-    CONTEXT: process.env.CONTEXT,
-    NODE_ENV: process.env.NODE_ENV,
-    DEPLOY_ID: process.env.DEPLOY_ID,
-    URL: process.env.URL,
-    isNetlifyEnvironment,
-    isProduction,
-    isTest,
-  })
+  const isNetlify = !!process.env.URL // Netlify always sets URL environment variable
 
   // Test environment: mocks handle the configuration
   if (isTest) {
-    console.log("📦 Using TEST store (mocked)")
     return getStore({
       name: "reports",
       consistency: "strong",
@@ -69,20 +53,17 @@ function getReportStore() {
   }
 
   // Netlify environments (production, deploy-preview, branch-deploy)
-  if (isNetlifyEnvironment) {
+  if (isNetlify) {
     // Production uses main store
     if (isProduction) {
-      console.log("📦 Using PRODUCTION Netlify Blobs store")
       return getStore({ name: "reports", consistency: "strong" })
     }
     // Deploy previews and branch deploys use deploy-specific store
-    console.log("📦 Using DEPLOY-SPECIFIC Netlify Blobs store")
     return getDeployStore("reports")
   }
 
   // Local development: Use file system local store
   // This allows testing without Netlify credentials and enables manual inspection
-  console.log("📦 Using LOCAL file system store")
   return getLocalStore({ name: "reports" }) as any
 }
 
@@ -165,36 +146,15 @@ export const reportsRouter = createTRPCRouter({
 
         if (format === "pdf") {
           // PDF generation must happen in dedicated API route to avoid RSC compilation issues
+          // The @react-pdf/renderer package uses React reconciler which is incompatible
+          // with React Server Components. The Pages Router API route bypasses RSC compilation.
           // Call the internal API route which runs in Node.js runtime
 
           // Determine base URL for internal API calls
-          // In Netlify: use DEPLOY_PRIME_URL (deploy previews) or URL (production)
-          // In local dev: use NEXTAUTH_URL or localhost
-          // In Netlify functions, CONTEXT may not be available, so detect via URL
-          const isNetlify =
-            !!process.env.CONTEXT || (!!process.env.URL && process.env.URL.includes("netlify.app"))
-          const baseUrl = isNetlify
-            ? process.env.DEPLOY_PRIME_URL || process.env.URL || "http://localhost:3000"
-            : process.env.NEXTAUTH_URL || "http://localhost:3000"
-
-          console.log("🔍 NETLIFY env var inspection:", {
-            value: process.env.NETLIFY,
-            type: typeof process.env.NETLIFY,
-            stringified: JSON.stringify(process.env.NETLIFY),
-            equalTrue: process.env.NETLIFY === "true",
-            equalOne: process.env.NETLIFY === "1",
-            truthyCheck: !!process.env.NETLIFY,
-          })
-
-          console.log("🔗 PDF generation baseUrl:", {
-            isNetlify,
-            CONTEXT: process.env.CONTEXT,
-            NETLIFY: process.env.NETLIFY,
-            DEPLOY_PRIME_URL: process.env.DEPLOY_PRIME_URL,
-            URL: process.env.URL,
-            NEXTAUTH_URL: process.env.NEXTAUTH_URL,
-            selectedBaseUrl: baseUrl,
-          })
+          // NEXT_PUBLIC_SITE_URL is injected at build time from DEPLOY_PRIME_URL (Netlify)
+          // This ensures deploy previews use the correct preview URL, not production URL
+          // In local dev: defaults to localhost:3000
+          const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
 
           // Forward authentication cookies from the original request
           const cookieHeader = ctx.headers.get("cookie") || ""
