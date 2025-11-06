@@ -241,9 +241,19 @@ export const reportsRouter = createTRPCRouter({
           }
         }
 
+        // Netlify Blobs returns metadata nested under a 'metadata' property
+        const metadataWrapper = metadata as any
+        const reportMetadata = metadataWrapper.metadata
+
+        if (!reportMetadata || !reportMetadata.expiresAt) {
+          return {
+            status: "expired" as const,
+            downloadUrl: null,
+          }
+        }
+
         // Check if report has expired
-        const metadataObj = metadata as any
-        const expiresAt = new Date(metadataObj.expiresAt as string)
+        const expiresAt = new Date(reportMetadata.expiresAt as string)
         const now = new Date()
 
         if (expiresAt < now) {
@@ -300,9 +310,19 @@ export const reportsRouter = createTRPCRouter({
           })
         }
 
+        // Netlify Blobs returns metadata nested under a 'metadata' property
+        const metadataWrapper = metadata as any
+        const reportMetadata = metadataWrapper.metadata
+
+        if (!reportMetadata || !reportMetadata.userId) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Report not found",
+          })
+        }
+
         // Verify the report belongs to this user
-        const metadataObj = metadata as any
-        if (metadataObj.userId !== ctx.session.user.id) {
+        if (reportMetadata.userId !== ctx.session.user.id) {
           throw new TRPCError({
             code: "FORBIDDEN",
             message: "You do not have permission to delete this report",

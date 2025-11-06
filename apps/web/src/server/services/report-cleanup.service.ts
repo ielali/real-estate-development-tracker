@@ -65,14 +65,17 @@ export async function cleanupExpiredReports(): Promise<CleanupResult> {
           continue
         }
 
-        const metadataObj = metadata as any // eslint-disable-line @typescript-eslint/no-explicit-any
-        if (!metadataObj.expiresAt) {
+        // Netlify Blobs returns metadata nested under a 'metadata' property
+        const metadataWrapper = metadata as any // eslint-disable-line @typescript-eslint/no-explicit-any
+        const reportMetadata = metadataWrapper.metadata
+
+        if (!reportMetadata || !reportMetadata.expiresAt) {
           // No expiry info - skip (shouldn't happen)
           console.warn(`Report ${blob.key} has no expiry metadata`)
           continue
         }
 
-        const expiresAt = new Date(metadataObj.expiresAt as string)
+        const expiresAt = new Date(reportMetadata.expiresAt as string)
 
         // Delete if expired
         if (expiresAt < now) {
@@ -127,13 +130,16 @@ export async function isReportExpired(reportId: string, fileName: string): Promi
       return true
     }
 
-    const metadataObj = metadata as any // eslint-disable-line @typescript-eslint/no-explicit-any
-    if (!metadataObj.expiresAt) {
+    // Netlify Blobs returns metadata nested under a 'metadata' property
+    const metadataWrapper = metadata as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    const reportMetadata = metadataWrapper.metadata
+
+    if (!reportMetadata || !reportMetadata.expiresAt) {
       // No expiry - consider expired
       return true
     }
 
-    const expiresAt = new Date(metadataObj.expiresAt as string)
+    const expiresAt = new Date(reportMetadata.expiresAt as string)
     const now = new Date()
 
     return expiresAt < now
