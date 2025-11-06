@@ -40,10 +40,22 @@ import crypto from "crypto"
 function getReportStore() {
   const isProduction = process.env.CONTEXT === "production"
   const isTest = process.env.NODE_ENV === "test"
-  const isNetlify = !!process.env.URL // Netlify always sets URL environment variable
+  // Netlify sets NETLIFY=true in all builds and serverless functions
+  // Also check CONTEXT for reliability (production/deploy-preview/branch-deploy)
+  const isNetlify = process.env.NETLIFY === "true" || !!process.env.CONTEXT
+
+  console.log("📦 getReportStore() detection:", {
+    NETLIFY: process.env.NETLIFY,
+    CONTEXT: process.env.CONTEXT,
+    NODE_ENV: process.env.NODE_ENV,
+    isNetlify,
+    isProduction,
+    isTest,
+  })
 
   // Test environment: mocks handle the configuration
   if (isTest) {
+    console.log("→ Using TEST store (mocked)")
     return getStore({
       name: "reports",
       consistency: "strong",
@@ -56,14 +68,17 @@ function getReportStore() {
   if (isNetlify) {
     // Production uses main store
     if (isProduction) {
+      console.log("→ Using PRODUCTION Netlify Blobs store")
       return getStore({ name: "reports", consistency: "strong" })
     }
     // Deploy previews and branch deploys use deploy-specific store
+    console.log("→ Using DEPLOY-SPECIFIC Netlify Blobs store")
     return getDeployStore("reports")
   }
 
   // Local development: Use file system local store
   // This allows testing without Netlify credentials and enables manual inspection
+  console.log("→ Using LOCAL file system store")
   return getLocalStore({ name: "reports" }) as any
 }
 
