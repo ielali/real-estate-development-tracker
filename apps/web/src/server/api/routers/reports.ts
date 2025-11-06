@@ -38,8 +38,10 @@ import crypto from "crypto"
  * Note: Local store saves files to .blobs/reports/ directory (gitignored) with 24-hour auto-cleanup
  */
 function getReportStore() {
-  // Netlify always sets CONTEXT to "production", "deploy-preview", or "branch-deploy"
-  const isNetlifyEnvironment = !!process.env.CONTEXT
+  // In Netlify functions, CONTEXT may not be available, so we detect via URL
+  // Netlify always sets URL to a netlify.app domain
+  const isNetlifyEnvironment =
+    !!process.env.CONTEXT || (!!process.env.URL && process.env.URL.includes("netlify.app"))
   const isProduction = process.env.CONTEXT === "production"
   const isTest = process.env.NODE_ENV === "test"
 
@@ -168,8 +170,9 @@ export const reportsRouter = createTRPCRouter({
           // Determine base URL for internal API calls
           // In Netlify: use DEPLOY_PRIME_URL (deploy previews) or URL (production)
           // In local dev: use NEXTAUTH_URL or localhost
-          // Netlify always sets CONTEXT environment variable
-          const isNetlify = !!process.env.CONTEXT
+          // In Netlify functions, CONTEXT may not be available, so detect via URL
+          const isNetlify =
+            !!process.env.CONTEXT || (!!process.env.URL && process.env.URL.includes("netlify.app"))
           const baseUrl = isNetlify
             ? process.env.DEPLOY_PRIME_URL || process.env.URL || "http://localhost:3000"
             : process.env.NEXTAUTH_URL || "http://localhost:3000"
