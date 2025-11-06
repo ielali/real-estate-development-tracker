@@ -87,8 +87,9 @@ export function TimelineDurationChart({ data }: TimelineDurationChartProps) {
             <XAxis type="number" tickFormatter={(value) => `${value}d`} className="text-xs" />
             <YAxis dataKey="name" type="category" className="text-xs" />
             <Tooltip
-              formatter={(value: number, name: string, props: { payload: any }) => {
+              formatter={(value: number, name: string, props: { payload?: any }) => {
                 const { payload } = props
+                if (!payload) return [value, name]
                 return [
                   <div key="tooltip" className="space-y-1">
                     <div>Duration: {value} days</div>

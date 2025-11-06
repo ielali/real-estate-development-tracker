@@ -78,8 +78,9 @@ export function CommonCategoriesChart({ data }: CommonCategoriesChartProps) {
                 ))}
               </Pie>
               <Tooltip
-                formatter={(value: number, name: string, props: { payload: any }) => {
+                formatter={(value: number, name: string, props: { payload?: any }) => {
                   const { payload } = props
+                  if (!payload) return [value, name]
                   return [
                     <div key="tooltip" className="space-y-1">
                       <div>Amount: {formatCurrency(value * 100)}</div>

@@ -478,33 +478,42 @@ export const portfolioRouter = createTRPCRouter({
           "Category",
           "Amount",
         ],
-        ...projectTotals.flatMap((project) => {
-          const categories = categoriesByProject.get(project.projectId) || []
-          // If project has no categories, still show project row with empty category
-          if (categories.length === 0) {
-            return [
-              [
-                escapeCSV(project.projectName),
-                escapeCSV(project.projectStatus),
-                formatCurrency(project.totalCost),
-                project.durationDays.toString(),
-                project.costPerSqft !== null ? formatCurrency(project.costPerSqft) : "N/A",
-                "",
-                "$0.00",
-              ],
-            ]
+        ...projectTotals.flatMap(
+          (project: {
+            projectId: string
+            projectName: string
+            projectStatus: string
+            totalCost: number
+            durationDays: number
+            costPerSqft: number | null
+          }) => {
+            const categories = categoriesByProject.get(project.projectId) || []
+            // If project has no categories, still show project row with empty category
+            if (categories.length === 0) {
+              return [
+                [
+                  escapeCSV(project.projectName),
+                  escapeCSV(project.projectStatus),
+                  formatCurrency(project.totalCost),
+                  project.durationDays.toString(),
+                  project.costPerSqft !== null ? formatCurrency(project.costPerSqft) : "N/A",
+                  "",
+                  "$0.00",
+                ],
+              ]
+            }
+            // One row per category
+            return categories.map((cat) => [
+              escapeCSV(project.projectName),
+              escapeCSV(project.projectStatus),
+              formatCurrency(project.totalCost),
+              project.durationDays.toString(),
+              project.costPerSqft !== null ? formatCurrency(project.costPerSqft) : "N/A",
+              escapeCSV(cat.categoryName),
+              formatCurrency(cat.categoryTotal),
+            ])
           }
-          // One row per category
-          return categories.map((cat) => [
-            escapeCSV(project.projectName),
-            escapeCSV(project.projectStatus),
-            formatCurrency(project.totalCost),
-            project.durationDays.toString(),
-            project.costPerSqft !== null ? formatCurrency(project.costPerSqft) : "N/A",
-            escapeCSV(cat.categoryName),
-            formatCurrency(cat.categoryTotal),
-          ])
-        }),
+        ),
       ]
 
       const csvContent = csvRows.map((row) => row.join(",")).join("\n")
