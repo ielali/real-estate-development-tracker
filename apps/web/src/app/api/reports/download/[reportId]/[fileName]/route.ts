@@ -108,10 +108,12 @@ export async function GET(
       )
     }
 
-    // 7. Retrieve blob data
-    const blob = await store.get(blobKey)
+    // 7. Retrieve blob data as ArrayBuffer for binary files (PDF/Excel)
+    // IMPORTANT: Must specify type: "arrayBuffer" for binary data
+    // Default type is "text" which corrupts binary files
+    const blobData = await store.get(blobKey, { type: "arrayBuffer" })
 
-    if (!blob) {
+    if (!blobData) {
       return NextResponse.json({ error: "Report data not found" }, { status: 404 })
     }
 
@@ -122,8 +124,8 @@ export async function GET(
         ? "application/pdf"
         : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
-    // 9. Return blob as downloadable file
-    return new NextResponse(blob, {
+    // 9. Return ArrayBuffer as downloadable file
+    return new NextResponse(blobData, {
       status: 200,
       headers: {
         "Content-Type": mimeType,
