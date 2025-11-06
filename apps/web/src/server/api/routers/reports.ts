@@ -174,6 +174,15 @@ export const reportsRouter = createTRPCRouter({
             ? process.env.DEPLOY_PRIME_URL || process.env.URL || "http://localhost:3000"
             : process.env.NEXTAUTH_URL || "http://localhost:3000"
 
+          console.log("🔍 NETLIFY env var inspection:", {
+            value: process.env.NETLIFY,
+            type: typeof process.env.NETLIFY,
+            stringified: JSON.stringify(process.env.NETLIFY),
+            equalTrue: process.env.NETLIFY === "true",
+            equalTrueBoolean: process.env.NETLIFY === true,
+            truthyCheck: !!process.env.NETLIFY,
+          })
+
           console.log("🔗 PDF generation baseUrl:", {
             isNetlify,
             CONTEXT: process.env.CONTEXT,
