@@ -51,9 +51,11 @@ const createProjectSchema = z.object({
   description: z.string().nullable().optional(),
   address: addressSchema,
   projectType: projectTypeSchema,
+  status: projectStatusSchema.optional().default("planning"),
   startDate: z.date(),
   endDate: z.date().nullable().optional(),
   totalBudget: z.number().positive().nullable().optional(),
+  size: z.number().positive().nullable().optional(), // Square meters for analytics
 })
 
 /**
@@ -69,6 +71,7 @@ const updateProjectSchema = z.object({
   startDate: z.date().optional(),
   endDate: z.date().nullable().optional(),
   totalBudget: z.number().positive().nullable().optional(),
+  size: z.number().positive().nullable().optional(),
 })
 
 /**
@@ -142,11 +145,12 @@ export const projectRouter = createTRPCRouter({
         description: input.description ?? null,
         addressId: address.id,
         projectType: input.projectType,
-        status: "planning",
+        status: input.status ?? "planning",
         startDate: input.startDate,
         endDate: input.endDate ?? null,
         ownerId: userId,
         totalBudget: input.totalBudget ?? null,
+        size: input.size ?? null,
       })
       .returning()
 
