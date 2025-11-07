@@ -380,6 +380,10 @@ export function CommandPalette() {
               )}
 
               <CommandGroup heading="Quick Actions">
+                <CommandItem onSelect={() => router.push("/portfolio" as never)}>
+                  <span className="mr-2">📊</span>
+                  View Portfolio Analytics
+                </CommandItem>
                 <CommandItem onSelect={() => router.push("/projects/new" as never)}>
                   <span className="mr-2">🏗️</span>
                   Create Project

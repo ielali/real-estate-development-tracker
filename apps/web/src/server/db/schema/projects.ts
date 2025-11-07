@@ -23,5 +23,6 @@ export const projects = pgTable("projects", {
     .notNull()
     .references(() => users.id),
   totalBudget: bigint("total_budget", { mode: "number" }),
+  size: bigint("size", { mode: "number" }), // Square meters for cost-per-sqm calculation
   search_vector: tsvector("search_vector"),
 })

@@ -23,6 +23,7 @@ export function Navbar() {
     ...(user
       ? [
           { href: "/projects", label: "Projects" },
+          { href: "/portfolio", label: "Portfolio" },
           { href: "/contacts", label: "Contacts" },
           { href: "/categories", label: "Categories" },
         ]

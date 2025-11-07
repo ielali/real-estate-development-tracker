@@ -81,6 +81,8 @@ export function BreadcrumbSeparator() {
 export const breadcrumbHelpers = {
   projects: (): BreadcrumbItem[] => [{ label: "Projects", href: "/projects" }],
 
+  portfolio: (): BreadcrumbItem[] => [{ label: "Portfolio Analytics", href: "/portfolio" }],
+
   project: (projectName: string, projectId: string): BreadcrumbItem[] => [
     { label: "Projects", href: "/projects" },
     { label: projectName, href: `/projects/${projectId}` },
