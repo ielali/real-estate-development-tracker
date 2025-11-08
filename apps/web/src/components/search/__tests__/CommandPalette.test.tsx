@@ -661,9 +661,11 @@ describe("CommandPalette Component", () => {
 
       await waitFor(() => {
         expect(screen.getByText(/quick actions/i)).toBeInTheDocument()
-        expect(screen.getByText("Create Project")).toBeInTheDocument()
-        expect(screen.getByText("Add Cost")).toBeInTheDocument()
-        expect(screen.getByText("Add Contact")).toBeInTheDocument()
+        expect(screen.getByText("View Portfolio Analytics")).toBeInTheDocument()
+        expect(screen.getByText("Create New Project")).toBeInTheDocument()
+        expect(screen.getByText("Add New Contact")).toBeInTheDocument()
+        expect(screen.getByText("View Vendor Dashboard")).toBeInTheDocument()
+        expect(screen.getByText("Compare Vendors")).toBeInTheDocument()
       })
     })
 
@@ -673,14 +675,31 @@ describe("CommandPalette Component", () => {
       fireEvent.keyDown(document, { key: "k", metaKey: true })
 
       await waitFor(() => {
-        expect(screen.getByText("Create Project")).toBeInTheDocument()
+        expect(screen.getByText("Create New Project")).toBeInTheDocument()
       })
 
-      const createProjectAction = screen.getByText("Create Project")
+      const createProjectAction = screen.getByText("Create New Project")
       await userEvent.click(createProjectAction)
 
       await waitFor(() => {
-        expect(mockPush).toHaveBeenCalledWith("/projects/new")
+        expect(mockPush).toHaveBeenCalledWith("/projects?action=add")
+      })
+    })
+
+    test("should navigate to vendor dashboard on quick action click", async () => {
+      renderCommandPalette()
+
+      fireEvent.keyDown(document, { key: "k", metaKey: true })
+
+      await waitFor(() => {
+        expect(screen.getByText("View Vendor Dashboard")).toBeInTheDocument()
+      })
+
+      const vendorDashboardAction = screen.getByText("View Vendor Dashboard")
+      await userEvent.click(vendorDashboardAction)
+
+      await waitFor(() => {
+        expect(mockPush).toHaveBeenCalledWith("/vendors/dashboard")
       })
     })
   })
