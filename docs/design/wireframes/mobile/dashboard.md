@@ -1,6 +1,7 @@
 # Mobile Dashboard Screen
 
 ## Screen: Dashboard (Mobile)
+
 **Purpose:** Provide instant project overview with quick action access for the developer
 
 ```
@@ -48,13 +49,15 @@
 ```
 
 ## Key Elements
+
 - Project cost summary cards with progress indicators
 - Floating action button (FAB) for quick cost entry
-- Recent activity feed (last 5 costs added)  
+- Recent activity feed (last 5 costs added)
 - Project status badges (active/on-hold/complete)
 - Pull-to-refresh gesture support
 
 ## Interaction Notes
+
 - Cards expand on tap to show breakdown
 - Swipe between projects horizontally
 - Long-press for quick actions menu
@@ -62,6 +65,7 @@
 - Activity items link to cost details
 
 ## Accessibility
+
 - Minimum 44x44px touch targets
 - High contrast status indicators
 - Screen reader announces percentages

@@ -15,6 +15,10 @@ export interface ContactSpendingProps {
    * Contact ID to display spending for
    */
   contactId: string
+  /**
+   * Whether to show the header (default: true)
+   */
+  showHeader?: boolean
 }
 
 /**
@@ -28,7 +32,7 @@ export interface ContactSpendingProps {
  *
  * Mobile-optimized with responsive grid layout
  */
-export function ContactSpending({ contactId }: ContactSpendingProps) {
+export function ContactSpending({ contactId, showHeader = true }: ContactSpendingProps) {
   const { data, isLoading, isError } = api.costs.getContactSpending.useQuery({ contactId })
 
   if (isLoading) {
@@ -90,14 +94,16 @@ export function ContactSpending({ contactId }: ContactSpendingProps) {
     <div className="space-y-6">
       {/* Total Spending Card */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <DollarSign className="h-5 w-5" />
-            Total Spending
-          </CardTitle>
-          <CardDescription>Total costs associated with this contact</CardDescription>
-        </CardHeader>
-        <CardContent>
+        {showHeader && (
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <DollarSign className="h-5 w-5" />
+              Total Spending
+            </CardTitle>
+            <CardDescription>Total costs associated with this contact</CardDescription>
+          </CardHeader>
+        )}
+        <CardContent className={showHeader ? "" : "pt-6"}>
           <div className="text-3xl font-bold">{formatCurrency(data.totalSpending)}</div>
         </CardContent>
       </Card>
@@ -105,14 +111,16 @@ export function ContactSpending({ contactId }: ContactSpendingProps) {
       {/* Spending by Project */}
       {data.projectBreakdown.length > 0 && (
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FolderKanban className="h-5 w-5" />
-              Spending by Project
-            </CardTitle>
-            <CardDescription>Breakdown of costs across projects</CardDescription>
-          </CardHeader>
-          <CardContent>
+          {showHeader && (
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FolderKanban className="h-5 w-5" />
+                Spending by Project
+              </CardTitle>
+              <CardDescription>Breakdown of costs across projects</CardDescription>
+            </CardHeader>
+          )}
+          <CardContent className={showHeader ? "" : "pt-6"}>
             <div className="space-y-3">
               {(data.projectBreakdown as any[]) // eslint-disable-line @typescript-eslint/no-explicit-any
                 .sort((a: { total: number }, b: { total: number }) => b.total - a.total)
@@ -133,14 +141,16 @@ export function ContactSpending({ contactId }: ContactSpendingProps) {
       {/* Spending by Category */}
       {data.categoryBreakdown.length > 0 && (
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Tag className="h-5 w-5" />
-              Spending by Category
-            </CardTitle>
-            <CardDescription>Breakdown of costs by cost category</CardDescription>
-          </CardHeader>
-          <CardContent>
+          {showHeader && (
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Tag className="h-5 w-5" />
+                Spending by Category
+              </CardTitle>
+              <CardDescription>Breakdown of costs by cost category</CardDescription>
+            </CardHeader>
+          )}
+          <CardContent className={showHeader ? "" : "pt-6"}>
             <div className="space-y-3">
               {(data.categoryBreakdown as any[]) // eslint-disable-line @typescript-eslint/no-explicit-any
                 .sort((a: { total: number }, b: { total: number }) => b.total - a.total)

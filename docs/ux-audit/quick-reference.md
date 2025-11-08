@@ -370,7 +370,6 @@ const ChartsVisualization = lazy(() => import("./ChartsVisualization"))
 ```tsx
 // Always use Next.js Image component
 import Image from "next/image"
-
 ;<Image
   src="/document.jpg"
   alt="Document description"

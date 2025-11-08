@@ -1,6 +1,7 @@
 # Partner Dashboard (Desktop)
 
 ## Screen: Partner Dashboard - Read-Only Professional View
+
 **Purpose:** Professional presentation of project status for investment partners
 
 ```
@@ -64,15 +65,17 @@
 ```
 
 ## Key Elements
+
 - Professional header with branding
 - Executive summary metrics cards
-- Interactive cost breakdown charts  
+- Interactive cost breakdown charts
 - Timeline of major milestones
 - Document gallery with download options
 - KPI indicators and trend analysis
 - Contact information for questions
 
 ## Interaction Notes
+
 - Charts animate on page load
 - Hover/click for detailed tooltips
 - Smooth scroll between sections
@@ -81,6 +84,7 @@
 - Breadcrumb navigation for multi-project access
 
 ## Partner-Specific Features
+
 - Read-only access (no editing capabilities)
 - Financial focus with ROI calculations
 - Professional terminology and presentation
@@ -89,6 +93,7 @@
 - Automated email reports option
 
 ## Accessibility
+
 - High contrast charts with patterns
 - Keyboard navigation for all interactive elements
 - Screen reader friendly table structures

@@ -1,6 +1,7 @@
 # Timeline Tab (Mobile)
 
 ## Screen: Project Timeline - Event Management
+
 **Purpose:** Chronological view of all project events, milestones, and activities
 
 ```
@@ -62,6 +63,7 @@
 ```
 
 ## Key Elements
+
 - Timeline visualization with event markers
 - Event cards with type icons and linked entities
 - Monthly grouping with collapsible sections
@@ -70,8 +72,9 @@
 - Event type categorization
 
 ## Event Types & Icons
+
 - 🏗️ Construction milestones
-- 👥 Meetings and communications  
+- 👥 Meetings and communications
 - ✅ Inspections and approvals
 - 🔧 Trade work completion
 - 📝 Documentation events
@@ -79,13 +82,16 @@
 - ⚠️ Issues and delays
 
 ## Linked Entities Display
+
 Each event shows:
+
 - **Contacts:** People involved (👤)
-- **Costs:** Related expenses (💰) 
+- **Costs:** Related expenses (💰)
 - **Documents:** Photos, files (📄 📸)
 - **Projects:** Cross-project references
 
 ## Interaction Notes
+
 - Tap event to expand full details
 - Swipe for quick actions (edit/delete)
 - Long-press for multi-select
@@ -94,6 +100,7 @@ Each event shows:
 - Filter by event type, contact, date range
 
 ## Accessibility
+
 - Timeline semantically marked as ordered list
 - Event markers have descriptive labels
 - Linked items announced with counts

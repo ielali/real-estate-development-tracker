@@ -2,6 +2,7 @@ import { db } from "./index"
 import { sql } from "drizzle-orm"
 import { execSync } from "child_process"
 import { checkProductionSafety, parseSafetyFlags } from "./safety-check"
+import { syncSchema } from "./sync-schema"
 
 /**
  * Database Rebuild Script
@@ -60,11 +61,15 @@ async function rebuild() {
     console.log("\n2️⃣  Running migrations from scratch...")
     execSync("tsx src/server/db/migrate.ts", { stdio: "inherit" })
 
-    console.log("\n3️⃣  Seeding database...")
+    console.log("\n3️⃣  Syncing schema (adding any missing columns)...")
+    await syncSchema()
+
+    console.log("\n4️⃣  Seeding database...")
     execSync("tsx src/server/db/seed.ts", { stdio: "inherit" })
 
     console.log("\n✅ Database rebuild completed successfully!")
     console.log("   - All migrations applied from beginning")
+    console.log("   - Schema synced with Drizzle definitions")
     console.log("   - Database seeded with initial data")
   } catch (error) {
     console.error("\n❌ Rebuild failed:", error)

@@ -26,6 +26,7 @@ export * from "./email_logs"
 export * from "./digest_queue"
 export * from "./revoked_tokens"
 export * from "./comments"
+export * from "./vendor-ratings"
 
 import { relations } from "drizzle-orm"
 import { users } from "./users"
@@ -49,6 +50,7 @@ import { securityEvents } from "./security-events"
 import { notifications } from "./notifications"
 import { notificationPreferences } from "./notification_preferences"
 import { comments } from "./comments"
+import { vendorRatings } from "./vendor-ratings"
 
 export const usersRelations = relations(users, ({ one, many }) => ({
   ownedProjects: many(projects),
@@ -59,6 +61,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   securityEvents: many(securityEvents),
   notifications: many(notifications),
   comments: many(comments),
+  vendorRatings: many(vendorRatings),
   notificationPreferences: one(notificationPreferences, {
     fields: [users.id],
     references: [notificationPreferences.userId],
@@ -88,6 +91,7 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
   projectBackups: many(projectBackups),
   notifications: many(notifications),
   comments: many(comments),
+  vendorRatings: many(vendorRatings),
 }))
 
 export const costsRelations = relations(costs, ({ one, many }) => ({
@@ -122,6 +126,7 @@ export const contactsRelations = relations(contacts, ({ one, many }) => ({
   costs: many(costs),
   projects: many(projectContact),
   contactDocuments: many(contactDocuments),
+  vendorRatings: many(vendorRatings),
 }))
 
 export const documentsRelations = relations(documents, ({ one, many }) => ({
@@ -293,4 +298,19 @@ export const commentsRelations = relations(comments, ({ one, many }) => ({
     references: [comments.id],
   }),
   replies: many(comments),
+}))
+
+export const vendorRatingsRelations = relations(vendorRatings, ({ one }) => ({
+  user: one(users, {
+    fields: [vendorRatings.userId],
+    references: [users.id],
+  }),
+  contact: one(contacts, {
+    fields: [vendorRatings.contactId],
+    references: [contacts.id],
+  }),
+  project: one(projects, {
+    fields: [vendorRatings.projectId],
+    references: [projects.id],
+  }),
 }))

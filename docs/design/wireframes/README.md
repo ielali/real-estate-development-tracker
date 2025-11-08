@@ -5,6 +5,7 @@ This directory contains ASCII wireframes for the Real Estate Development Tracker
 ## Mobile Wireframes (/mobile/)
 
 ### Core User Screens (Developer-focused)
+
 - **dashboard.md** - Main mobile dashboard with project cards and quick actions
 - **cost-entry-form.md** - 30-second cost entry flow with numeric keypad
 - **project-detail.md** - Project overview with tabbed navigation
@@ -14,7 +15,8 @@ This directory contains ASCII wireframes for the Real Estate Development Tracker
 ## Desktop Wireframes (/desktop/)
 
 ### Developer & Partner Views
-- **project-dashboard.md** - Multi-project overview dashboard (developer view)  
+
+- **project-dashboard.md** - Multi-project overview dashboard (developer view)
 - **partner-dashboard.md** - Professional read-only dashboard for investment partners
 - **contact-detail.md** - Comprehensive contact profile with linked relationships
 - **costs-breakdown-view.md** - Detailed cost analysis with vendor and category breakdowns
@@ -24,24 +26,28 @@ This directory contains ASCII wireframes for the Real Estate Development Tracker
 These wireframes implement the requirements from `/docs/front-end-spec.md`:
 
 ### Mobile-First Approach
+
 - **30-second cost entry** flow optimized for on-site use
 - **Thumb-reachable** bottom navigation with FAB for primary actions
 - **Progressive disclosure** with expandable cards and drill-down navigation
 - **Pull-to-refresh** and swipe gestures throughout
 
-### Professional Partner Experience  
+### Professional Partner Experience
+
 - **Executive-level** dashboards with financial focus
 - **Read-only access** with professional presentation
 - **Chart visualizations** with ROI and trend analysis
 - **Print-friendly** reports and export capabilities
 
 ### Comprehensive Entity Linking (PRD FR8)
+
 - **Costs ↔ Vendors ↔ Documents** relationships displayed consistently
 - **Timeline events** linked to contacts, costs, and supporting documents
 - **Contact profiles** show all associated projects, spending, and communications
 - **Document management** with attachment indicators and preview capabilities
 
 ### Accessibility & Performance
+
 - **WCAG 2.1 AA compliance** considerations built into each wireframe
 - **44x44px minimum** touch targets on mobile
 - **High contrast** status indicators and financial data
@@ -50,12 +56,14 @@ These wireframes implement the requirements from `/docs/front-end-spec.md`:
 ## Navigation Architecture
 
 ### Mobile Navigation Pattern
+
 ```
 Bottom Tab Bar:
 🏠 Dashboard → 📊 Projects → ➕ Add Cost → 👥 Contacts → ☰ Menu
 ```
 
-### Desktop Navigation Pattern  
+### Desktop Navigation Pattern
+
 ```
 Top Navigation:
 Home > Projects > [Project Name] > [Current Section]
@@ -65,6 +73,7 @@ With project switcher dropdown and user account menu
 ## Component Integration
 
 These wireframes reference the component library defined in the specification:
+
 - **ProjectCard** components in various states and layouts
 - **QuickAddButton** (FAB) for primary actions
 - **CostItem** displays with swipe actions and bulk selection
@@ -76,7 +85,7 @@ These wireframes reference the component library defined in the specification:
 ## Next Steps
 
 1. **High-fidelity mockups** - Create detailed visual designs in Figma
-2. **Interactive prototypes** - Build clickable prototypes for user testing  
+2. **Interactive prototypes** - Build clickable prototypes for user testing
 3. **Component library** - Develop React components based on these wireframes
 4. **Responsive testing** - Validate layouts across device breakpoints
 5. **Accessibility testing** - Screen reader and keyboard navigation validation

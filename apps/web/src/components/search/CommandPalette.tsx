@@ -380,21 +380,50 @@ export function CommandPalette() {
               )}
 
               <CommandGroup heading="Quick Actions">
-                <CommandItem onSelect={() => router.push("/portfolio" as never)}>
+                <CommandItem
+                  onSelect={() => {
+                    router.push("/portfolio" as never)
+                    setOpen(false)
+                  }}
+                >
                   <span className="mr-2">📊</span>
                   View Portfolio Analytics
                 </CommandItem>
-                <CommandItem onSelect={() => router.push("/projects/new" as never)}>
+                <CommandItem
+                  onSelect={() => {
+                    router.push("/projects?action=add" as never)
+                    setOpen(false)
+                  }}
+                >
                   <span className="mr-2">🏗️</span>
-                  Create Project
+                  Create New Project
                 </CommandItem>
-                <CommandItem onSelect={() => router.push("/costs/new" as never)}>
-                  <span className="mr-2">💰</span>
-                  Add Cost
-                </CommandItem>
-                <CommandItem onSelect={() => router.push("/contacts/new" as never)}>
+                <CommandItem
+                  onSelect={() => {
+                    router.push("/contacts?action=add" as never)
+                    setOpen(false)
+                  }}
+                >
                   <span className="mr-2">👥</span>
-                  Add Contact
+                  Add New Contact
+                </CommandItem>
+                <CommandItem
+                  onSelect={() => {
+                    router.push("/vendors/dashboard" as never)
+                    setOpen(false)
+                  }}
+                >
+                  <span className="mr-2">🏆</span>
+                  View Vendor Dashboard
+                </CommandItem>
+                <CommandItem
+                  onSelect={() => {
+                    router.push("/vendors/compare" as never)
+                    setOpen(false)
+                  }}
+                >
+                  <span className="mr-2">📊</span>
+                  Compare Vendors
                 </CommandItem>
               </CommandGroup>
 

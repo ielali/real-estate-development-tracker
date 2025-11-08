@@ -9,6 +9,7 @@ I want to upload documents and photos to projects,
 so that all files are centralized.
 
 ### Acceptance Criteria
+
 1: File upload with drag-and-drop or click-to-browse
 2: Direct camera access for mobile photo capture
 3: Multiple file selection supported
@@ -23,6 +24,7 @@ I want documents organized and easily retrievable,
 so that I never waste time searching.
 
 ### Acceptance Criteria
+
 1: Documents stored as blobs in SQLite initially
 2: Automatic file type categorization (invoice, photo, contract, etc.)
 3: Document thumbnail generation for preview
@@ -37,6 +39,7 @@ I want to log project events and milestones,
 so that I can track project progression.
 
 ### Acceptance Criteria
+
 1: Event creation with date, title, description
 2: Events displayed in chronological timeline view
 3: Events linkable to contacts (meeting with builder, etc.)
@@ -51,6 +54,7 @@ I want to link documents to costs, contacts, and events,
 so that everything has context.
 
 ### Acceptance Criteria
+
 1: Link documents to specific costs (receipts, invoices)
 2: Attach documents to events (permits, approvals)
 3: Associate documents with contacts (contracts, quotes)
