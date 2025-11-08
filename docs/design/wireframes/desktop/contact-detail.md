@@ -1,6 +1,7 @@
 # Contact Detail View (Desktop)
 
 ## Screen: Contact Detail - Linked Relationships
+
 **Purpose:** Show comprehensive contact information with all linked project activities
 
 ```
@@ -60,21 +61,25 @@
 ```
 
 ## Key Elements
+
 - Contact header with category breadcrumb and actions
 - **Linked Items Timeline:** Chronological list of all costs, documents, events
-- Project association cards with spending summaries  
+- Project association cards with spending summaries
 - Performance metrics and ratings
 - Communication history tracking
 - Related contacts with relationship context
 
 ## Linked Relationships Display
+
 Timeline shows all connected activities:
+
 - **Costs:** Payment history with amounts and project context
 - **Events:** Meetings, milestones, work completion tied to contact
 - **Documents:** Photos, certificates, contracts associated with contact
 - **Projects:** Cross-project activity and spending patterns
 
 ## Interaction Notes
+
 - Timeline items link back to original records
 - Project badges filter activities when clicked
 - Inline editing for contact details
@@ -82,13 +87,15 @@ Timeline shows all connected activities:
 - Related contacts show collaboration patterns
 
 ## Data Intelligence Features
+
 - Automatic spending totals across projects
-- Performance tracking and rating system  
+- Performance tracking and rating system
 - Communication frequency analysis
 - Relationship mapping with other contacts
 - Payment history and terms tracking
 
 ## Accessibility
+
 - Contact information clearly structured with labels
 - Timeline semantically marked with proper headings
 - All linked items have descriptive link text

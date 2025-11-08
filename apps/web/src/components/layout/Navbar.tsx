@@ -25,6 +25,7 @@ export function Navbar() {
           { href: "/projects", label: "Projects" },
           { href: "/portfolio", label: "Portfolio" },
           { href: "/contacts", label: "Contacts" },
+          { href: "/vendors/dashboard", label: "Vendors" },
           { href: "/categories", label: "Categories" },
         ]
       : []),

@@ -3,19 +3,21 @@
 ## Unified Error Handling
 
 **Error Response Format:**
+
 ```typescript
 interface ApiError {
   error: {
-    code: string;
-    message: string;
-    details?: Record<string, any>;
-    timestamp: string;
-    requestId: string;
-  };
+    code: string
+    message: string
+    details?: Record<string, any>
+    timestamp: string
+    requestId: string
+  }
 }
 ```
 
 **Frontend Error Handling:**
+
 ```typescript
 // Global error boundary for component errors
 export function GlobalErrorBoundary({ children }: { children: React.ReactNode }) {
@@ -52,20 +54,21 @@ const { mutate: addCost } = api.costs.quickAdd.useMutation({
 ```
 
 **Backend Error Handling:**
+
 ```typescript
 // tRPC error handler
 export const errorHandler = (error: any, req: any) => {
-  console.error('tRPC Error:', error);
-  
-  if (error.code === 'UNAUTHORIZED') {
-    return { code: 'UNAUTHORIZED', message: 'Please log in to continue' };
+  console.error("tRPC Error:", error)
+
+  if (error.code === "UNAUTHORIZED") {
+    return { code: "UNAUTHORIZED", message: "Please log in to continue" }
   }
-  
-  if (error.code === 'FORBIDDEN') {
-    return { code: 'FORBIDDEN', message: 'You do not have permission for this action' };
+
+  if (error.code === "FORBIDDEN") {
+    return { code: "FORBIDDEN", message: "You do not have permission for this action" }
   }
-  
+
   // Log to Sentry
-  return { code: 'INTERNAL_SERVER_ERROR', message: 'An unexpected error occurred' };
-};
+  return { code: "INTERNAL_SERVER_ERROR", message: "An unexpected error occurred" }
+}
 ```

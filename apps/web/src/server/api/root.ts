@@ -18,6 +18,7 @@ import { notificationPreferencesRouter } from "./routers/notification_preference
 import { commentsRouter } from "./routers/comments"
 import { reportsRouter } from "./routers/reports"
 import { portfolioRouter } from "./routers/portfolio"
+import { vendorRouter } from "./routers/vendor"
 
 export const appRouter = createTRPCRouter({
   auth: authRouter,
@@ -39,6 +40,7 @@ export const appRouter = createTRPCRouter({
   comments: commentsRouter,
   reports: reportsRouter,
   portfolio: portfolioRouter,
+  vendor: vendorRouter,
 })
 
 export type AppRouter = typeof appRouter

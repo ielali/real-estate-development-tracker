@@ -9,6 +9,7 @@ This unified approach combines what would traditionally be separate backend and 
 Based on the PRD analysis and technical assumptions, this is a **greenfield project** that should leverage Next.js 14+ with the modern component ecosystem. Given the specified tech stack requirements:
 
 **Recommended Foundation:**
+
 - **Next.js 14+ with App Router** as the core fullstack framework
 - **Shadcn/ui component library** for professional UI components
 - **Tailwind CSS** for styling system
@@ -16,6 +17,7 @@ Based on the PRD analysis and technical assumptions, this is a **greenfield proj
 - **Turborepo** for monorepo management
 
 Rather than using a comprehensive starter like T3 Stack, the PRD specifically calls for Shadcn/ui components, which provides a more curated, customizable approach. This allows for:
+
 - Professional, accessible components out of the box
 - Full customization control for real estate branding
 - Excellent mobile-first responsive design
@@ -25,6 +27,6 @@ Rather than using a comprehensive starter like T3 Stack, the PRD specifically ca
 
 ## Change Log
 
-| Date | Version | Description | Author |
-|------|---------|-------------|--------|
-| 2025-08-31 | 1.0 | Initial architecture creation | Winston (Architect) |
+| Date       | Version | Description                   | Author              |
+| ---------- | ------- | ----------------------------- | ------------------- |
+| 2025-08-31 | 1.0     | Initial architecture creation | Winston (Architect) |

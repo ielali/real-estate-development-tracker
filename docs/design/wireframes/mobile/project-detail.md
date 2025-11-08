@@ -1,6 +1,7 @@
 # Project Detail View (Mobile)
 
 ## Screen: Project Detail with Tabbed Navigation
+
 **Purpose:** Comprehensive project information with linked entity management
 
 ```
@@ -62,6 +63,7 @@
 ```
 
 ## Key Elements
+
 - Project header with budget progress
 - Tabbed navigation for sections
 - Status indicators and metrics
@@ -70,13 +72,15 @@
 - Visual progress indicators
 
 ## Tab Content Areas
+
 - **Overview:** Summary, metrics, recent activity
-- **Costs:** Cost list, breakdown charts, vendor analysis  
+- **Costs:** Cost list, breakdown charts, vendor analysis
 - **Timeline:** Event timeline, milestones, linked activities
 - **Documents:** Photo gallery, file uploads, document viewer
 - **Partners:** Access management, partner communications
 
 ## Interaction Notes
+
 - Horizontal swipe between tabs
 - Pull-to-refresh updates data
 - Quick actions float above content
@@ -84,7 +88,9 @@
 - Activity items link to source records
 
 ## Linked Entity Display
+
 Each tab shows comprehensive relationships:
+
 - Costs → Vendors, Categories, Documents
 - Timeline → Contacts, Costs, Documents
 - Documents → Events, Costs, Contacts

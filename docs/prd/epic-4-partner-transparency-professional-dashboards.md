@@ -9,6 +9,7 @@ I want to invite partners to view projects,
 so that they have transparency without me sending updates.
 
 ### Acceptance Criteria
+
 1: Email invitation flow with secure token generation
 2: Partner registration with limited profile fields
 3: Email verification before access granted
@@ -23,6 +24,7 @@ I want to control what partners can see and do,
 so that sensitive information is protected.
 
 ### Acceptance Criteria
+
 1: Admin role with full read/write access
 2: Partner role with read-only access to assigned projects
 3: Role assignment during invitation process
@@ -37,6 +39,7 @@ I want a professional dashboard view of my investments,
 so that I can monitor progress without requesting updates.
 
 ### Acceptance Criteria
+
 1: Clean, professional read-only interface
 2: Project summary cards with key metrics
 3: Cost breakdown by category with visualizations
@@ -51,6 +54,7 @@ I want visual representations of project data,
 so that I can quickly understand project status.
 
 ### Acceptance Criteria
+
 1: Spending trend chart over time
 2: Category breakdown pie chart with smooth animations
 3: Budget vs actual comparison (when budget data exists)

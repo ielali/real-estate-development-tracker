@@ -1,6 +1,7 @@
 # Costs Breakdown View (Desktop)
 
 ## Screen: Comprehensive Cost Analysis and Management
+
 **Purpose:** Detailed cost tracking with vendor analysis, category breakdown, and financial insights
 
 ```
@@ -73,6 +74,7 @@
 ```
 
 ## Key Elements
+
 - Cost summary metrics with budget tracking
 - Interactive category and vendor breakdowns
 - Filterable transaction table
@@ -81,7 +83,9 @@
 - Document/photo attachment indicators
 
 ## Linked Entity Relationships
+
 Each cost entry shows:
+
 - **Vendor:** Link to vendor detail with full history
 - **Category:** Grouped analysis and budget allocation
 - **Documents:** Attached receipts, photos, invoices
@@ -89,6 +93,7 @@ Each cost entry shows:
 - **Projects:** Cross-project vendor spending patterns
 
 ## Interactive Features
+
 - Click categories to drill down into subcategories
 - Vendor names link to full vendor profiles
 - Date columns sort chronologically
@@ -96,6 +101,7 @@ Each cost entry shows:
 - Bulk selection for batch operations
 
 ## Analytics Capabilities
+
 - Spending velocity tracking
 - Budget variance analysis
 - Vendor performance comparisons
@@ -103,12 +109,14 @@ Each cost entry shows:
 - Cash flow projections
 
 ## Document Management
+
 - 📎 Attachments (receipts, invoices)
 - 📸 Photos (work progress, materials)
 - 📋 Notes (context, approvals)
 - 📄 Official documents (permits, contracts)
 
 ## Export Options
+
 - PDF reports for partners
 - Excel/CSV for accounting
 - Custom date ranges
@@ -116,6 +124,7 @@ Each cost entry shows:
 - Vendor payment summaries
 
 ## Accessibility
+
 - Table headers properly associated
 - Sort indicators clearly marked
 - Filter states announced to screen readers

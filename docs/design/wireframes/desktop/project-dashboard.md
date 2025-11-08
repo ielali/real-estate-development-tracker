@@ -1,6 +1,7 @@
 # Project Dashboard (Desktop)
 
 ## Screen: Multi-Project Dashboard - Developer View
+
 **Purpose:** Comprehensive overview of all active projects with quick access to critical information
 
 ```
@@ -80,6 +81,7 @@
 ```
 
 ## Key Elements
+
 - Portfolio-level metrics and overview
 - Expandable project cards with status indicators
 - Cross-project activity feed
@@ -88,7 +90,9 @@
 - Real-time progress tracking
 
 ## Project Card Information
+
 Each project shows:
+
 - Budget progress with visual indicator
 - Current status and key milestones
 - Most recent activity with timestamp
@@ -96,12 +100,14 @@ Each project shows:
 - Quick action buttons for immediate tasks
 
 ## Status Indicators
+
 - 🟢 **On Track:** Meeting budget and timeline
-- 🟡 **Watch:** Approaching limits or requiring attention  
+- 🟡 **Watch:** Approaching limits or requiring attention
 - 🔴 **Alert:** Over budget or behind schedule
 - ⏸️ **On Hold:** Temporarily paused
 
 ## Dashboard Intelligence
+
 - Real-time budget calculations
 - Spending trend analysis
 - Timeline conflict detection
@@ -109,6 +115,7 @@ Each project shows:
 - Partner notification triggers
 
 ## Interaction Notes
+
 - Click project cards to expand details
 - Drag and drop to reorder project priority
 - Hover for quick preview tooltips
@@ -116,6 +123,7 @@ Each project shows:
 - Multi-project bulk operations
 
 ## Responsive Behavior
+
 - Collapses to single column on smaller screens
 - Project cards stack vertically on tablets
 - Activity feeds merge on mobile
