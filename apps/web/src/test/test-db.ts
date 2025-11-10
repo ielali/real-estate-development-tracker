@@ -89,6 +89,9 @@ export const createTestDb = async () => {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function createCleanupFunction(db: any) {
   return async () => {
+    // Wait for any async operations (email logs, notifications) to complete
+    await new Promise((resolve) => setTimeout(resolve, 500))
+
     // TRUNCATE CASCADE automatically handles foreign key dependencies
     // Much more reliable than manual DELETE ordering
     // Note: Only includes tables that exist in all environments
@@ -145,6 +148,9 @@ function createCleanupFunction(db: any) {
  * Call this in global afterAll if needed.
  */
 export const cleanupAllTestDatabases = async () => {
+  // Wait for async operations (email logs, notifications, etc.) to complete
+  await new Promise((resolve) => setTimeout(resolve, 1000))
+
   if (globalPool) {
     await globalPool.end()
     globalPool = null
