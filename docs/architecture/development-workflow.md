@@ -150,6 +150,54 @@ git push origin feature/epic-1-story-1.2
 # - Netlify will automatically deploy to production
 ```
 
+**Epic Integration Branch Strategy:**
+
+For large epics with multiple stories, use an integration branch to test all changes together before merging to main:
+
+```bash
+# 1. Create integration branch from main (at epic start)
+git checkout main
+git pull origin main
+git checkout -b integration/epic-{n}
+git push -u origin integration/epic-{n}
+
+# 2. Story PRs target the integration branch
+# - Create feature branch from main: feature/story-{n}.{n}
+# - Open PR targeting integration/epic-{n} (not main)
+# - Merge story PR to integration branch after review
+
+# 3. Test integration branch
+# - Netlify creates preview deployment for integration branch
+# - Test all epic stories together
+# - Verify no conflicts or regressions
+
+# 4. Merge integration branch to main when epic complete
+# - Open PR from integration/epic-{n} → main
+# - Final review and approval
+# - Merge triggers production deployment
+```
+
+**Integration Branch Benefits:**
+
+- Isolate epic changes from main until fully tested
+- Test all epic stories together in preview environment
+- Catch integration issues early
+- Easier to rollback epic if needed
+- Allows parallel work on multiple epics
+
+**Example:**
+
+```bash
+# Epic 10: Modern Navigation & Design System Overhaul
+# Integration branch: integration/epic-10
+
+# Story 10.1 PR: feature/story-10.1 → integration/epic-10
+# Story 10.2 PR: feature/story-10.2 → integration/epic-10
+# Story 10.3 PR: feature/story-10.3 → integration/epic-10
+
+# Final PR: integration/epic-10 → main
+```
+
 ## Code Quality Gates
 
 **Pre-commit Hooks (Husky):**
