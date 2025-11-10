@@ -34,6 +34,8 @@ export function QuickFilterPresets({ onPresetSelect, activePreset }: QuickFilter
             size="sm"
             onClick={() => onPresetSelect(preset)}
             className="gap-2"
+            aria-pressed={activePreset === preset.id}
+            data-preset-id={preset.id}
           >
             {PRESET_ICONS[preset.id]}
             {preset.label}

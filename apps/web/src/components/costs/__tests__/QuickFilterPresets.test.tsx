@@ -41,18 +41,21 @@ describe("QuickFilterPresets", () => {
   })
 
   test("should highlight active preset", () => {
-    const { container } = render(
+    const { getByRole } = render(
       <QuickFilterPresets onPresetSelect={vi.fn()} activePreset="last-30-days" />
     )
 
-    const buttons = Array.from(container.querySelectorAll("button"))
-    const activeButton = buttons.find((btn) => btn.textContent?.includes("Last 30 days"))
-    const inactiveButton = buttons.find((btn) => btn.textContent?.includes("Over $1,000"))
+    // Query buttons by their accessible role and text
+    const activeButton = getByRole("button", { name: /Last 30 days/i })
+    const inactiveButton = getByRole("button", { name: /Over \$1,000/i })
 
-    // Active button has default variant (bg-gray-900)
-    expect(activeButton?.className).toContain("bg-gray-900")
-    // Inactive button does not have default variant class
-    expect(inactiveButton?.className).not.toContain("bg-gray-900")
+    // Active button should have aria-pressed="true"
+    expect(activeButton).toHaveAttribute("aria-pressed", "true")
+    expect(activeButton).toHaveAttribute("data-preset-id", "last-30-days")
+
+    // Inactive button should have aria-pressed="false"
+    expect(inactiveButton).toHaveAttribute("aria-pressed", "false")
+    expect(inactiveButton).toHaveAttribute("data-preset-id", "over-1000")
   })
 
   test("should show icons for presets", () => {
