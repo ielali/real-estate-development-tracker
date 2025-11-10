@@ -91,6 +91,7 @@ function createCleanupFunction(db: any) {
   return async () => {
     // TRUNCATE CASCADE automatically handles foreign key dependencies
     // Much more reliable than manual DELETE ordering
+    // Note: Only includes tables that exist in all environments
     await db.execute(sql`
       TRUNCATE TABLE
         audit_log,
@@ -110,31 +111,31 @@ function createCleanupFunction(db: any) {
         addresses,
         users,
         notification_preferences,
-        notifications,
         email_logs,
         digest_queue,
-        revoked_tokens,
-        security_events,
-        project_backups,
         cost_templates,
         categories
       CASCADE
     `)
 
-    // Separately truncate two_factor if it exists (handles migration state)
-    try {
-      await db.execute(sql`TRUNCATE TABLE two_factor CASCADE`)
-    } catch (error) {
-      // Table doesn't exist yet - this is fine during migration periods
-      // Silently skip
-    }
+    // Separately truncate tables that may not exist yet (handles migration state)
+    const optionalTables = [
+      "two_factor",
+      "comments",
+      "notifications",
+      "revoked_tokens",
+      "security_events",
+      "project_backups",
+      "vendor_ratings",
+    ]
 
-    // Separately truncate comments if it exists (handles migration state)
-    try {
-      await db.execute(sql`TRUNCATE TABLE comments CASCADE`)
-    } catch (error) {
-      // Table doesn't exist yet - this is fine during migration periods
-      // Silently skip
+    for (const table of optionalTables) {
+      try {
+        await db.execute(sql.raw(`TRUNCATE TABLE ${table} CASCADE`))
+      } catch (error) {
+        // Table doesn't exist yet - this is fine during migration periods
+        // Silently skip
+      }
     }
   }
 }
@@ -144,6 +145,9 @@ function createCleanupFunction(db: any) {
  * Call this in global afterAll if needed.
  */
 export const cleanupAllTestDatabases = async () => {
+  // Wait for async operations (email logs, notifications, etc.) to complete
+  await new Promise((resolve) => setTimeout(resolve, 1000))
+
   if (globalPool) {
     await globalPool.end()
     globalPool = null

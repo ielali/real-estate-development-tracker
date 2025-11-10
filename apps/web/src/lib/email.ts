@@ -57,6 +57,18 @@ export class EmailService {
   }
 
   /**
+   * Sanitize tag values for Resend API
+   * Resend requires tag values to only contain ASCII letters, numbers, underscores, or dashes
+   */
+  private sanitizeTagValue(value: string): string {
+    return value
+      .replace(/[^a-zA-Z0-9_-]/g, "_") // Replace invalid chars with underscore
+      .replace(/_+/g, "_") // Collapse multiple underscores
+      .replace(/^_|_$/g, "") // Trim leading/trailing underscores
+      .slice(0, 256) // Limit length
+  }
+
+  /**
    * Sleep utility for retry delays
    */
   private sleep(ms: number): Promise<void> {
@@ -132,8 +144,12 @@ export class EmailService {
       const fromEmail = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev"
 
       // Convert tags from Record<string, string> to Tag[] format
+      // Sanitize tag values to meet Resend's requirements (ASCII letters, numbers, underscores, dashes only)
       const tagsArray = tags
-        ? Object.entries(tags).map(([name, value]) => ({ name, value }))
+        ? Object.entries(tags).map(([name, value]) => ({
+            name,
+            value: this.sanitizeTagValue(value),
+          }))
         : undefined
 
       const result = await resend.emails.send({
