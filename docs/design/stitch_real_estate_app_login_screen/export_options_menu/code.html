@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Export Options</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0A2540",
+                        "secondary": "#20C997",
+                        "background-light": "#F8F9FA",
+                        "background-dark": "#101922",
+                        "text-light": "#343A40",
+                        "text-dark": "#E9ECEF",
+                        "subtle-light": "#6C757D",
+                        "subtle-dark": "#A0AEC0",
+                        "border-light": "#DEE2E6",
+                        "border-dark": "#4A5568",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark">
+<div class="relative flex h-screen min-h-screen w-full flex-col items-center justify-center p-4" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBPXzo8FY2c36u9Qgf_BdTRpqWLkTE7SyHr073vSUGyThRXo3BmGaAOV_7aJU5OQGJ7y4woiVC6KUFnhLvzRwiSyaD1Xi5iLOliT7Z_kBxdzD679LHgjJTKqGM0QSmERDszX85Qw3zaXuqbSh-SWIi4fqrPErbrN6ybele8Vt5vGf1bhBzKfU19k6TsYpYOYO4AB0L-4J90XFCF6oORQd4PrUdRqH-lax5RFQi7X6zBMobrBzdiTBVoZnc1k3S6V1JVDG38AQUv7lPL');">
+<div class="w-full max-w-lg rounded-xl bg-background-light dark:bg-background-dark shadow-2xl ring-1 ring-border-light dark:ring-border-dark">
+<div class="flex items-center justify-between border-b border-border-light dark:border-border-dark p-4 sm:p-5">
+<h1 class="text-xl font-bold text-primary dark:text-white">Export Report</h1>
+<button class="flex size-8 items-center justify-center rounded-full text-subtle-light dark:text-subtle-dark transition-colors hover:bg-gray-200 dark:hover:bg-gray-700">
+<span class="material-symbols-outlined text-xl">close</span>
+</button>
+</div>
+<div class="flex flex-col space-y-6 p-4 sm:p-6">
+<div>
+<h2 class="text-base font-semibold leading-tight text-subtle-light dark:text-subtle-dark mb-2">Choose a format</h2>
+<div class="flex h-11 items-center justify-center rounded-lg bg-gray-200/50 dark:bg-black/20 p-1">
+<label class="flex h-full flex-1 cursor-pointer items-center justify-center rounded-md px-2 text-sm font-medium leading-normal text-subtle-light dark:text-subtle-dark has-[:checked]:bg-background-light has-[:checked]:text-text-light has-[:checked]:shadow-sm has-[:checked]:dark:bg-gray-700 has-[:checked]:dark:text-text-dark">
+<span class="truncate">PDF</span>
+<input class="invisible w-0" name="export-format" type="radio" value="PDF"/>
+</label>
+<label class="flex h-full flex-1 cursor-pointer items-center justify-center rounded-md px-2 text-sm font-medium leading-normal text-subtle-light dark:text-subtle-dark has-[:checked]:bg-background-light has-[:checked]:text-text-light has-[:checked]:shadow-sm has-[:checked]:dark:bg-gray-700 has-[:checked]:dark:text-text-dark">
+<span class="truncate">Excel</span>
+<input checked="" class="invisible w-0" name="export-format" type="radio" value="Excel"/>
+</label>
+<label class="flex h-full flex-1 cursor-pointer items-center justify-center rounded-md px-2 text-sm font-medium leading-normal text-subtle-light dark:text-subtle-dark has-[:checked]:bg-background-light has-[:checked]:text-text-light has-[:checked]:shadow-sm has-[:checked]:dark:bg-gray-700 has-[:checked]:dark:text-text-dark">
+<span class="truncate">CSV</span>
+<input class="invisible w-0" name="export-format" type="radio" value="CSV"/>
+</label>
+</div>
+</div>
+<div>
+<h2 class="text-base font-semibold leading-tight text-subtle-light dark:text-subtle-dark mb-2">Select a date range</h2>
+<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+<div class="relative">
+<input class="w-full rounded-lg border border-border-light bg-transparent p-3 text-sm text-text-light placeholder-subtle-light focus:border-primary/50 focus:ring-primary/50 dark:border-border-dark dark:text-text-dark dark:placeholder-subtle-dark" onblur="(this.type='text')" onfocus="(this.type='date')" placeholder="Start Date" type="text"/>
+</div>
+<div class="relative">
+<input class="w-full rounded-lg border border-border-light bg-transparent p-3 text-sm text-text-light placeholder-subtle-light focus:border-primary/50 focus:ring-primary/50 dark:border-border-dark dark:text-text-dark dark:placeholder-subtle-dark" onblur="(this.type='text')" onfocus="(this.type='date')" placeholder="End Date" type="text"/>
+</div>
+</div>
+</div>
+<div>
+<h2 class="text-base font-semibold leading-tight text-subtle-light dark:text-subtle-dark mb-2">Filter by project status</h2>
+<div class="flex flex-wrap gap-2">
+<label class="flex cursor-pointer items-center gap-2 rounded-full px-3 py-1.5 text-sm has-[:checked]:bg-secondary has-[:checked]:text-white bg-gray-200/60 dark:bg-gray-800 text-subtle-light dark:text-subtle-dark has-[:checked]:dark:text-primary transition-colors">
+<input checked="" class="invisible h-0 w-0" type="checkbox" value="in-progress"/>
+<span>In Progress</span>
+</label>
+<label class="flex cursor-pointer items-center gap-2 rounded-full px-3 py-1.5 text-sm has-[:checked]:bg-secondary has-[:checked]:text-white bg-gray-200/60 dark:bg-gray-800 text-subtle-light dark:text-subtle-dark has-[:checked]:dark:text-primary transition-colors">
+<input checked="" class="invisible h-0 w-0" type="checkbox" value="completed"/>
+<span>Completed</span>
+</label>
+<label class="flex cursor-pointer items-center gap-2 rounded-full px-3 py-1.5 text-sm has-[:checked]:bg-secondary has-[:checked]:text-white bg-gray-200/60 dark:bg-gray-800 text-subtle-light dark:text-subtle-dark has-[:checked]:dark:text-primary transition-colors">
+<input class="invisible h-0 w-0" type="checkbox" value="on-hold"/>
+<span>On Hold</span>
+</label>
+<label class="flex cursor-pointer items-center gap-2 rounded-full px-3 py-1.5 text-sm has-[:checked]:bg-secondary has-[:checked]:text-white bg-gray-200/60 dark:bg-gray-800 text-subtle-light dark:text-subtle-dark has-[:checked]:dark:text-primary transition-colors">
+<input class="invisible h-0 w-0" type="checkbox" value="cancelled"/>
+<span>Cancelled</span>
+</label>
+</div>
+</div>
+</div>
+<div class="border-t border-border-light dark:border-border-dark p-4 sm:p-5">
+<button class="flex w-full items-center justify-center gap-2 rounded-lg bg-primary py-3 text-base font-semibold text-white transition-opacity hover:opacity-90 active:opacity-80">
+<span>Generate &amp; Download</span>
+</button>
+</div>
+<!-- Loading Indicator Example (hidden by default) -->
+<!-- 
+            <div class="absolute inset-0 z-10 flex flex-col items-center justify-center rounded-xl bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm">
+                <svg class="h-10 w-10 animate-spin text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p class="mt-4 text-sm font-medium text-subtle-light dark:text-subtle-dark">Generating your report...</p>
+            </div>
+            -->
+</div>
+</div>
+</body></html>

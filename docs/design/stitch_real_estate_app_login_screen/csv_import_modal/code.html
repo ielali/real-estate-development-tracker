@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Import Project Data</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+<div class="relative flex min-h-screen items-center justify-center p-4">
+<div class="w-full max-w-4xl rounded-xl bg-white dark:bg-slate-900 shadow-2xl flex flex-col max-h-[90vh]">
+<!-- Modal Header -->
+<div class="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center shrink-0">
+<div class="flex flex-col gap-1">
+<h1 class="text-xl font-bold text-slate-800 dark:text-slate-100">Import Project Data</h1>
+<p class="text-sm text-slate-500 dark:text-slate-400">Upload a CSV file to import project data. Ensure the file includes headers.</p>
+</div>
+<button class="flex items-center justify-center size-8 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
+<span class="material-symbols-outlined text-xl">close</span>
+</button>
+</div>
+<!-- Modal Body -->
+<div class="p-6 overflow-y-auto space-y-8 flex-1">
+<!-- Step 1: Upload File -->
+<div>
+<!-- Empty State for Upload -->
+<div class="flex flex-col items-center gap-6 rounded-lg border-2 border-dashed border-slate-300 dark:border-slate-700 px-6 py-10">
+<div class="flex max-w-md flex-col items-center gap-2 text-center">
+<span class="material-symbols-outlined text-4xl text-primary">upload_file</span>
+<p class="text-lg font-bold text-slate-800 dark:text-slate-100">Drag &amp; Drop CSV file or click to browse</p>
+<p class="text-sm text-slate-500 dark:text-slate-400">Max file size: 10MB. Accepted format: .csv</p>
+</div>
+<button class="flex min-w-[84px] max-w-xs cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-sm font-bold leading-normal tracking-wide hover:bg-slate-200 dark:hover:bg-slate-700">
+<span>Browse Files</span>
+</button>
+</div>
+<!-- File Details Display (shown after upload) -->
+<div class="mt-4 hidden">
+<div class="flex items-center gap-4 rounded-lg bg-slate-100 dark:bg-slate-800 px-4 py-3 justify-between">
+<div class="flex items-center gap-4">
+<div class="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-10">
+<span class="material-symbols-outlined">description</span>
+</div>
+<div class="flex-1">
+<p class="text-base font-medium text-slate-800 dark:text-slate-100 truncate">development_projects_q3.csv</p>
+<p class="text-sm text-slate-500 dark:text-slate-400">4.7 MB</p>
+</div>
+</div>
+<button class="shrink-0 text-slate-500 dark:text-slate-400 flex size-7 items-center justify-center rounded-full hover:bg-slate-200 dark:hover:bg-slate-700">
+<span class="material-symbols-outlined text-xl">close</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Step 2: Map Columns -->
+<div class="space-y-4">
+<div class="pb-2">
+<h2 class="text-lg font-bold leading-tight tracking-tight text-slate-800 dark:text-slate-100">Map Your Columns</h2>
+<p class="text-sm text-slate-500 dark:text-slate-400 pt-1">Match the columns from your CSV file to the corresponding fields. Required fields are marked with an asterisk (*).</p>
+</div>
+<!-- Error Display -->
+<div class="flex items-start gap-3 rounded-lg bg-red-50 dark:bg-red-900/20 p-4 border border-red-200 dark:border-red-500/30">
+<span class="material-symbols-outlined text-xl text-red-600 dark:text-red-400 mt-0.5">error</span>
+<div class="flex flex-col">
+<h3 class="font-semibold text-red-800 dark:text-red-300">Validation Error</h3>
+<p class="text-sm text-red-700 dark:text-red-400">Required field 'Project Name' is not mapped.</p>
+</div>
+</div>
+<!-- Mapping Headers -->
+<div class="grid grid-cols-2 gap-4 px-4 pb-2">
+<h3 class="text-sm font-semibold text-slate-600 dark:text-slate-400">CSV Column Header</h3>
+<h3 class="text-sm font-semibold text-slate-600 dark:text-slate-400">Application Field</h3>
+</div>
+<!-- Mapping Items -->
+<div class="space-y-2">
+<!-- Mapping Row 1 (Required) -->
+<div class="grid grid-cols-2 gap-4 items-center p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50">
+<div class="px-1 text-slate-700 dark:text-slate-300 font-medium">Project Title</div>
+<div>
+<select class="w-full rounded-md border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:border-primary focus:ring-primary focus:ring-opacity-50 text-sm">
+<option>Project Name *</option>
+<option>Address</option>
+<option>Acquisition Cost</option>
+</select>
+</div>
+</div>
+<!-- Mapping Row 2 -->
+<div class="grid grid-cols-2 gap-4 items-center p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50">
+<div class="px-1 text-slate-700 dark:text-slate-300 font-medium">Property Address</div>
+<div>
+<select class="w-full rounded-md border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:border-primary focus:ring-primary focus:ring-opacity-50 text-sm">
+<option>Project Name *</option>
+<option selected="">Address</option>
+<option>Acquisition Cost</option>
+</select>
+</div>
+</div>
+<!-- Mapping Row 3 (Unmapped) -->
+<div class="grid grid-cols-2 gap-4 items-center p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50">
+<div class="px-1 text-slate-700 dark:text-slate-300 font-medium">Purchase Price</div>
+<div>
+<select class="w-full rounded-md border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 focus:border-primary focus:ring-primary focus:ring-opacity-50 text-sm">
+<option selected="">Select a field...</option>
+<option>Project Name *</option>
+<option>Address</option>
+<option>Acquisition Cost</option>
+</select>
+</div>
+</div>
+<!-- Mapping Row 4 -->
+<div class="grid grid-cols-2 gap-4 items-center p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50">
+<div class="px-1 text-slate-700 dark:text-slate-300 font-medium">Start Date</div>
+<div>
+<select class="w-full rounded-md border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:border-primary focus:ring-primary focus:ring-opacity-50 text-sm">
+<option>Select a field...</option>
+<option selected="">Start Date</option>
+<option>End Date</option>
+</select>
+</div>
+</div>
+</div>
+</div>
+<!-- Step 3: Data Preview -->
+<div>
+<h2 class="text-lg font-bold leading-tight tracking-tight text-slate-800 dark:text-slate-100 px-1 pb-3 pt-4">Data Preview</h2>
+<div class="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800">
+<table class="w-full text-sm text-left text-slate-500 dark:text-slate-400">
+<thead class="text-xs text-slate-700 dark:text-slate-300 uppercase bg-slate-50 dark:bg-slate-800">
+<tr>
+<th class="px-6 py-3" scope="col">Project Title</th>
+<th class="px-6 py-3" scope="col">Property Address</th>
+<th class="px-6 py-3" scope="col">Purchase Price</th>
+<th class="px-6 py-3" scope="col">Start Date</th>
+</tr>
+</thead>
+<tbody>
+<tr class="bg-white dark:bg-slate-900 border-b dark:border-slate-800">
+<td class="px-6 py-4 font-medium text-slate-900 dark:text-white whitespace-nowrap">Riverfront Tower</td>
+<td class="px-6 py-4">123 Main St, Metro City</td>
+<td class="px-6 py-4">$5,200,000</td>
+<td class="px-6 py-4">2023-01-15</td>
+</tr>
+<tr class="bg-white dark:bg-slate-900 border-b dark:border-slate-800">
+<td class="px-6 py-4 font-medium text-slate-900 dark:text-white whitespace-nowrap">Oakwood Lofts</td>
+<td class="px-6 py-4">456 Oak Ave, Greenwood</td>
+<td class="px-6 py-4">$3,500,000</td>
+<td class="px-6 py-4">2023-03-22</td>
+</tr>
+<tr class="bg-white dark:bg-slate-900">
+<td class="px-6 py-4 font-medium text-slate-900 dark:text-white whitespace-nowrap">Skyline Plaza</td>
+<td class="px-6 py-4">789 Skyline Blvd, Central</td>
+<td class="px-6 py-4">$8,100,000</td>
+<td class="px-6 py-4">2023-05-10</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- Modal Footer -->
+<div class="p-6 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-200 dark:border-slate-800 flex justify-end items-center gap-4 shrink-0">
+<button class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-sm font-bold leading-normal tracking-wide hover:bg-slate-100 dark:hover:bg-slate-700">
+<span>Cancel</span>
+</button>
+<button class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-wide hover:bg-primary/90 disabled:bg-primary/50 disabled:cursor-not-allowed">
+<span>Import Data</span>
+</button>
+</div>
+</div>
+</div>
+</body></html>

@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Notification Settings</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<style type="text/tailwindcss">
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .toggle-switch:checked {
+            background-color: #0A58D6;
+            border-color: #0A58D6;
+        }
+        .toggle-switch:checked + .toggle-dot {
+            transform: translateX(100%);
+            background-color: white;
+        }
+    </style>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#0A58D6",
+              "background-light": "#f8f9fa",
+              "background-dark": "#101922",
+              "content-light": "#ffffff",
+              "content-dark": "#1a2632",
+              "text-primary-light": "#212529",
+              "text-primary-dark": "#f8f9fa",
+              "text-secondary-light": "#6c757d",
+              "text-secondary-dark": "#a0aec0",
+              "border-light": "#dee2e6",
+              "border-dark": "#3e4c5a",
+              "success": "#198754",
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark text-text-primary-light dark:text-text-primary-dark">
+<div class="relative flex min-h-screen w-full">
+<!-- SideNavBar -->
+<aside class="flex-shrink-0 w-64 bg-content-light dark:bg-content-dark border-r border-border-light dark:border-border-dark">
+<div class="flex h-full flex-col justify-between p-4">
+<div class="flex flex-col gap-4">
+<div class="flex gap-3 items-center">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" data-alt="Company logo for Redwood Developers" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCWq0OoPhO0vDU3sSNNjosuW8RD81EXZXd2vWjvOVtEo6qZXuHlPH6y5QhY7snxtd-3McTtjl7jIP995hhqlW_SWT-aGQg3zcgNbiT0RFNoUaU6X87SS81SMud_ZT67SvOECUmEMbHnNvnfgMJhHne6t7Dq-9vW6yQRMOke0yUvSLgqjloIYwtV6MuRCwSe-osH-MOJhYJ33c67gpRckCd0tfNuypWFP1ooY8SXrh-rM2C1EMUpo7pi7cydvHpgkmdaxuNZcMCqaqJ8");'></div>
+<div class="flex flex-col">
+<h1 class="text-base font-medium leading-normal text-text-primary-light dark:text-text-primary-dark">Redwood Developers</h1>
+<p class="text-sm font-normal leading-normal text-text-secondary-light dark:text-text-secondary-dark">Developer Account</p>
+</div>
+</div>
+<nav class="flex flex-col gap-2 mt-4">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/10 transition-colors" href="#">
+<span class="material-symbols-outlined text-text-primary-light dark:text-text-primary-dark">dashboard</span>
+<p class="text-sm font-medium leading-normal">Dashboard</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/10 transition-colors" href="#">
+<span class="material-symbols-outlined text-text-primary-light dark:text-text-primary-dark">folder</span>
+<p class="text-sm font-medium leading-normal">Projects</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/10 transition-colors" href="#">
+<span class="material-symbols-outlined text-text-primary-light dark:text-text-primary-dark">credit_card</span>
+<p class="text-sm font-medium leading-normal">Financials</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/10 transition-colors" href="#">
+<span class="material-symbols-outlined text-text-primary-light dark:text-text-primary-dark">bar_chart</span>
+<p class="text-sm font-medium leading-normal">Reports</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/10 transition-colors" href="#">
+<span class="material-symbols-outlined text-text-primary-light dark:text-text-primary-dark">group</span>
+<p class="text-sm font-medium leading-normal">Team</p>
+</a>
+</nav>
+</div>
+<div class="flex flex-col gap-2">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/10 text-primary" href="#">
+<span class="material-symbols-outlined">settings</span>
+<p class="text-sm font-medium leading-normal">Settings</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/10 transition-colors" href="#">
+<span class="material-symbols-outlined text-text-primary-light dark:text-text-primary-dark">logout</span>
+<p class="text-sm font-medium leading-normal">Log Out</p>
+</a>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 p-6 sm:p-8 lg:p-12">
+<div class="max-w-4xl mx-auto">
+<!-- PageHeading -->
+<header class="mb-8">
+<h1 class="text-4xl font-black leading-tight tracking-[-0.033em]">Notification Settings</h1>
+</header>
+<div class="space-y-8">
+<!-- Section: Delivery Frequency -->
+<section class="p-6 bg-content-light dark:bg-content-dark rounded-lg border border-border-light dark:border-border-dark">
+<!-- SectionHeader -->
+<h3 class="text-lg font-bold leading-tight tracking-[-0.015em]">Delivery Frequency</h3>
+<!-- BodyText -->
+<p class="text-base font-normal leading-normal text-text-secondary-light dark:text-text-secondary-dark mt-1">How often do you want to receive notifications?</p>
+<!-- RadioList -->
+<div aria-labelledby="delivery-frequency-label" class="flex flex-col gap-3 mt-4" role="radiogroup">
+<label class="flex items-center gap-4 rounded-lg border border-solid border-border-light dark:border-border-dark p-4 cursor-pointer hover:border-primary dark:hover:border-primary has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+<input checked="" class="h-5 w-5 border-2 border-border-light dark:border-border-dark bg-transparent text-primary focus:ring-primary focus:ring-offset-0 checked:bg-primary" name="delivery-frequency" type="radio"/>
+<span class="text-sm font-medium leading-normal">Immediate</span>
+</label>
+<label class="flex items-center gap-4 rounded-lg border border-solid border-border-light dark:border-border-dark p-4 cursor-pointer hover:border-primary dark:hover:border-primary has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+<input class="h-5 w-5 border-2 border-border-light dark:border-border-dark bg-transparent text-primary focus:ring-primary focus:ring-offset-0 checked:bg-primary" name="delivery-frequency" type="radio"/>
+<span class="text-sm font-medium leading-normal">Daily Digest</span>
+</label>
+<label class="flex items-center gap-4 rounded-lg border border-solid border-border-light dark:border-border-dark p-4 cursor-pointer hover:border-primary dark:hover:border-primary has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+<input class="h-5 w-5 border-2 border-border-light dark:border-border-dark bg-transparent text-primary focus:ring-primary focus:ring-offset-0 checked:bg-primary" name="delivery-frequency" type="radio"/>
+<span class="text-sm font-medium leading-normal">Weekly Digest</span>
+</label>
+</div>
+</section>
+<div class="space-y-6">
+<!-- Section: Project Updates -->
+<section>
+<h3 class="text-lg font-bold leading-tight tracking-[-0.015em] mb-4">Project Updates</h3>
+<div class="bg-content-light dark:bg-content-dark rounded-lg border border-border-light dark:border-border-dark divide-y divide-border-light dark:divide-border-dark">
+<div class="flex items-center justify-between p-4">
+<div>
+<p class="font-medium">New Task Assigned to Me</p>
+<p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Get notified when a new task is assigned to you.</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer toggle-switch" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-gray-200 dark:bg-gray-700 rounded-full peer peer-focus:ring-2 peer-focus:ring-primary/50 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+</label>
+</div>
+<div class="flex items-center justify-between p-4">
+<div>
+<p class="font-medium">Task Status Changes</p>
+<p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Receive updates when a task's status is changed.</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer toggle-switch" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-gray-200 dark:bg-gray-700 rounded-full peer peer-focus:ring-2 peer-focus:ring-primary/50 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+</label>
+</div>
+<div class="flex items-center justify-between p-4">
+<div>
+<p class="font-medium">Milestone Reached</p>
+<p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Get an alert when a project milestone is completed.</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer toggle-switch" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-gray-200 dark:bg-gray-700 rounded-full peer peer-focus:ring-2 peer-focus:ring-primary/50 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+</label>
+</div>
+<div class="flex items-center justify-between p-4">
+<div>
+<p class="font-medium">Document Uploaded</p>
+<p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Be notified when a new document is added to a project.</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer toggle-switch" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-gray-200 dark:bg-gray-700 rounded-full peer peer-focus:ring-2 peer-focus:ring-primary/50 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+</label>
+</div>
+</div>
+</section>
+<!-- Section: Financial Alerts -->
+<section>
+<h3 class="text-lg font-bold leading-tight tracking-[-0.015em] mb-4">Financial Alerts</h3>
+<div class="bg-content-light dark:bg-content-dark rounded-lg border border-border-light dark:border-border-dark divide-y divide-border-light dark:divide-border-dark">
+<div class="flex items-center justify-between p-4">
+<div>
+<p class="font-medium">New Cost Added</p>
+<p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Get notified when a new cost is logged.</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer toggle-switch" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-gray-200 dark:bg-gray-700 rounded-full peer peer-focus:ring-2 peer-focus:ring-primary/50 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+</label>
+</div>
+<div class="flex items-center justify-between p-4">
+<div>
+<p class="font-medium">Budget Threshold Exceeded</p>
+<p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Receive an alert when the project budget is near its limit.</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer toggle-switch" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-gray-200 dark:bg-gray-700 rounded-full peer peer-focus:ring-2 peer-focus:ring-primary/50 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+</label>
+</div>
+<div class="flex items-center justify-between p-4">
+<div>
+<p class="font-medium">Invoice Approved</p>
+<p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Get notified when an invoice has been approved.</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer toggle-switch" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-gray-200 dark:bg-gray-700 rounded-full peer peer-focus:ring-2 peer-focus:ring-primary/50 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+</label>
+</div>
+</div>
+</section>
+<!-- Section: Communication -->
+<section>
+<h3 class="text-lg font-bold leading-tight tracking-[-0.015em] mb-4">Communication</h3>
+<div class="bg-content-light dark:bg-content-dark rounded-lg border border-border-light dark:border-border-dark divide-y divide-border-light dark:divide-border-dark">
+<div class="flex items-center justify-between p-4">
+<div>
+<p class="font-medium">New Comment on My Tasks</p>
+<p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Get notified about new comments on your assigned tasks.</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer toggle-switch" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-gray-200 dark:bg-gray-700 rounded-full peer peer-focus:ring-2 peer-focus:ring-primary/50 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+</label>
+</div>
+<div class="flex items-center justify-between p-4">
+<div>
+<p class="font-medium">Mentioned in a Comment</p>
+<p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Receive an alert when someone @mentions you.</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer toggle-switch" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-gray-200 dark:bg-gray-700 rounded-full peer peer-focus:ring-2 peer-focus:ring-primary/50 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+</label>
+</div>
+</div>
+</section>
+</div>
+<!-- Action Button -->
+<footer class="pt-4 flex justify-end">
+<button class="flex min-w-[120px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-primary/90 focus:ring-2 focus:ring-primary/50 focus:outline-none disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed">
+<span class="truncate">Save Changes</span>
+</button>
+</footer>
+</div>
+</div>
+<!-- Toast Notification -->
+<div class="fixed bottom-5 right-5 bg-success text-white py-3 px-6 rounded-lg shadow-lg flex items-center gap-3 opacity-0 translate-y-4 transition-all duration-300" id="toast-notification" role="alert">
+<span class="material-symbols-outlined">check_circle</span>
+<p>Settings saved successfully!</p>
+</div>
+</main>
+</div>
+</body></html>

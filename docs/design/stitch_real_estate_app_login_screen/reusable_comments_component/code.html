@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Comments Component</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#137fec",
+            "background-light": "#f6f7f8",
+            "background-dark": "#101922",
+          },
+          fontFamily: {
+            "display": ["Inter", "sans-serif"]
+          },
+          borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+        },
+      },
+    }
+  </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-[#2D3748] dark:text-gray-300">
+<div class="relative flex min-h-screen w-full flex-col items-center justify-center p-4 sm:p-6 lg:p-8">
+<div class="w-full max-w-2xl">
+<div class="flex h-full grow flex-col rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/50 shadow-sm">
+<div class="p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700">
+<h3 class="text-lg font-bold leading-tight tracking-[-0.015em] text-gray-800 dark:text-gray-100">Comments (4)</h3>
+</div>
+<div class="flex flex-col divide-y divide-gray-200 dark:divide-gray-700">
+<!-- Comment 1 -->
+<div class="flex w-full flex-row items-start justify-start gap-4 p-4 sm:p-6">
+<img class="h-10 w-10 shrink-0 rounded-full bg-cover bg-center bg-no-repeat" data-alt="Avatar of Eleanor Vance" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCQDkAUdR-R_mu4oMJMdGUUWFwX0KceKdahWT9c_a1QE3JeRlO0wmwpOYNUk62sUh1RYgEoXi2RYemNzd6Kfgc3i6ALoXu5I0bLASiTDaahG_70EAJEvVesImDUD98uRSuIBR8q3chRqJQqY-_LKcmyfIeFMLkt9BqDU8GJHWpmhIs7pk0qqy0bm4I2xBxb9LhsO_neICPFrobEeMXenl1DZdjbiBFj9tVNuuu1Pc0ub9FXnQl5v2ld2TtaHO5k96oS7aXIthgkEI0u"/>
+<div class="flex h-full flex-1 flex-col items-start justify-start gap-1.5">
+<div class="flex w-full flex-row flex-wrap items-center justify-start gap-x-2">
+<p class="text-sm font-bold leading-normal text-gray-800 dark:text-gray-100">Eleanor Vance</p>
+<p class="text-xs font-normal leading-normal text-gray-500 dark:text-gray-400">2 hours ago</p>
+</div>
+<p class="text-sm font-normal leading-relaxed text-gray-700 dark:text-gray-300">
+                Reviewing the latest blueprints now. The adjustments on the west wing look promising. Has the structural engineer signed off on these changes yet?
+              </p>
+<div class="flex w-full flex-row items-center justify-start gap-4 pt-1">
+<div class="flex items-center gap-1.5 text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary cursor-pointer transition-colors">
+<span class="material-symbols-outlined text-base">thumb_up</span>
+<p class="text-xs font-medium">2</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Reply to Comment 1 -->
+<div class="flex w-full flex-row items-start justify-start gap-4 p-4 sm:p-6 pl-12 sm:pl-[76px]">
+<img class="h-10 w-10 shrink-0 rounded-full bg-cover bg-center bg-no-repeat" data-alt="Avatar of Marcus Thorne" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDKB7-6gR0z3llskJBPzns1KfSnH6l25kLEzJeCjbwA2ienAA3ONg5EF-VNuzgwWC4YsG4NzzmvU0DcNlB1XujmbJcbd-4-fb1b-iT_6VNfq_CbF7LUs-WHYar_N46wy4I2FQAhR1T7RlAXhd0sLAACNSEs_jFceruV7PBOhon7M23CWi1X6Akk4WI4fD69v2N8ajcBwYxm4aNDBqsmCekTvU-cx4tQDxIHkKwFN4ExavYXeTWEsuHSb7Xi6wNvskV9TUu1lMqrBSmg"/>
+<div class="flex h-full flex-1 flex-col items-start justify-start gap-1.5">
+<div class="flex w-full flex-row flex-wrap items-center justify-start gap-x-2">
+<p class="text-sm font-bold leading-normal text-gray-800 dark:text-gray-100">Marcus Thorne</p>
+<p class="text-xs font-normal leading-normal text-gray-500 dark:text-gray-400">1 hour ago</p>
+</div>
+<p class="text-sm font-normal leading-relaxed text-gray-700 dark:text-gray-300">
+                Yes, I got their approval this morning. I've attached the signed documents to the project files. <a class="text-primary font-medium" href="#">@OliviaChen</a> please take a look when you have a moment.
+              </p>
+<div class="flex w-full flex-row items-center justify-start gap-4 pt-1">
+<div class="flex items-center gap-1.5 text-primary">
+<span class="material-symbols-outlined text-base" style="font-variation-settings: 'FILL' 1;">thumb_up</span>
+<p class="text-xs font-medium">1</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Comment 2 -->
+<div class="flex w-full flex-row items-start justify-start gap-4 p-4 sm:p-6">
+<img class="h-10 w-10 shrink-0 rounded-full bg-cover bg-center bg-no-repeat" data-alt="Avatar of Olivia Chen" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBlIUJXQSzBKMZ5fqd9emKdqDRNeVcVObnlx7bTpHhe3YYktsyoyNICeawDTI7a87e0BPbCpWLFodhDd2GxqDBjpXp2iPCXhjhYy3svWJlXet-fhRl5pcEu67u6Xsnvqw9CFrTIGkqcWFMiJneiVX15juwc1MgSKBR0o2hiG-60tBVj6YSCFUNZc9h7ZA6_5ZhYmpokohxprPAVmXNRkmYli4XasszJiC3pCZSktlQolFL05kqOTPa44aMYPsoUT-iRh_hI3Ujm-TBX"/>
+<div class="flex h-full flex-1 flex-col items-start justify-start gap-1.5">
+<div class="flex w-full flex-row flex-wrap items-center justify-start gap-x-2">
+<p class="text-sm font-bold leading-normal text-gray-800 dark:text-gray-100">Olivia Chen</p>
+<p class="text-xs font-normal leading-normal text-gray-500 dark:text-gray-400">45 minutes ago</p>
+</div>
+<p class="text-sm font-normal leading-relaxed text-gray-700 dark:text-gray-300">
+                Thanks for the ping, <a class="text-primary font-medium" href="#">@MarcusThorne</a>. Documents look good. Let's proceed with the materials order for the west wing.
+              </p>
+<div class="flex w-full flex-row items-center justify-start gap-4 pt-1">
+<div class="flex items-center gap-1.5 text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary cursor-pointer transition-colors">
+<span class="material-symbols-outlined text-base">thumb_up</span>
+<p class="text-xs font-medium">3</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Comment 3 -->
+<div class="flex w-full flex-row items-start justify-start gap-4 p-4 sm:p-6">
+<img class="h-10 w-10 shrink-0 rounded-full bg-cover bg-center bg-no-repeat" data-alt="Avatar of Ben Carter" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAW5zH_A3X_DIoJrra7e9kmA6yVEZU46XBUcFWtq85ySbxhqkXzpBiccxyaaOOyQ6Tiw9VopUbEY_T1QJ4m9KetCRW7a4n1Ifu_T6Z5zLK9PelgK5aliEPuawWrc4KY1qTEoZ6NkEsBW_3j6OZXMNh5vznMg-QMwqJYWqIPizZhvrQePkSJ4Nij4YZh2wGd_FB-jfL8Uyo_45v1KsG2jmgBhErhbjrU50J8SHODs2fCf_NwqfDxvsTkcpuTdKNCwmaTJ0VaCiS3bu1b"/>
+<div class="flex h-full flex-1 flex-col items-start justify-start gap-1.5">
+<div class="flex w-full flex-row flex-wrap items-center justify-start gap-x-2">
+<p class="text-sm font-bold leading-normal text-gray-800 dark:text-gray-100">Ben Carter</p>
+<p class="text-xs font-normal leading-normal text-gray-500 dark:text-gray-400">15 minutes ago</p>
+</div>
+<p class="text-sm font-normal leading-relaxed text-gray-700 dark:text-gray-300">
+                Noticed a potential conflict with the HVAC ducting plan on the third floor. Can we schedule a brief call to discuss?
+              </p>
+<div class="flex w-full flex-row items-center justify-start gap-4 pt-1">
+<div class="flex items-center gap-1.5 text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary cursor-pointer transition-colors">
+<span class="material-symbols-outlined text-base">thumb_up</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Comment Input Form -->
+<div class="bg-gray-50 dark:bg-gray-800 p-4 sm:p-6 border-t border-gray-200 dark:border-gray-700">
+<div class="flex items-start space-x-4">
+<img class="h-10 w-10 shrink-0 rounded-full" data-alt="Your avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDwI1mnZQuOg2B1XK8mwa4TABp1ZZH_qlMQmsld6VfVrtqUtv4gOHvD3Jut0cP5v8BsFlMeoGXXCICHghYLirLGEUF6HmH48FuQLmZ3GLctomRztZl8OoOpI6MJ-YMESLzIRHF-YZoAUTrkKUWDGphVfbbEWUQgEZcu2z07IaHqzrqy45Aabq1V63r-uO1_sCxi-NzI9QnsyC2A9MSsgwkdxxxvKwW_lIgBVxfqXVzIyEH5T1rFmF1XbjXL4p8SdxKxuOxr1bhn3kGu"/>
+<div class="min-w-0 flex-1">
+<form action="#" class="relative">
+<div class="overflow-hidden rounded-lg shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus-within:ring-2 focus-within:ring-primary">
+<label class="sr-only" for="comment">Add a comment</label>
+<textarea class="block w-full resize-none border-0 bg-transparent py-2.5 text-gray-900 dark:text-gray-50 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-0 sm:text-sm sm:leading-6" id="comment" name="comment" placeholder="Add a comment... Use @ to mention a user." rows="3"></textarea>
+<div aria-hidden="true" class="py-2">
+<div class="py-px">
+<div class="h-9"></div>
+</div>
+</div>
+</div>
+<div class="absolute inset-x-0 bottom-0 flex justify-end py-2 pl-3 pr-2">
+<div class="flex-shrink-0">
+<button class="inline-flex items-center rounded-md bg-primary px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-colors" type="submit">Comment</button>
+</div>
+</div>
+</form>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body></html>

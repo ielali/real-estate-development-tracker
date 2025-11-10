@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Notification Center</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#3B82F6", // Professional Blue
+              "background-light": "#F9FAFB", // Off-white
+              "background-dark": "#101922",
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {
+              "DEFAULT": "0.25rem",
+              "lg": "0.5rem",
+              "xl": "0.75rem",
+              "full": "9999px"
+            },
+          },
+        },
+      }
+    </script>
+<style>
+      body {
+        background-color: #e5e7eb; /* A neutral gray to highlight the component */
+      }
+    </style>
+</head>
+<body class="font-display">
+<div class="flex min-h-screen w-full items-start justify-center bg-gray-200 p-10 dark:bg-gray-800">
+<!-- Notification Center Dropdown Panel -->
+<div class="flex w-full max-w-md flex-col overflow-hidden rounded-xl border border-gray-200 bg-background-light shadow-2xl dark:border-gray-700 dark:bg-background-dark">
+<!-- Header -->
+<div class="flex items-center justify-between border-b border-gray-200 p-4 dark:border-gray-700">
+<h3 class="text-lg font-bold leading-tight tracking-[-0.015em] text-gray-800 dark:text-gray-100">Notifications</h3>
+<button class="flex h-10 cursor-pointer min-w-[84px] max-w-[480px] items-center justify-center overflow-hidden rounded-lg bg-transparent px-4 text-sm font-bold leading-normal tracking-[0.015em] text-primary hover:bg-primary/10">
+<span class="truncate">Mark all as read</span>
+</button>
+</div>
+<!-- Notification List -->
+<div class="flex flex-col">
+<!-- Today Section -->
+<div class="flex flex-col">
+<h4 class="px-4 py-2 text-center text-sm font-bold leading-normal tracking-[0.015em] text-gray-500 dark:text-gray-400">Today</h4>
+<!-- Notification Item 1 (Unread) -->
+<div class="flex cursor-pointer items-center gap-3 bg-background-light px-4 py-3 hover:bg-gray-100 dark:bg-background-dark dark:hover:bg-gray-800/50">
+<div class="h-2 w-2 shrink-0 rounded-full bg-primary"></div>
+<div class="flex flex-grow items-center justify-between gap-4">
+<div class="flex items-center gap-4">
+<div class="flex size-12 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary dark:bg-primary/20">
+<span class="material-symbols-outlined text-2xl">attach_money</span>
+</div>
+<div class="flex flex-col justify-center">
+<p class="font-medium leading-normal text-gray-800 line-clamp-2 dark:text-gray-100">New invoice added to 'Downtown Tower' project.</p>
+</div>
+</div>
+<div class="shrink-0"><p class="text-sm font-normal leading-normal text-gray-500 dark:text-gray-400">2h ago</p></div>
+</div>
+</div>
+<!-- Notification Item 2 (Unread) -->
+<div class="flex cursor-pointer items-center gap-3 bg-background-light px-4 py-3 hover:bg-gray-100 dark:bg-background-dark dark:hover:bg-gray-800/50">
+<div class="h-2 w-2 shrink-0 rounded-full bg-primary"></div>
+<div class="flex flex-grow items-center justify-between gap-4">
+<div class="flex items-center gap-4">
+<div class="flex size-12 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary dark:bg-primary/20">
+<span class="material-symbols-outlined text-2xl">attach_file</span>
+</div>
+<div class="flex flex-col justify-center">
+<p class="font-medium leading-normal text-gray-800 line-clamp-2 dark:text-gray-100">Permit documents uploaded for 'Seaside Villas'.</p>
+</div>
+</div>
+<div class="shrink-0"><p class="text-sm font-normal leading-normal text-gray-500 dark:text-gray-400">5h ago</p></div>
+</div>
+</div>
+<!-- Notification Item 3 (Read) -->
+<div class="flex cursor-pointer items-center gap-3 bg-background-light px-4 py-3 hover:bg-gray-100 dark:bg-background-dark dark:hover:bg-gray-800/50">
+<div class="h-2 w-2 shrink-0 rounded-full bg-transparent"></div>
+<div class="flex flex-grow items-center justify-between gap-4">
+<div class="flex items-center gap-4">
+<div class="flex size-12 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300">
+<span class="material-symbols-outlined text-2xl">chat_bubble</span>
+</div>
+<div class="flex flex-col justify-center">
+<p class="font-medium leading-normal text-gray-800 line-clamp-2 dark:text-gray-100">Sarah commented on the 'Q3 Budget' task.</p>
+</div>
+</div>
+<div class="shrink-0"><p class="text-sm font-normal leading-normal text-gray-500 dark:text-gray-400">8h ago</p></div>
+</div>
+</div>
+</div>
+<!-- Yesterday Section -->
+<div class="flex flex-col">
+<h4 class="px-4 py-2 text-center text-sm font-bold leading-normal tracking-[0.015em] text-gray-500 dark:text-gray-400">Yesterday</h4>
+<!-- Notification Item 4 (Read) -->
+<div class="flex cursor-pointer items-center gap-3 bg-background-light px-4 py-3 hover:bg-gray-100 dark:bg-background-dark dark:hover:bg-gray-800/50">
+<div class="h-2 w-2 shrink-0 rounded-full bg-transparent"></div>
+<div class="flex flex-grow items-center justify-between gap-4">
+<div class="flex items-center gap-4">
+<div class="flex size-12 shrink-0 items-center justify-center rounded-lg bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400">
+<span class="material-symbols-outlined text-2xl">priority_high</span>
+</div>
+<div class="flex flex-col justify-center">
+<p class="font-medium leading-normal text-gray-800 line-clamp-2 dark:text-gray-100">Milestone 'Foundation Pour' is overdue.</p>
+</div>
+</div>
+<div class="shrink-0"><p class="text-sm font-normal leading-normal text-gray-500 dark:text-gray-400">1d ago</p></div>
+</div>
+</div>
+</div>
+<!-- Last 7 Days Section -->
+<div class="flex flex-col">
+<h4 class="px-4 py-2 text-center text-sm font-bold leading-normal tracking-[0.015em] text-gray-500 dark:text-gray-400">Last 7 Days</h4>
+<!-- Notification Item 5 (Read) -->
+<div class="flex cursor-pointer items-center gap-3 bg-background-light px-4 py-3 hover:bg-gray-100 dark:bg-background-dark dark:hover:bg-gray-800/50">
+<div class="h-2 w-2 shrink-0 rounded-full bg-transparent"></div>
+<div class="flex flex-grow items-center justify-between gap-4">
+<div class="flex items-center gap-4">
+<div class="flex size-12 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300">
+<span class="material-symbols-outlined text-2xl">person_add</span>
+</div>
+<div class="flex flex-col justify-center">
+<p class="font-medium leading-normal text-gray-800 line-clamp-2 dark:text-gray-100">You've been added to the 'Highrise Plaza' project.</p>
+</div>
+</div>
+<div class="shrink-0"><p class="text-sm font-normal leading-normal text-gray-500 dark:text-gray-400">3d ago</p></div>
+</div>
+</div>
+</div>
+<!-- Empty State Example (commented out) -->
+<!-- 
+                <div class="flex flex-col items-center justify-center gap-4 p-16 text-center">
+                    <div class="flex size-16 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
+                        <span class="material-symbols-outlined text-3xl text-gray-500 dark:text-gray-400">notifications_active</span>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <h5 class="text-lg font-bold text-gray-800 dark:text-gray-100">You're all caught up!</h5>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Check back later for new notifications.</p>
+                    </div>
+                </div>
+                -->
+</div>
+</div>
+</div>
+</body></html>

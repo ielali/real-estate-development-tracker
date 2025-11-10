@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+    <title>DevTrack - Mobile Navigation Proposals</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+    <style>
+        :root {
+            --primary: #2563EB;
+            --primary-hover: #1D4ED8;
+            --primary-light: #DBEAFE;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --error: #EF4444;
+            --bg-primary: #FFFFFF;
+            --bg-secondary: #F8FAFC;
+            --bg-tertiary: #F1F5F9;
+            --text-primary: #0F172A;
+            --text-secondary: #475569;
+            --text-tertiary: #94A3B8;
+            --border: #E2E8F0;
+            --border-hover: #CBD5E1;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        .material-symbols-outlined.filled {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Prevent body scroll when menu is open */
+        .menu-open {
+            overflow: hidden;
+        }
+
+        /* Slide animations */
+        .slide-enter {
+            transform: translateX(-100%);
+        }
+
+        .slide-enter-active {
+            transform: translateX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .slide-exit {
+            transform: translateX(0);
+        }
+
+        .slide-exit-active {
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+
+        /* Bottom sheet animation */
+        .bottom-sheet-enter {
+            transform: translateY(100%);
+        }
+
+        .bottom-sheet-enter-active {
+            transform: translateY(0);
+            transition: transform 0.3s ease;
+        }
+
+        /* Scroll indicator for horizontal nav */
+        .scroll-indicator {
+            background: linear-gradient(90deg, transparent, var(--bg-primary) 20px);
+        }
+
+        /* Safe area padding for iOS */
+        .safe-area-bottom {
+            padding-bottom: env(safe-area-inset-bottom, 0);
+        }
+
+        /* Demo container styles */
+        .phone-frame {
+            width: 375px;
+            height: 812px;
+            border: 8px solid #333;
+            border-radius: 36px;
+            overflow: hidden;
+            position: relative;
+            background: #000;
+        }
+
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            background: var(--bg-secondary);
+            overflow: hidden;
+            position: relative;
+        }
+
+        @media (max-width: 400px) {
+            .phone-frame {
+                width: 100vw;
+                height: 100vh;
+                border: none;
+                border-radius: 0;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-7xl mx-auto">
+        <h1 class="text-3xl font-bold mb-8 text-center">Mobile Navigation Proposals</h1>
+
+        <!-- Proposal Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
+
+            <!-- Proposal 1: Sliding Drawer with Bottom Tab Bar -->
+            <div class="bg-white rounded-lg p-6 shadow-lg">
+                <h2 class="text-xl font-semibold mb-4">Option 1: Hybrid Navigation</h2>
+                <p class="text-sm text-gray-600 mb-4">Sliding drawer + bottom tab bar for primary actions</p>
+                <div class="phone-frame mx-auto">
+                    <div class="phone-screen">
+                        <!-- Status Bar -->
+                        <div class="bg-white px-4 py-1 flex justify-between items-center text-xs">
+                            <span>9:41</span>
+                            <div class="flex gap-1">
+                                <span>📶</span>
+                                <span>🔋</span>
+                            </div>
+                        </div>
+
+                        <!-- Top Header -->
+                        <header class="bg-white border-b border-[var(--border)] px-4 py-3 flex items-center justify-between sticky top-0 z-40">
+                            <button onclick="toggleDrawer1()" class="p-2 -ml-2">
+                                <span class="material-symbols-outlined">menu</span>
+                            </button>
+                            <span class="font-semibold">DevTrack</span>
+                            <button class="p-2 -mr-2">
+                                <span class="material-symbols-outlined">notifications</span>
+                            </button>
+                        </header>
+
+                        <!-- Sliding Drawer -->
+                        <div id="drawer1" class="fixed inset-0 z-50 hidden">
+                            <!-- Overlay -->
+                            <div class="absolute inset-0 bg-black/50" onclick="toggleDrawer1()"></div>
+
+                            <!-- Drawer Content -->
+                            <div class="absolute left-0 top-0 bottom-0 w-80 bg-white shadow-xl overflow-y-auto">
+                                <!-- User Profile -->
+                                <div class="p-4 bg-[var(--primary)] text-white">
+                                    <div class="flex items-center gap-3">
+                                        <img src="https://ui-avatars.com/api/?name=John+Doe&background=fff&color=2563EB"
+                                             class="w-12 h-12 rounded-full" alt="Profile">
+                                        <div>
+                                            <div class="font-semibold">John Doe</div>
+                                            <div class="text-sm opacity-90">Project Manager</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Navigation Items -->
+                                <nav class="p-4">
+                                    <div class="space-y-1">
+                                        <a href="#" class="flex items-center gap-3 p-3 rounded-lg bg-[var(--primary-light)]">
+                                            <span class="material-symbols-outlined filled text-[var(--primary)]">dashboard</span>
+                                            <span class="font-medium text-[var(--primary)]">Dashboard</span>
+                                        </a>
+                                        <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100">
+                                            <span class="material-symbols-outlined">apartment</span>
+                                            <span>All Projects</span>
+                                        </a>
+                                        <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100">
+                                            <span class="material-symbols-outlined">schedule</span>
+                                            <span>Timeline</span>
+                                        </a>
+                                        <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100">
+                                            <span class="material-symbols-outlined">group</span>
+                                            <span>Vendors</span>
+                                        </a>
+                                        <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100">
+                                            <span class="material-symbols-outlined">assessment</span>
+                                            <span>Reports</span>
+                                        </a>
+                                        <hr class="my-4">
+                                        <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100">
+                                            <span class="material-symbols-outlined">settings</span>
+                                            <span>Settings</span>
+                                        </a>
+                                        <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100">
+                                            <span class="material-symbols-outlined">help</span>
+                                            <span>Help & Support</span>
+                                        </a>
+                                        <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100">
+                                            <span class="material-symbols-outlined">logout</span>
+                                            <span>Sign Out</span>
+                                        </a>
+                                    </div>
+                                </nav>
+                            </div>
+                        </div>
+
+                        <!-- Main Content -->
+                        <main class="flex-1 overflow-y-auto pb-16">
+                            <div class="p-4">
+                                <h1 class="text-2xl font-bold mb-4">Dashboard</h1>
+
+                                <!-- Stats Cards -->
+                                <div class="grid grid-cols-2 gap-3 mb-4">
+                                    <div class="bg-white p-4 rounded-lg border border-[var(--border)]">
+                                        <div class="text-sm text-[var(--text-secondary)]">Active</div>
+                                        <div class="text-xl font-bold">12</div>
+                                    </div>
+                                    <div class="bg-white p-4 rounded-lg border border-[var(--border)]">
+                                        <div class="text-sm text-[var(--text-secondary)]">Budget</div>
+                                        <div class="text-xl font-bold">$45.2M</div>
+                                    </div>
+                                </div>
+
+                                <!-- Project List -->
+                                <div class="space-y-3">
+                                    <div class="bg-white p-4 rounded-lg border border-[var(--border)]">
+                                        <div class="font-medium">The Grand Plaza</div>
+                                        <div class="text-sm text-[var(--text-secondary)] mt-1">65% Complete</div>
+                                        <div class="w-full bg-gray-200 rounded-full h-1.5 mt-2">
+                                            <div class="bg-[var(--primary)] h-1.5 rounded-full" style="width: 65%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="bg-white p-4 rounded-lg border border-[var(--border)]">
+                                        <div class="font-medium">Sunset Towers</div>
+                                        <div class="text-sm text-[var(--text-secondary)] mt-1">Planning Phase</div>
+                                        <div class="w-full bg-gray-200 rounded-full h-1.5 mt-2">
+                                            <div class="bg-[var(--warning)] h-1.5 rounded-full" style="width: 15%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </main>
+
+                        <!-- Bottom Tab Bar -->
+                        <nav class="absolute bottom-0 left-0 right-0 bg-white border-t border-[var(--border)] safe-area-bottom">
+                            <div class="flex items-center justify-around py-2">
+                                <button class="flex flex-col items-center gap-1 p-2 text-[var(--primary)]">
+                                    <span class="material-symbols-outlined filled">home</span>
+                                    <span class="text-xs">Home</span>
+                                </button>
+                                <button class="flex flex-col items-center gap-1 p-2 text-[var(--text-tertiary)]">
+                                    <span class="material-symbols-outlined">apartment</span>
+                                    <span class="text-xs">Projects</span>
+                                </button>
+                                <button class="flex flex-col items-center gap-1 p-2 text-[var(--text-tertiary)]">
+                                    <span class="material-symbols-outlined">payments</span>
+                                    <span class="text-xs">Costs</span>
+                                </button>
+                                <button class="flex flex-col items-center gap-1 p-2 text-[var(--text-tertiary)]">
+                                    <span class="material-symbols-outlined">folder</span>
+                                    <span class="text-xs">Files</span>
+                                </button>
+                                <button class="flex flex-col items-center gap-1 p-2 text-[var(--text-tertiary)]">
+                                    <span class="material-symbols-outlined">more_horiz</span>
+                                    <span class="text-xs">More</span>
+                                </button>
+                            </div>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Proposal 2: Full-Screen Overlay Menu -->
+            <div class="bg-white rounded-lg p-6 shadow-lg">
+                <h2 class="text-xl font-semibold mb-4">Option 2: Full-Screen Menu</h2>
+                <p class="text-sm text-gray-600 mb-4">Immersive full-screen navigation overlay</p>
+                <div class="phone-frame mx-auto">
+                    <div class="phone-screen">
+                        <!-- Status Bar -->
+                        <div class="bg-white px-4 py-1 flex justify-between items-center text-xs">
+                            <span>9:41</span>
+                            <div class="flex gap-1">
+                                <span>📶</span>
+                                <span>🔋</span>
+                            </div>
+                        </div>
+
+                        <!-- Top Header -->
+                        <header class="bg-white border-b border-[var(--border)] px-4 py-3 flex items-center justify-between">
+                            <button onclick="toggleFullMenu()" class="p-2 -ml-2">
+                                <span id="menuIcon2" class="material-symbols-outlined">menu</span>
+                            </button>
+                            <span class="font-semibold">DevTrack</span>
+                            <div class="flex items-center gap-2">
+                                <button class="p-2">
+                                    <span class="material-symbols-outlined">search</span>
+                                </button>
+                                <button class="p-2 -mr-2">
+                                    <span class="material-symbols-outlined">account_circle</span>
+                                </button>
+                            </div>
+                        </header>
+
+                        <!-- Full Screen Menu -->
+                        <div id="fullMenu" class="fixed inset-0 bg-white z-50 hidden">
+                            <div class="flex flex-col h-full">
+                                <!-- Menu Header -->
+                                <header class="px-4 py-3 flex items-center justify-between border-b border-[var(--border)]">
+                                    <span class="font-semibold text-lg">Menu</span>
+                                    <button onclick="toggleFullMenu()" class="p-2 -mr-2">
+                                        <span class="material-symbols-outlined">close</span>
+                                    </button>
+                                </header>
+
+                                <!-- Menu Content -->
+                                <div class="flex-1 overflow-y-auto">
+                                    <!-- Quick Actions -->
+                                    <div class="p-4 bg-[var(--bg-secondary)]">
+                                        <div class="text-xs font-semibold text-[var(--text-tertiary)] uppercase mb-3">Quick Actions</div>
+                                        <div class="grid grid-cols-2 gap-3">
+                                            <button class="bg-white p-4 rounded-lg flex flex-col items-center gap-2">
+                                                <span class="material-symbols-outlined text-[var(--primary)]">add_circle</span>
+                                                <span class="text-sm">New Project</span>
+                                            </button>
+                                            <button class="bg-white p-4 rounded-lg flex flex-col items-center gap-2">
+                                                <span class="material-symbols-outlined text-[var(--success)]">receipt_long</span>
+                                                <span class="text-sm">Add Cost</span>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Navigation -->
+                                    <nav class="p-4">
+                                        <div class="space-y-2">
+                                            <a href="#" class="flex items-center justify-between p-4 rounded-lg hover:bg-gray-50">
+                                                <div class="flex items-center gap-4">
+                                                    <span class="material-symbols-outlined text-[var(--primary)]">dashboard</span>
+                                                    <div>
+                                                        <div class="font-medium">Dashboard</div>
+                                                        <div class="text-xs text-[var(--text-tertiary)]">Overview of all projects</div>
+                                                    </div>
+                                                </div>
+                                                <span class="material-symbols-outlined text-[var(--text-tertiary)]">chevron_right</span>
+                                            </a>
+                                            <a href="#" class="flex items-center justify-between p-4 rounded-lg hover:bg-gray-50">
+                                                <div class="flex items-center gap-4">
+                                                    <span class="material-symbols-outlined">apartment</span>
+                                                    <div>
+                                                        <div class="font-medium">Projects</div>
+                                                        <div class="text-xs text-[var(--text-tertiary)]">12 active projects</div>
+                                                    </div>
+                                                </div>
+                                                <span class="bg-[var(--error)] text-white text-xs px-2 py-1 rounded-full">3</span>
+                                            </a>
+                                            <a href="#" class="flex items-center justify-between p-4 rounded-lg hover:bg-gray-50">
+                                                <div class="flex items-center gap-4">
+                                                    <span class="material-symbols-outlined">payments</span>
+                                                    <div>
+                                                        <div class="font-medium">Costs & Budget</div>
+                                                        <div class="text-xs text-[var(--text-tertiary)]">Track expenses</div>
+                                                    </div>
+                                                </div>
+                                                <span class="material-symbols-outlined text-[var(--text-tertiary)]">chevron_right</span>
+                                            </a>
+                                            <a href="#" class="flex items-center justify-between p-4 rounded-lg hover:bg-gray-50">
+                                                <div class="flex items-center gap-4">
+                                                    <span class="material-symbols-outlined">group</span>
+                                                    <div>
+                                                        <div class="font-medium">Vendors</div>
+                                                        <div class="text-xs text-[var(--text-tertiary)]">Manage contractors</div>
+                                                    </div>
+                                                </div>
+                                                <span class="material-symbols-outlined text-[var(--text-tertiary)]">chevron_right</span>
+                                            </a>
+                                        </div>
+                                    </nav>
+
+                                    <!-- User Section -->
+                                    <div class="p-4 border-t border-[var(--border)]">
+                                        <div class="flex items-center gap-3 mb-4">
+                                            <img src="https://ui-avatars.com/api/?name=John+Doe&background=2563EB&color=fff"
+                                                 class="w-12 h-12 rounded-full" alt="Profile">
+                                            <div>
+                                                <div class="font-medium">John Doe</div>
+                                                <div class="text-sm text-[var(--text-tertiary)]">john.doe@company.com</div>
+                                            </div>
+                                        </div>
+                                        <button class="w-full py-2 text-[var(--error)] text-sm font-medium">Sign Out</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Main Content -->
+                        <main class="flex-1 overflow-y-auto">
+                            <div class="p-4">
+                                <!-- Search Bar -->
+                                <div class="relative mb-4">
+                                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]">search</span>
+                                    <input type="text" placeholder="Search projects, costs, vendors..."
+                                           class="w-full pl-10 pr-4 py-3 bg-white border border-[var(--border)] rounded-lg">
+                                </div>
+
+                                <!-- Content -->
+                                <h1 class="text-2xl font-bold mb-4">Projects</h1>
+                                <div class="space-y-3">
+                                    <div class="bg-white p-4 rounded-lg border border-[var(--border)]">
+                                        <div class="flex justify-between items-start mb-2">
+                                            <div class="font-medium">The Grand Plaza</div>
+                                            <span class="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">Active</span>
+                                        </div>
+                                        <div class="text-sm text-[var(--text-secondary)]">Mixed-use development</div>
+                                        <div class="flex justify-between text-sm mt-3">
+                                            <span>Budget: $2M</span>
+                                            <span class="text-[var(--primary)]">65% Complete</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </main>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Proposal 3: Horizontal Scrolling Top Nav + FAB -->
+            <div class="bg-white rounded-lg p-6 shadow-lg">
+                <h2 class="text-xl font-semibold mb-4">Option 3: Contextual Navigation</h2>
+                <p class="text-sm text-gray-600 mb-4">Horizontal scroll nav + floating action button</p>
+                <div class="phone-frame mx-auto">
+                    <div class="phone-screen">
+                        <!-- Status Bar -->
+                        <div class="bg-white px-4 py-1 flex justify-between items-center text-xs">
+                            <span>9:41</span>
+                            <div class="flex gap-1">
+                                <span>📶</span>
+                                <span>🔋</span>
+                            </div>
+                        </div>
+
+                        <!-- Top Header with Project Name -->
+                        <header class="bg-white border-b border-[var(--border)]">
+                            <div class="px-4 py-3 flex items-center justify-between">
+                                <button class="p-2 -ml-2">
+                                    <span class="material-symbols-outlined">arrow_back</span>
+                                </button>
+                                <div class="text-center flex-1">
+                                    <div class="font-semibold">The Grand Plaza</div>
+                                    <div class="text-xs text-[var(--text-tertiary)]">Active Project</div>
+                                </div>
+                                <button class="p-2 -mr-2">
+                                    <span class="material-symbols-outlined">more_vert</span>
+                                </button>
+                            </div>
+
+                            <!-- Horizontal Scrolling Navigation -->
+                            <div class="relative">
+                                <div class="overflow-x-auto scrollbar-hide">
+                                    <nav class="flex items-center gap-1 px-4 pb-2 min-w-max">
+                                        <button class="px-4 py-2 rounded-full bg-[var(--primary)] text-white text-sm font-medium whitespace-nowrap">
+                                            Overview
+                                        </button>
+                                        <button class="px-4 py-2 rounded-full text-[var(--text-secondary)] text-sm whitespace-nowrap">
+                                            Costs
+                                        </button>
+                                        <button class="px-4 py-2 rounded-full text-[var(--text-secondary)] text-sm whitespace-nowrap">
+                                            Timeline
+                                        </button>
+                                        <button class="px-4 py-2 rounded-full text-[var(--text-secondary)] text-sm whitespace-nowrap">
+                                            Tasks
+                                        </button>
+                                        <button class="px-4 py-2 rounded-full text-[var(--text-secondary)] text-sm whitespace-nowrap">
+                                            Documents
+                                        </button>
+                                        <button class="px-4 py-2 rounded-full text-[var(--text-secondary)] text-sm whitespace-nowrap">
+                                            Team
+                                        </button>
+                                        <button class="px-4 py-2 rounded-full text-[var(--text-secondary)] text-sm whitespace-nowrap">
+                                            Reports
+                                        </button>
+                                    </nav>
+                                </div>
+                                <!-- Fade indicator on right -->
+                                <div class="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white pointer-events-none"></div>
+                            </div>
+                        </header>
+
+                        <!-- Main Content -->
+                        <main class="flex-1 overflow-y-auto relative">
+                            <div class="p-4">
+                                <!-- Stats Grid -->
+                                <div class="grid grid-cols-2 gap-3 mb-4">
+                                    <div class="bg-white p-3 rounded-lg border border-[var(--border)]">
+                                        <div class="flex items-center justify-between mb-1">
+                                            <span class="text-xs text-[var(--text-tertiary)]">Budget</span>
+                                            <span class="material-symbols-outlined text-sm text-[var(--primary)]">account_balance</span>
+                                        </div>
+                                        <div class="text-lg font-bold">$2.0M</div>
+                                        <div class="text-xs text-[var(--success)]">On track</div>
+                                    </div>
+                                    <div class="bg-white p-3 rounded-lg border border-[var(--border)]">
+                                        <div class="flex items-center justify-between mb-1">
+                                            <span class="text-xs text-[var(--text-tertiary)]">Spent</span>
+                                            <span class="material-symbols-outlined text-sm text-[var(--warning)]">payments</span>
+                                        </div>
+                                        <div class="text-lg font-bold">$1.25M</div>
+                                        <div class="text-xs text-[var(--warning)]">62.5%</div>
+                                    </div>
+                                    <div class="bg-white p-3 rounded-lg border border-[var(--border)]">
+                                        <div class="flex items-center justify-between mb-1">
+                                            <span class="text-xs text-[var(--text-tertiary)]">Progress</span>
+                                            <span class="material-symbols-outlined text-sm text-[var(--success)]">check_circle</span>
+                                        </div>
+                                        <div class="text-lg font-bold">65%</div>
+                                        <div class="text-xs text-[var(--text-secondary)]">Ahead +10%</div>
+                                    </div>
+                                    <div class="bg-white p-3 rounded-lg border border-[var(--border)]">
+                                        <div class="flex items-center justify-between mb-1">
+                                            <span class="text-xs text-[var(--text-tertiary)]">Timeline</span>
+                                            <span class="material-symbols-outlined text-sm text-[var(--error)]">schedule</span>
+                                        </div>
+                                        <div class="text-lg font-bold">180d</div>
+                                        <div class="text-xs text-[var(--text-secondary)]">Remaining</div>
+                                    </div>
+                                </div>
+
+                                <!-- Recent Activity -->
+                                <div class="bg-white rounded-lg border border-[var(--border)] p-4">
+                                    <h3 class="font-semibold mb-3">Recent Activity</h3>
+                                    <div class="space-y-3">
+                                        <div class="flex gap-3">
+                                            <div class="w-8 h-8 rounded-full bg-[var(--primary-light)] flex items-center justify-center flex-shrink-0">
+                                                <span class="material-symbols-outlined text-sm text-[var(--primary)]">check</span>
+                                            </div>
+                                            <div class="flex-1">
+                                                <div class="text-sm">Foundation completed</div>
+                                                <div class="text-xs text-[var(--text-tertiary)]">2 hours ago</div>
+                                            </div>
+                                        </div>
+                                        <div class="flex gap-3">
+                                            <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                                                <span class="material-symbols-outlined text-sm text-green-600">paid</span>
+                                            </div>
+                                            <div class="flex-1">
+                                                <div class="text-sm">Invoice #1234 paid</div>
+                                                <div class="text-xs text-[var(--text-tertiary)]">1 day ago</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Floating Action Button with Menu -->
+                            <div class="fixed bottom-6 right-6">
+                                <!-- Speed Dial Menu (hidden by default) -->
+                                <div id="speedDial" class="absolute bottom-16 right-0 hidden">
+                                    <div class="flex flex-col items-end gap-2">
+                                        <button class="flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-lg">
+                                            <span class="text-sm">Add Document</span>
+                                            <span class="material-symbols-outlined text-[var(--text-secondary)]">upload_file</span>
+                                        </button>
+                                        <button class="flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-lg">
+                                            <span class="text-sm">Add Task</span>
+                                            <span class="material-symbols-outlined text-[var(--text-secondary)]">task_alt</span>
+                                        </button>
+                                        <button class="flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-lg">
+                                            <span class="text-sm">Add Cost</span>
+                                            <span class="material-symbols-outlined text-[var(--text-secondary)]">receipt_long</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                <!-- Main FAB -->
+                                <button onclick="toggleSpeedDial()" class="w-14 h-14 bg-[var(--primary)] text-white rounded-full shadow-lg flex items-center justify-center">
+                                    <span id="fabIcon" class="material-symbols-outlined">add</span>
+                                </button>
+                            </div>
+                        </main>
+
+                        <!-- Context-aware Bottom Bar -->
+                        <div class="absolute bottom-0 left-0 right-0 bg-white border-t border-[var(--border)] px-4 py-3 safe-area-bottom">
+                            <div class="flex items-center justify-between">
+                                <button class="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
+                                    <span class="material-symbols-outlined text-lg">home</span>
+                                    <span>Home</span>
+                                </button>
+                                <button class="px-4 py-2 bg-[var(--primary)] text-white rounded-lg text-sm font-medium">
+                                    View All Projects
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Description Section -->
+        <div class="mt-12 bg-white rounded-lg p-8 shadow-lg">
+            <h2 class="text-2xl font-bold mb-6">Mobile Navigation Comparison</h2>
+
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="border-b">
+                            <th class="text-left py-3 px-4">Feature</th>
+                            <th class="text-center py-3 px-4">Option 1<br><span class="text-sm font-normal">Hybrid</span></th>
+                            <th class="text-center py-3 px-4">Option 2<br><span class="text-sm font-normal">Full-Screen</span></th>
+                            <th class="text-center py-3 px-4">Option 3<br><span class="text-sm font-normal">Contextual</span></th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-sm">
+                        <tr class="border-b">
+                            <td class="py-3 px-4 font-medium">Primary Navigation Access</td>
+                            <td class="text-center py-3 px-4">Bottom tabs + Drawer</td>
+                            <td class="text-center py-3 px-4">Hamburger menu</td>
+                            <td class="text-center py-3 px-4">Horizontal scroll</td>
+                        </tr>
+                        <tr class="border-b">
+                            <td class="py-3 px-4 font-medium">Screen Space Efficiency</td>
+                            <td class="text-center py-3 px-4">
+                                <span class="text-yellow-600">●●●○○</span><br>
+                                <span class="text-xs">Good (tab bar uses space)</span>
+                            </td>
+                            <td class="text-center py-3 px-4">
+                                <span class="text-green-600">●●●●●</span><br>
+                                <span class="text-xs">Excellent</span>
+                            </td>
+                            <td class="text-center py-3 px-4">
+                                <span class="text-green-600">●●●●○</span><br>
+                                <span class="text-xs">Very Good</span>
+                            </td>
+                        </tr>
+                        <tr class="border-b">
+                            <td class="py-3 px-4 font-medium">One-handed Use</td>
+                            <td class="text-center py-3 px-4">
+                                <span class="text-green-600">●●●●●</span><br>
+                                <span class="text-xs">Excellent (bottom tabs)</span>
+                            </td>
+                            <td class="text-center py-3 px-4">
+                                <span class="text-yellow-600">●●●○○</span><br>
+                                <span class="text-xs">Good</span>
+                            </td>
+                            <td class="text-center py-3 px-4">
+                                <span class="text-green-600">●●●●○</span><br>
+                                <span class="text-xs">Very Good (FAB)</span>
+                            </td>
+                        </tr>
+                        <tr class="border-b">
+                            <td class="py-3 px-4 font-medium">Discoverability</td>
+                            <td class="text-center py-3 px-4">
+                                <span class="text-green-600">●●●●●</span><br>
+                                <span class="text-xs">Excellent</span>
+                            </td>
+                            <td class="text-center py-3 px-4">
+                                <span class="text-yellow-600">●●●○○</span><br>
+                                <span class="text-xs">Good</span>
+                            </td>
+                            <td class="text-center py-3 px-4">
+                                <span class="text-green-600">●●●●○</span><br>
+                                <span class="text-xs">Very Good</span>
+                            </td>
+                        </tr>
+                        <tr class="border-b">
+                            <td class="py-3 px-4 font-medium">Context Switching</td>
+                            <td class="text-center py-3 px-4">Fast (single tap)</td>
+                            <td class="text-center py-3 px-4">Slower (2 taps)</td>
+                            <td class="text-center py-3 px-4">Fast (swipe/tap)</td>
+                        </tr>
+                        <tr>
+                            <td class="py-3 px-4 font-medium">Best For</td>
+                            <td class="text-center py-3 px-4">Frequent task switching</td>
+                            <td class="text-center py-3 px-4">Focus on content</td>
+                            <td class="text-center py-3 px-4">Project-centric workflow</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-8 grid md:grid-cols-3 gap-6">
+                <div class="p-4 bg-blue-50 rounded-lg">
+                    <h3 class="font-semibold mb-2 text-blue-900">Option 1: Hybrid Navigation</h3>
+                    <p class="text-sm text-blue-800">
+                        Best for users who frequently switch between main sections. The bottom tab bar provides instant access to
+                        primary features while the drawer contains secondary options and settings.
+                    </p>
+                </div>
+
+                <div class="p-4 bg-green-50 rounded-lg">
+                    <h3 class="font-semibold mb-2 text-green-900">Option 2: Full-Screen Menu</h3>
+                    <p class="text-sm text-green-800">
+                        Maximizes content area and reduces visual clutter. Ideal when users spend most time within specific views
+                        rather than navigating between sections.
+                    </p>
+                </div>
+
+                <div class="p-4 bg-purple-50 rounded-lg">
+                    <h3 class="font-semibold mb-2 text-purple-900">Option 3: Contextual Navigation</h3>
+                    <p class="text-sm text-purple-800">
+                        Perfect for project-focused workflows. The horizontal scrolling nav adapts to context, and the FAB provides
+                        quick access to common actions without leaving the current view.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleDrawer1() {
+            const drawer = document.getElementById('drawer1');
+            drawer.classList.toggle('hidden');
+            document.body.classList.toggle('menu-open');
+        }
+
+        function toggleFullMenu() {
+            const menu = document.getElementById('fullMenu');
+            const icon = document.getElementById('menuIcon2');
+            menu.classList.toggle('hidden');
+            document.body.classList.toggle('menu-open');
+        }
+
+        function toggleSpeedDial() {
+            const speedDial = document.getElementById('speedDial');
+            const fabIcon = document.getElementById('fabIcon');
+            speedDial.classList.toggle('hidden');
+            if (speedDial.classList.contains('hidden')) {
+                fabIcon.textContent = 'add';
+            } else {
+                fabIcon.textContent = 'close';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Generate Project Report</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#0A2540",
+              "background-light": "#F6F9FC",
+              "background-dark": "#101922",
+              "neutral-text": "#525F7F",
+              "neutral-border": "#E6EBF1"
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+<div class="layout-container flex h-full grow flex-col">
+<div class="flex flex-1 justify-center py-10 sm:py-16 md:py-20 px-4 sm:px-6 lg:px-8">
+<div class="layout-content-container flex flex-col w-full max-w-3xl flex-1 gap-8">
+<!-- Page Heading -->
+<div class="flex flex-wrap justify-between gap-3">
+<div class="flex flex-col gap-2">
+<p class="text-primary dark:text-slate-50 text-3xl md:text-4xl font-black leading-tight tracking-[-0.033em]">Generate Project Report</p>
+<p class="text-neutral-text dark:text-slate-400 text-base font-normal leading-normal">Customize and generate a detailed report for your project.</p>
+</div>
+</div>
+<div class="flex flex-col gap-8">
+<!-- Section: Report Format -->
+<div class="flex flex-col gap-4">
+<h2 class="text-primary dark:text-slate-200 text-lg font-bold leading-tight tracking-[-0.015em]">Select Report Format</h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<label class="flex items-center gap-4 rounded-xl border-2 border-solid border-neutral-border dark:border-slate-700 p-4 cursor-pointer ring-offset-2 ring-offset-background-light dark:ring-offset-background-dark has-[:checked]:border-primary has-[:checked]:ring-2 has-[:checked]:ring-primary dark:has-[:checked]:border-primary transition-all duration-200">
+<input checked="" class="h-5 w-5 appearance-none rounded-full border-2 border-neutral-border dark:border-slate-600 bg-transparent checked:border-primary dark:checked:border-primary checked:bg-primary dark:checked:bg-primary focus:outline-none focus:ring-0 focus:ring-offset-0" name="report_format" style="--radio-dot-svg: url('data:image/svg+xml,%3csvg viewBox=%270 0 16 16%27 fill=%27white%27 xmlns=%27http://www.w3.org/2000/svg%27%3e%3ccircle cx=%278%27 cy=%278%27 r=%273%27/%3e%3c/svg%3e'); background-image: var(--radio-dot-svg); background-position: center; background-repeat: no-repeat;" type="radio"/>
+<div class="flex grow flex-col">
+<p class="text-primary dark:text-slate-100 text-sm font-medium leading-normal">PDF</p>
+<p class="text-neutral-text dark:text-slate-400 text-sm font-normal leading-normal">Investor Report</p>
+</div>
+</label>
+<label class="flex items-center gap-4 rounded-xl border-2 border-solid border-neutral-border dark:border-slate-700 p-4 cursor-pointer ring-offset-2 ring-offset-background-light dark:ring-offset-background-dark has-[:checked]:border-primary has-[:checked]:ring-2 has-[:checked]:ring-primary dark:has-[:checked]:border-primary transition-all duration-200">
+<input class="h-5 w-5 appearance-none rounded-full border-2 border-neutral-border dark:border-slate-600 bg-transparent checked:border-primary dark:checked:border-primary checked:bg-primary dark:checked:bg-primary focus:outline-none focus:ring-0 focus:ring-offset-0" name="report_format" style="--radio-dot-svg: url('data:image/svg+xml,%3csvg viewBox=%270 0 16 16%27 fill=%27white%27 xmlns=%27http://www.w3.org/2000/svg%27%3e%3ccircle cx=%278%27 cy=%278%27 r=%273%27/%3e%3c/svg%3e'); background-image: var(--radio-dot-svg); background-position: center; background-repeat: no-repeat;" type="radio"/>
+<div class="flex grow flex-col">
+<p class="text-primary dark:text-slate-100 text-sm font-medium leading-normal">Excel</p>
+<p class="text-neutral-text dark:text-slate-400 text-sm font-normal leading-normal">Detailed Financial Export</p>
+</div>
+</label>
+<label class="flex items-center gap-4 rounded-xl border-2 border-solid border-neutral-border dark:border-slate-700 p-4 cursor-pointer ring-offset-2 ring-offset-background-light dark:ring-offset-background-dark has-[:checked]:border-primary has-[:checked]:ring-2 has-[:checked]:ring-primary dark:has-[:checked]:border-primary transition-all duration-200">
+<input class="h-5 w-5 appearance-none rounded-full border-2 border-neutral-border dark:border-slate-600 bg-transparent checked:border-primary dark:checked:border-primary checked:bg-primary dark:checked:bg-primary focus:outline-none focus:ring-0 focus:ring-offset-0" name="report_format" style="--radio-dot-svg: url('data:image/svg+xml,%3csvg viewBox=%270 0 16 16%27 fill=%27white%27 xmlns=%27http://www.w3.org/2000/svg%27%3e%3ccircle cx=%278%27 cy=%278%27 r=%273%27/%3e%3c/svg%3e'); background-image: var(--radio-dot-svg); background-position: center; background-repeat: no-repeat;" type="radio"/>
+<div class="flex grow flex-col">
+<p class="text-primary dark:text-slate-100 text-sm font-medium leading-normal">CSV</p>
+<p class="text-neutral-text dark:text-slate-400 text-sm font-normal leading-normal">Raw Data</p>
+</div>
+</label>
+</div>
+</div>
+<!-- Section: Date Range -->
+<div class="flex flex-col gap-4">
+<h2 class="text-primary dark:text-slate-200 text-lg font-bold leading-tight tracking-[-0.015em]">Select Date Range</h2>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<div class="relative">
+<label class="block text-sm font-medium text-neutral-text dark:text-slate-400 mb-1.5" for="start_date">Start Date</label>
+<input class="w-full rounded-lg border border-neutral-border dark:border-slate-700 bg-white dark:bg-slate-800 py-2.5 pl-4 pr-10 text-primary dark:text-slate-100 placeholder:text-neutral-text/60 dark:placeholder:text-slate-500 focus:border-primary focus:ring-primary" id="start_date" placeholder="Select date" type="text"/>
+<span class="material-symbols-outlined absolute right-3 top-9 text-neutral-text dark:text-slate-400">calendar_today</span>
+</div>
+<div class="relative">
+<label class="block text-sm font-medium text-neutral-text dark:text-slate-400 mb-1.5" for="end_date">End Date</label>
+<input class="w-full rounded-lg border border-neutral-border dark:border-slate-700 bg-white dark:bg-slate-800 py-2.5 pl-4 pr-10 text-primary dark:text-slate-100 placeholder:text-neutral-text/60 dark:placeholder:text-slate-500 focus:border-primary focus:ring-primary" id="end_date" placeholder="Select date" type="text"/>
+<span class="material-symbols-outlined absolute right-3 top-9 text-neutral-text dark:text-slate-400">calendar_today</span>
+</div>
+</div>
+</div>
+<!-- Section: Checklist -->
+<div class="flex flex-col gap-4">
+<h2 class="text-primary dark:text-slate-200 text-lg font-bold leading-tight tracking-[-0.015em]">Include in Report</h2>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3 rounded-xl border border-neutral-border dark:border-slate-700 p-4">
+<label class="flex items-center gap-3">
+<input checked="" class="h-5 w-5 rounded border-neutral-border dark:border-slate-600 bg-white dark:bg-slate-800 text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-sm font-medium text-neutral-text dark:text-slate-300">Project Overview</span>
+</label>
+<label class="flex items-center gap-3">
+<input class="h-5 w-5 rounded border-neutral-border dark:border-slate-600 bg-white dark:bg-slate-800 text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-sm font-medium text-neutral-text dark:text-slate-300">Vendor &amp; Contractor Summary</span>
+</label>
+<label class="flex items-center gap-3">
+<input checked="" class="h-5 w-5 rounded border-neutral-border dark:border-slate-600 bg-white dark:bg-slate-800 text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-sm font-medium text-neutral-text dark:text-slate-300">Executive Summary</span>
+</label>
+<label class="flex items-center gap-3">
+<input checked="" class="h-5 w-5 rounded border-neutral-border dark:border-slate-600 bg-white dark:bg-slate-800 text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-sm font-medium text-neutral-text dark:text-slate-300">Project Timeline &amp; Milestones</span>
+</label>
+<label class="flex items-center gap-3">
+<input checked="" class="h-5 w-5 rounded border-neutral-border dark:border-slate-600 bg-white dark:bg-slate-800 text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-sm font-medium text-neutral-text dark:text-slate-300">Financial Summary</span>
+</label>
+<label class="flex items-center gap-3">
+<input class="h-5 w-5 rounded border-neutral-border dark:border-slate-600 bg-white dark:bg-slate-800 text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-sm font-medium text-neutral-text dark:text-slate-300">Risk Analysis</span>
+</label>
+<label class="flex items-center gap-3">
+<input checked="" class="h-5 w-5 rounded border-neutral-border dark:border-slate-600 bg-white dark:bg-slate-800 text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-sm font-medium text-neutral-text dark:text-slate-300">Detailed Cost Breakdown</span>
+</label>
+</div>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 pt-4 border-t border-neutral-border dark:border-slate-800">
+<button class="w-full sm:w-auto px-6 py-3 rounded-lg text-sm font-semibold text-neutral-text dark:text-slate-300 bg-transparent hover:bg-neutral-border/50 dark:hover:bg-slate-700/50 transition-colors">Cancel</button>
+<button class="w-full sm:w-auto px-6 py-3 rounded-lg text-sm font-semibold text-white bg-primary hover:bg-primary/90 transition-colors">Generate Report</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body></html>

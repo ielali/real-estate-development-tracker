@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Contact Directory - DevTrack</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-800 dark:text-slate-200">
+<div class="flex min-h-screen">
+<!-- SideNavBar -->
+<aside class="flex flex-col w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800">
+<div class="flex flex-col justify-between flex-grow p-4">
+<div class="flex flex-col gap-4">
+<div class="flex items-center gap-3">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" data-alt="DevTrack company logo" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCRzZP4oOhQfi0CC9eNmZPcTT-sP1f-YSx7cLS9iswpMpQxd_pKkud85Fkh_UOns4ffyyrtnNlOfjkiZid3hV_ZLkeGwZyW2Xt-EV6anawQSZKWmidShb9Y7YtFV0PyOQEJEr8PLR229GmAqHdo5CqJi-TFOh1z9kb0-InPJJeETI4XsUm5ClP0E8xwWUj34LysrpSfXZe4YC3QxMLnsgmcaa1Ol_VDdvbK5kOQ-0JoFVyD3Yqf8IT_DVbN32q0b6t3sGXORBZ6caOp");'></div>
+<div class="flex flex-col">
+<h1 class="text-slate-900 dark:text-white text-base font-bold leading-normal">DevTrack</h1>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal leading-normal">Real Estate Development</p>
+</div>
+</div>
+<nav class="flex flex-col gap-2 mt-4">
+<a class="flex items-center gap-3 px-3 py-2 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg" href="#">
+<span class="material-symbols-outlined text-slate-600 dark:text-slate-400">dashboard</span>
+<p class="text-sm font-medium leading-normal">Dashboard</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg" href="#">
+<span class="material-symbols-outlined text-slate-600 dark:text-slate-400">folder_open</span>
+<p class="text-sm font-medium leading-normal">Projects</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/10 text-primary dark:text-white dark:bg-primary/90" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">contacts</span>
+<p class="text-sm font-medium leading-normal">Contacts</p>
+</a>
+</nav>
+</div>
+<div class="flex flex-col gap-2">
+<button class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-primary/90">
+<span class="truncate">Add New Contact</span>
+</button>
+<div class="flex flex-col gap-1 border-t border-slate-200 dark:border-slate-800 pt-2">
+<a class="flex items-center gap-3 px-3 py-2 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg" href="#">
+<span class="material-symbols-outlined text-slate-600 dark:text-slate-400">settings</span>
+<p class="text-sm font-medium leading-normal">Settings</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg" href="#">
+<span class="material-symbols-outlined text-slate-600 dark:text-slate-400">logout</span>
+<p class="text-sm font-medium leading-normal">Log Out</p>
+</a>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 overflow-y-auto">
+<div class="p-8">
+<!-- PageHeading -->
+<header class="flex flex-wrap justify-between items-center gap-4 mb-6">
+<div class="flex flex-col">
+<h1 class="text-slate-900 dark:text-white text-4xl font-black leading-tight tracking-[-0.033em]">Contact Directory</h1>
+<p class="text-slate-500 dark:text-slate-400 text-base font-normal leading-normal">All contacts across all projects</p>
+</div>
+</header>
+<!-- SearchBar -->
+<div class="mb-8">
+<label class="flex flex-col min-w-40 h-12 w-full">
+<div class="flex w-full flex-1 items-stretch rounded-lg h-full">
+<div class="text-slate-500 dark:text-slate-400 flex bg-white dark:bg-slate-800 items-center justify-center pl-4 rounded-l-lg border border-slate-200 dark:border-slate-700 border-r-0">
+<span class="material-symbols-outlined">search</span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-r-lg text-slate-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-primary h-full placeholder:text-slate-500 dark:placeholder:text-slate-400 px-4 text-base font-normal leading-normal" placeholder="Search by name, company, or role..." value=""/>
+</div>
+</label>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+<!-- Filters Sidebar -->
+<div class="lg:col-span-1">
+<!-- SectionHeader -->
+<div class="flex justify-between items-center px-4 pb-2 pt-4">
+<h3 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">Filter by Category</h3>
+<button class="text-sm text-primary dark:text-primary/90 hover:underline">Clear All</button>
+</div>
+<!-- Accordions -->
+<div class="flex flex-col px-4 pt-2">
+<details class="flex flex-col border-t border-slate-200 dark:border-slate-700 py-2 group">
+<summary class="flex cursor-pointer items-center justify-between gap-6 py-2 list-none">
+<p class="text-slate-800 dark:text-slate-200 text-sm font-medium leading-normal">Project Team</p>
+<span class="material-symbols-outlined text-slate-600 dark:text-slate-400 group-open:rotate-180 transition-transform">expand_more</span>
+</summary>
+<div class="pl-4 space-y-2 pb-2">
+<label class="flex items-center gap-2 text-slate-600 dark:text-slate-300 text-sm"><input class="form-checkbox rounded text-primary focus:ring-primary/50" type="checkbox"/>Architect</label>
+<label class="flex items-center gap-2 text-slate-600 dark:text-slate-300 text-sm"><input class="form-checkbox rounded text-primary focus:ring-primary/50" type="checkbox"/>Engineer</label>
+<label class="flex items-center gap-2 text-slate-600 dark:text-slate-300 text-sm"><input class="form-checkbox rounded text-primary focus:ring-primary/50" type="checkbox"/>General Contractor</label>
+</div>
+</details>
+<details class="flex flex-col border-t border-slate-200 dark:border-slate-700 py-2 group" open="">
+<summary class="flex cursor-pointer items-center justify-between gap-6 py-2 list-none">
+<p class="text-slate-800 dark:text-slate-200 text-sm font-medium leading-normal">Trades</p>
+<span class="material-symbols-outlined text-slate-600 dark:text-slate-400 group-open:rotate-180 transition-transform">expand_more</span>
+</summary>
+<div class="pl-4 space-y-2 pb-2">
+<label class="flex items-center gap-2 text-slate-600 dark:text-slate-300 text-sm"><input checked="" class="form-checkbox rounded text-primary focus:ring-primary/50" type="checkbox"/>Electrical</label>
+<label class="flex items-center gap-2 text-slate-600 dark:text-slate-300 text-sm"><input class="form-checkbox rounded text-primary focus:ring-primary/50" type="checkbox"/>Plumbing</label>
+<label class="flex items-center gap-2 text-slate-600 dark:text-slate-300 text-sm"><input class="form-checkbox rounded text-primary focus:ring-primary/50" type="checkbox"/>HVAC</label>
+</div>
+</details>
+<details class="flex flex-col border-t border-slate-200 dark:border-slate-700 py-2 group">
+<summary class="flex cursor-pointer items-center justify-between gap-6 py-2 list-none">
+<p class="text-slate-800 dark:text-slate-200 text-sm font-medium leading-normal">Consultants</p>
+<span class="material-symbols-outlined text-slate-600 dark:text-slate-400 group-open:rotate-180 transition-transform">expand_more</span>
+</summary>
+<div class="pl-4 space-y-2 pb-2">
+<label class="flex items-center gap-2 text-slate-600 dark:text-slate-300 text-sm"><input class="form-checkbox rounded text-primary focus:ring-primary/50" type="checkbox"/>Legal</label>
+<label class="flex items-center gap-2 text-slate-600 dark:text-slate-300 text-sm"><input class="form-checkbox rounded text-primary focus:ring-primary/50" type="checkbox"/>Environmental</label>
+<label class="flex items-center gap-2 text-slate-600 dark:text-slate-300 text-sm"><input class="form-checkbox rounded text-primary focus:ring-primary/50" type="checkbox"/>Surveyor</label>
+</div>
+</details>
+<details class="flex flex-col border-t border-slate-200 dark:border-slate-700 py-2 group">
+<summary class="flex cursor-pointer items-center justify-between gap-6 py-2 list-none">
+<p class="text-slate-800 dark:text-slate-200 text-sm font-medium leading-normal">Investors &amp; Lenders</p>
+<span class="material-symbols-outlined text-slate-600 dark:text-slate-400 group-open:rotate-180 transition-transform">expand_more</span>
+</summary>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal leading-normal pb-2 pl-4">No sub-categories</p>
+</details>
+<details class="flex flex-col border-t border-b border-slate-200 dark:border-slate-700 py-2 group">
+<summary class="flex cursor-pointer items-center justify-between gap-6 py-2 list-none">
+<p class="text-slate-800 dark:text-slate-200 text-sm font-medium leading-normal">City &amp; Municipal</p>
+<span class="material-symbols-outlined text-slate-600 dark:text-slate-400 group-open:rotate-180 transition-transform">expand_more</span>
+</summary>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal leading-normal pb-2 pl-4">No sub-categories</p>
+</details>
+</div>
+</div>
+<!-- Contacts Grid -->
+<div class="lg:col-span-3">
+<div class="flex justify-between items-baseline mb-4">
+<h3 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">All Contacts</h3>
+<p class="text-slate-500 dark:text-slate-400 text-sm">Showing 6 of 150 contacts</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+<!-- Contact Card Example -->
+<div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12" data-alt="Avatar of Jane Doe" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDHCJr8cH0vW4Tnf2E_cVyzun8tK2PQb88pIch9-jA6ZKBhfgxytOOFrn_14aIJPLMQfxdlouEKtEXVQZEqE43K3I9K6T6s7oBTn5GvxayBWKVDbXFOzdYY4PLE2-lP4pbS9VOeH09nN8ta9mGX4VeyOaEyUKDgV9Yi2U_Yj_P-iu6ntEr7TkB4eE0C66iM5lfmWL5yxDVmYaejOJla1Na-v1kdXQdyGenAravNmtQXcqmAwb2ndrdNahfxSTYJOVxVWfRIddEnYUlo");'></div>
+<div class="flex flex-col">
+<h4 class="text-slate-900 dark:text-white font-bold">Jane Doe</h4>
+<p class="text-slate-500 dark:text-slate-400 text-sm">Lead Electrician</p>
+</div>
+</div>
+<button class="text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<p class="text-slate-600 dark:text-slate-300 text-sm">Sparklight Electrical Inc.</p>
+<div class="flex items-center gap-2 border-t border-slate-200 dark:border-slate-700 pt-3">
+<span class="inline-flex items-center justify-center text-xs font-bold px-2.5 py-1 bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary/90 rounded-full">Trades</span>
+<span class="inline-flex items-center justify-center text-xs font-bold px-2.5 py-1 bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary/90 rounded-full">Electrical</span>
+</div>
+<div class="flex items-center gap-4 mt-2">
+<button class="p-2 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600">
+<span class="material-symbols-outlined text-lg">phone</span>
+</button>
+<button class="p-2 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600">
+<span class="material-symbols-outlined text-lg">email</span>
+</button>
+</div>
+</div>
+<!-- More contact cards -->
+<div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12" data-alt="Avatar of John Smith" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBjAVcd1fCtlIMq7dOSo_DHX1Cqqiaf0r-XkLSa2mBwhDt03YrKenJ2CNoJRd641wwa2hEd_kPEIxl7jpM6gGrodSMvakdjpofYqfY1fhxxQ7M2-Ac4NCMq3gsL2grr4u3j90VfhTG5F0VkOocmOvgdhEVVVeD5-MNyTue6wLKmBo0gO0JxC7NORjbcdqJcIlLMqvTAd6kIRJ7HkHX44M_u6EKH4AAdRlStZVcH2LV3k6ye5Ff3CEF-27ZD73i4qM7Hpe_WYtOjTkhY");'></div>
+<div class="flex flex-col">
+<h4 class="text-slate-900 dark:text-white font-bold">John Smith</h4>
+<p class="text-slate-500 dark:text-slate-400 text-sm">Lead Architect</p>
+</div>
+</div>
+<button class="text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<p class="text-slate-600 dark:text-slate-300 text-sm">Arch &amp; Co.</p>
+<div class="flex items-center gap-2 border-t border-slate-200 dark:border-slate-700 pt-3">
+<span class="inline-flex items-center justify-center text-xs font-bold px-2.5 py-1 bg-sky-100 text-sky-800 dark:bg-sky-900/50 dark:text-sky-300 rounded-full">Project Team</span>
+<span class="inline-flex items-center justify-center text-xs font-bold px-2.5 py-1 bg-sky-100 text-sky-800 dark:bg-sky-900/50 dark:text-sky-300 rounded-full">Architect</span>
+</div>
+<div class="flex items-center gap-4 mt-2">
+<button class="p-2 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600">
+<span class="material-symbols-outlined text-lg">phone</span>
+</button>
+<button class="p-2 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600">
+<span class="material-symbols-outlined text-lg">email</span>
+</button>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12" data-alt="Avatar of Emily White" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuC6FGe9qLecw6vXNU_nFvZfGYsPQj2ky7PW3VEcoENcqngodk30zhSSBz0rebRjDxwczHNaR_CsAEDKsiHertGKiQ0CLcj0bKqbEVNwe-wuPeSkR92NBmQElygs8ObDQvSBNSfAoYdoc0CjIf0AqP8y5CYxJWVkL_ftEaK4aEtNt9kkMNwqg-f4O1-u-YMhuJC6yrFqBKlGSl-mcOvQ1dnI4OQ_cX2T1OePvU672DWf-X-TfmQ95nK2PBpkalzqW3zV0kUF7SjeVRre");'></div>
+<div class="flex flex-col">
+<h4 class="text-slate-900 dark:text-white font-bold">Emily White</h4>
+<p class="text-slate-500 dark:text-slate-400 text-sm">Legal Counsel</p>
+</div>
+</div>
+<button class="text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<p class="text-slate-600 dark:text-slate-300 text-sm">Legal Eagles Firm</p>
+<div class="flex items-center gap-2 border-t border-slate-200 dark:border-slate-700 pt-3">
+<span class="inline-flex items-center justify-center text-xs font-bold px-2.5 py-1 bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300 rounded-full">Consultants</span>
+<span class="inline-flex items-center justify-center text-xs font-bold px-2.5 py-1 bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300 rounded-full">Legal</span>
+</div>
+<div class="flex items-center gap-4 mt-2">
+<button class="p-2 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600">
+<span class="material-symbols-outlined text-lg">phone</span>
+</button>
+<button class="p-2 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600">
+<span class="material-symbols-outlined text-lg">email</span>
+</button>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12" data-alt="Avatar of Michael Brown" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBYbmzZktr4bKlOPBg4g4oNyOgt8JNQs-zoCTjIScoV1gFBKh3QAicsUCtTsvk_DuZCv-Mh7Coi6-CueWfaRwoT6_yF024X01X_QJVPZpF2VYntHPjYha5-Hs4h9h8_NttshEFn5JlVSTrMS__KUV0WRcH2EpJKOqvcDERuZYeae04QzZEkAnIT-nsh2Eq-0DKjVZTyf0x_NsWKoWlts3yBV893zwowZwGvZPmRQ3KHI7lS3YKbPKTsHoFJ47TRP1z1oOx_mlktAml6");'></div>
+<div class="flex flex-col">
+<h4 class="text-slate-900 dark:text-white font-bold">Michael Brown</h4>
+<p class="text-slate-500 dark:text-slate-400 text-sm">Plumbing Supervisor</p>
+</div>
+</div>
+<button class="text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<p class="text-slate-600 dark:text-slate-300 text-sm">ProFlow Plumbers</p>
+<div class="flex items-center gap-2 border-t border-slate-200 dark:border-slate-700 pt-3">
+<span class="inline-flex items-center justify-center text-xs font-bold px-2.5 py-1 bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary/90 rounded-full">Trades</span>
+<span class="inline-flex items-center justify-center text-xs font-bold px-2.5 py-1 bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary/90 rounded-full">Plumbing</span>
+</div>
+<div class="flex items-center gap-4 mt-2">
+<button class="p-2 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600">
+<span class="material-symbols-outlined text-lg">phone</span>
+</button>
+<button class="p-2 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600">
+<span class="material-symbols-outlined text-lg">email</span>
+</button>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12" data-alt="Avatar of Olivia Green" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAlrDMW9YlhrTKjQLX6e0Dd1r2VHrlE4uaX1jGZPMbJyR01e3ukOqtbWK1BhtvaFScmNwZiS4KnAMrCVy70DsG0yx0zqXpgbny-Xcs2wyLjUzRuc_1Ls7a3nl_tJSPKagnb0Bdef3YEf_qKaLI0UWu4LxEmjoeZa-jNpfJlHJcRzctjaSRfpsKOHhTT9JM7n8Kd1HvMyMo0QP2BgJytnHwVySFYl7Xhxko0pSiMNG_JWyQsU6tWqtjVypMr_ztl5Zj8R4ueMvqj_qwZ");'></div>
+<div class="flex flex-col">
+<h4 class="text-slate-900 dark:text-white font-bold">Olivia Green</h4>
+<p class="text-slate-500 dark:text-slate-400 text-sm">Investor Relations</p>
+</div>
+</div>
+<button class="text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<p class="text-slate-600 dark:text-slate-300 text-sm">Capital Ventures</p>
+<div class="flex items-center gap-2 border-t border-slate-200 dark:border-slate-700 pt-3">
+<span class="inline-flex items-center justify-center text-xs font-bold px-2.5 py-1 bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300 rounded-full">Investors</span>
+</div>
+<div class="flex items-center gap-4 mt-2">
+<button class="p-2 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600">
+<span class="material-symbols-outlined text-lg">phone</span>
+</button>
+<button class="p-2 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600">
+<span class="material-symbols-outlined text-lg">email</span>
+</button>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12" data-alt="Avatar of David Chen" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuADgH2KuOye7yF8r1I4fOfh57ecBdF2iD2qTfDsRc9cfDBlAPo6B5XtyheSsg1jdE-ILCZfbeej4L7fEbrGeOOwQEKcfU4cQ0ScgLljyk4zq2iWrgVZCmwg1Qp-22u0yhs10kNXXCR87xgYKqKf1wKeLeb_1PGq7PMCQ71eVwPcicuxdQQPBagy9Dj58B2YIoyHPxeJcuxkiZ4smBrpPyOGG_vlU4Ln3tRHDh8ENWoNU0yNXUUfDiQpoP1XrCRShBu8JE7BuzMf4XDn");'></div>
+<div class="flex flex-col">
+<h4 class="text-slate-900 dark:text-white font-bold">David Chen</h4>
+<p class="text-slate-500 dark:text-slate-400 text-sm">City Planner</p>
+</div>
+</div>
+<button class="text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<p class="text-slate-600 dark:text-slate-300 text-sm">City of Metropolis</p>
+<div class="flex items-center gap-2 border-t border-slate-200 dark:border-slate-700 pt-3">
+<span class="inline-flex items-center justify-center text-xs font-bold px-2.5 py-1 bg-rose-100 text-rose-800 dark:bg-rose-900/50 dark:text-rose-300 rounded-full">Municipal</span>
+</div>
+<div class="flex items-center gap-4 mt-2">
+<button class="p-2 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600">
+<span class="material-symbols-outlined text-lg">phone</span>
+</button>
+<button class="p-2 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600">
+<span class="material-symbols-outlined text-lg">email</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

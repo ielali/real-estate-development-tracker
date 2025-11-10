@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Project Contacts - Real Estate Tracker</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings:
+                'FILL' 0,
+                'wght' 400,
+                'GRAD' 0,
+                'opsz' 24
+        }
+    </style>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark">
+<div class="relative flex min-h-screen w-full">
+<!-- SideNavBar -->
+<aside class="flex w-64 flex-col border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 p-4">
+<div class="flex flex-col gap-4">
+<div class="flex items-center gap-3">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" data-alt="User avatar for John Doe" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAjvXSwOBBsZFJCv_XuOzz_h08AELHI8HZKJuQGYoOyruswvkWsKxM6P1EaYs4SV0giiySpFNQ5cYmAacWNNjg-XG8a40E7R7B0ArUkYH5Un0KFGTZR-BdCmVZvqthXUMMG7gYQsk4y3mxE4Ac9s0dMb2rojON4PUvg3lBLB91PnnEhlHkINr2h6XG7I9Hnv6N8Zn9aNz9GNHKsvm1sM8q2YiNo16a1hjze909fUygJLnO1-CGN9YCJp9ZP4GrdA86sayoB3Uk_lj2r");'></div>
+<div class="flex flex-col">
+<h1 class="text-slate-900 dark:text-slate-50 text-base font-medium leading-normal">John Doe</h1>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal leading-normal">Real Estate Developer</p>
+</div>
+</div>
+<nav class="flex flex-col gap-2 mt-4">
+<a class="flex items-center gap-3 px-3 py-2 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg" href="#">
+<span class="material-symbols-outlined text-slate-800 dark:text-slate-200">dashboard</span>
+<p class="text-sm font-medium leading-normal">Dashboard</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-300" href="#">
+<span class="material-symbols-outlined !fill-1">folder</span>
+<p class="text-sm font-medium leading-normal">Projects</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg" href="#">
+<span class="material-symbols-outlined text-slate-800 dark:text-slate-200">task_alt</span>
+<p class="text-sm font-medium leading-normal">Tasks</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg" href="#">
+<span class="material-symbols-outlined text-slate-800 dark:text-slate-200">bar_chart</span>
+<p class="text-sm font-medium leading-normal">Reports</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg" href="#">
+<span class="material-symbols-outlined text-slate-800 dark:text-slate-200">settings</span>
+<p class="text-sm font-medium leading-normal">Settings</p>
+</a>
+</nav>
+</div>
+<div class="mt-auto">
+<button class="flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em]">
+<span class="truncate">New Project</span>
+</button>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 p-6 lg:p-8">
+<div class="w-full max-w-7xl mx-auto">
+<!-- Breadcrumbs -->
+<div class="flex flex-wrap gap-2 mb-4">
+<a class="text-slate-500 dark:text-slate-400 text-sm font-medium leading-normal hover:text-primary dark:hover:text-primary-300" href="#">Projects</a>
+<span class="text-slate-500 dark:text-slate-400 text-sm font-medium leading-normal">/</span>
+<a class="text-slate-500 dark:text-slate-400 text-sm font-medium leading-normal hover:text-primary dark:hover:text-primary-300" href="#">Greenwood Towers</a>
+<span class="text-slate-500 dark:text-slate-400 text-sm font-medium leading-normal">/</span>
+<span class="text-slate-800 dark:text-slate-200 text-sm font-medium leading-normal">Contacts</span>
+</div>
+<!-- PageHeading & Toolbar -->
+<div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+<div class="flex min-w-72 flex-col">
+<h1 class="text-slate-900 dark:text-slate-50 text-4xl font-black leading-tight tracking-[-0.033em]">Project Contacts</h1>
+<p class="text-slate-500 dark:text-slate-400 text-base font-normal leading-normal mt-1">Manage all contacts for the Greenwood Towers project.</p>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-full max-w-sm">
+<label class="flex flex-col min-w-40 h-12 w-full">
+<div class="flex w-full flex-1 items-stretch rounded-lg h-full">
+<div class="text-slate-500 dark:text-slate-400 flex border-none bg-white dark:bg-slate-800 items-center justify-center pl-4 rounded-l-lg border-r-0">
+<span class="material-symbols-outlined">search</span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-slate-900 dark:text-slate-50 focus:outline-0 focus:ring-2 focus:ring-primary/50 border-none bg-white dark:bg-slate-800 h-full placeholder:text-slate-500 dark:placeholder:text-slate-400 px-4 rounded-l-none border-l-0 pl-2 text-base font-normal leading-normal" placeholder="Search by name, company..." value=""/>
+</div>
+</label>
+</div>
+<button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 bg-primary text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-4 shadow-sm hover:bg-primary/90">
+<span class="material-symbols-outlined">add</span>
+<span class="truncate">Add Contact</span>
+</button>
+</div>
+</div>
+<div class="flex flex-col lg:flex-row gap-8">
+<!-- Filter Sidebar -->
+<div class="w-full lg:w-64">
+<h2 class="text-lg font-bold text-slate-800 dark:text-slate-200 mb-4">Filter by Role</h2>
+<div class="space-y-3">
+<label class="flex items-center space-x-3 cursor-pointer">
+<input checked="" class="form-checkbox h-4 w-4 rounded border-slate-300 dark:border-slate-600 text-primary focus:ring-primary/50 bg-white dark:bg-slate-800" type="checkbox"/>
+<span class="text-slate-700 dark:text-slate-300">All</span>
+</label>
+<label class="flex items-center space-x-3 cursor-pointer">
+<input class="form-checkbox h-4 w-4 rounded border-slate-300 dark:border-slate-600 text-primary focus:ring-primary/50 bg-white dark:bg-slate-800" type="checkbox"/>
+<span class="text-slate-700 dark:text-slate-300">General Contractor</span>
+</label>
+<label class="flex items-center space-x-3 cursor-pointer">
+<input class="form-checkbox h-4 w-4 rounded border-slate-300 dark:border-slate-600 text-primary focus:ring-primary/50 bg-white dark:bg-slate-800" type="checkbox"/>
+<span class="text-slate-700 dark:text-slate-300">Architect</span>
+</label>
+<label class="flex items-center space-x-3 cursor-pointer">
+<input class="form-checkbox h-4 w-4 rounded border-slate-300 dark:border-slate-600 text-primary focus:ring-primary/50 bg-white dark:bg-slate-800" type="checkbox"/>
+<span class="text-slate-700 dark:text-slate-300">Plumber</span>
+</label>
+<label class="flex items-center space-x-3 cursor-pointer">
+<input class="form-checkbox h-4 w-4 rounded border-slate-300 dark:border-slate-600 text-primary focus:ring-primary/50 bg-white dark:bg-slate-800" type="checkbox"/>
+<span class="text-slate-700 dark:text-slate-300">Electrician</span>
+</label>
+<label class="flex items-center space-x-3 cursor-pointer">
+<input class="form-checkbox h-4 w-4 rounded border-slate-300 dark:border-slate-600 text-primary focus:ring-primary/50 bg-white dark:bg-slate-800" type="checkbox"/>
+<span class="text-slate-700 dark:text-slate-300">Structural Engineer</span>
+</label>
+<label class="flex items-center space-x-3 cursor-pointer">
+<input class="form-checkbox h-4 w-4 rounded border-slate-300 dark:border-slate-600 text-primary focus:ring-primary/50 bg-white dark:bg-slate-800" type="checkbox"/>
+<span class="text-slate-700 dark:text-slate-300">Legal Counsel</span>
+</label>
+</div>
+</div>
+<!-- Contacts Grid -->
+<div class="flex-1">
+<div class="grid grid-cols-1 @[40rem]:grid-cols-2 @[60rem]:grid-cols-3 gap-6">
+<!-- Contact Card 1 -->
+<div class="flex flex-col bg-white dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 transition-all hover:shadow-md hover:-translate-y-1">
+<div class="flex items-center gap-4">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12" data-alt="Avatar for Elena Rodriguez" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAQ9tDN_-AifaTa5VcmY3_DmxzzQZUqi9E_bL2foKc8Hf1_HtotiYbM7cf8kARLENk1mUqvqv-2dGjD0w2TsJ55qcdBsTn6lnyDw3X7QhGg4sH0lTsUYSzfUF0SzFUCCdt8VMgoiUrFJG_D17GKzHh3uowTDYk2cYiKDij6c3_8ZsSGmRi8LlOfIYckrfzXD075QeM6gha5gGKsZyGmeb8aBwA-F7uWmkwYeTjx50JhrSF1Rpgsk9vhlgz0vSsMoLqtUkLBbdCOttHp");'></div>
+<div>
+<h3 class="font-bold text-lg text-slate-800 dark:text-slate-100">Elena Rodriguez</h3>
+<p class="text-sm text-slate-500 dark:text-slate-400">BuildRight Inc. - Architect</p>
+</div>
+</div>
+<div class="mt-4 flex flex-col gap-3">
+<a class="flex items-center gap-3 text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary-300" href="tel:+1234567890">
+<span class="material-symbols-outlined text-lg">call</span>
+<span class="text-sm">(123) 456-7890</span>
+</a>
+<a class="flex items-center gap-3 text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary-300" href="mailto:elena.r@buildright.com">
+<span class="material-symbols-outlined text-lg">mail</span>
+<span class="text-sm truncate">elena.r@buildright.com</span>
+</a>
+</div>
+<div class="mt-5 pt-4 border-t border-slate-200 dark:border-slate-800">
+<p class="text-xs text-slate-500 dark:text-slate-400 uppercase font-semibold tracking-wider">Total Spent</p>
+<p class="text-2xl font-bold text-green-600 dark:text-green-500 mt-1">$250,000</p>
+</div>
+</div>
+<!-- Contact Card 2 -->
+<div class="flex flex-col bg-white dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 transition-all hover:shadow-md hover:-translate-y-1">
+<div class="flex items-center gap-4">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12" data-alt="Avatar for Ben Carter" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBpbL1Nd1FFYjLSetQgIqdIGNoreLbRlICohK88N7GUq-Cx20vcp9K6nkq-o4DKL6y0iX0-US29UVYprwN4B33MfnHvjMxGAIoz-ugvK5L9WXM3ob0rfmiswxXe1jkpWWM2zoPUw_cCkCavlqmoMVNrcR299ea-3LOed4UShW2p1qtzALUzJ5pLmPWuhhAw3dHKioYaX43d8ZHZpZGGiUej3fgtumeUjw2XzGp-754noiA4Ew8dT1SKzKDEmV1okDxGkJM8vdWeVgJ3");'></div>
+<div>
+<h3 class="font-bold text-lg text-slate-800 dark:text-slate-100">Ben Carter</h3>
+<p class="text-sm text-slate-500 dark:text-slate-400">Spark Electric - Electrician</p>
+</div>
+</div>
+<div class="mt-4 flex flex-col gap-3">
+<a class="flex items-center gap-3 text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary-300" href="tel:+1987654321">
+<span class="material-symbols-outlined text-lg">call</span>
+<span class="text-sm">(198) 765-4321</span>
+</a>
+<a class="flex items-center gap-3 text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary-300" href="mailto:ben.carter@spark.co">
+<span class="material-symbols-outlined text-lg">mail</span>
+<span class="text-sm truncate">ben.carter@spark.co</span>
+</a>
+</div>
+<div class="mt-5 pt-4 border-t border-slate-200 dark:border-slate-800">
+<p class="text-xs text-slate-500 dark:text-slate-400 uppercase font-semibold tracking-wider">Total Spent</p>
+<p class="text-2xl font-bold text-green-600 dark:text-green-500 mt-1">$75,480</p>
+</div>
+</div>
+<!-- Contact Card 3 -->
+<div class="flex flex-col bg-white dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 transition-all hover:shadow-md hover:-translate-y-1">
+<div class="flex items-center gap-4">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12" data-alt="Avatar for Maria Garcia" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuD4M3m6omY15Cv-wJsj7utni-M35l_wucOGhdzUWXdZ2Ny1iqjI1SjmuFzt-VZg2L39cYdnNwDmAM5hOHBPzWGz1DvhQAX-h8lK4qo6R46xcsZiBL1zylu4Lc_v3p8eNMFhwFgXHqgg_m83T9ja3_pYBVR7Y4_WRewooFXMc-9fj91mU4syUZru-XU8ScDe255ktywL9ZwNXQ1Eiqc4hK5VtJOSTskvGPBeVFbwY3nYVKnwU7sIrQMRRjBd9k5A57EimdoB9PBW0ovC");'></div>
+<div>
+<h3 class="font-bold text-lg text-slate-800 dark:text-slate-100">Maria Garcia</h3>
+<p class="text-sm text-slate-500 dark:text-slate-400">Flow Plumbing - Plumber</p>
+</div>
+</div>
+<div class="mt-4 flex flex-col gap-3">
+<a class="flex items-center gap-3 text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary-300" href="tel:+1555123456">
+<span class="material-symbols-outlined text-lg">call</span>
+<span class="text-sm">(555) 123-4567</span>
+</a>
+<a class="flex items-center gap-3 text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary-300" href="mailto:m.garcia@flowplumbing.net">
+<span class="material-symbols-outlined text-lg">mail</span>
+<span class="text-sm truncate">m.garcia@flowplumbing.net</span>
+</a>
+</div>
+<div class="mt-5 pt-4 border-t border-slate-200 dark:border-slate-800">
+<p class="text-xs text-slate-500 dark:text-slate-400 uppercase font-semibold tracking-wider">Total Spent</p>
+<p class="text-2xl font-bold text-green-600 dark:text-green-500 mt-1">$42,150</p>
+</div>
+</div>
+<!-- Empty State Card -->
+<div class="col-span-1 @[40rem]:col-span-2 @[60rem]:col-span-3 flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-900/30 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700 p-12 text-center min-h-[300px]">
+<span class="material-symbols-outlined text-5xl text-slate-400 dark:text-slate-500">search</span>
+<h3 class="mt-4 text-xl font-bold text-slate-800 dark:text-slate-200">No Contacts Found</h3>
+<p class="mt-1 text-slate-500 dark:text-slate-400">No contacts match your current search or filter. <br/> Try adjusting your criteria or adding a new contact.</p>
+<button class="mt-6 flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 bg-primary text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-4 shadow-sm hover:bg-primary/90">
+<span class="material-symbols-outlined">add</span>
+<span class="truncate">Add New Contact</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

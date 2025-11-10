@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Portfolio Analytics Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark text-gray-800 dark:text-gray-200">
+<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+<div class="layout-container flex h-full grow flex-col">
+<header class="flex items-center justify-between whitespace-nowrap border-b border-gray-200 dark:border-gray-700 px-4 sm:px-6 lg:px-8 py-3 bg-white dark:bg-background-dark sticky top-0 z-10">
+<div class="flex items-center gap-4 text-gray-900 dark:text-white">
+<div class="text-primary size-6">
+<svg fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_6_319)">
+<path d="M8.57829 8.57829C5.52816 11.6284 3.451 15.5145 2.60947 19.7452C1.76794 23.9758 2.19984 28.361 3.85056 32.3462C5.50128 36.3314 8.29667 39.7376 11.8832 42.134C15.4698 44.5305 19.6865 45.8096 24 45.8096C28.3135 45.8096 32.5302 44.5305 36.1168 42.134C39.7033 39.7375 42.4987 36.3314 44.1494 32.3462C45.8002 28.361 46.2321 23.9758 45.3905 19.7452C44.549 15.5145 42.4718 11.6284 39.4217 8.57829L24 24L8.57829 8.57829Z" fill="currentColor"></path>
+</g>
+<defs><clippath id="clip0_6_319"><rect fill="white" height="48" width="48"></rect></clippath></defs>
+</svg>
+</div>
+<h2 class="text-lg font-bold leading-tight tracking-[-0.015em]">Development Tracker</h2>
+</div>
+<div class="flex flex-1 justify-end gap-4">
+<div class="flex gap-2">
+<button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 bg-gray-100 dark:bg-gray-700/50 text-gray-900 dark:text-gray-200 gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 bg-gray-100 dark:bg-gray-700/50 text-gray-900 dark:text-gray-200 gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5">
+<span class="material-symbols-outlined">download</span>
+</button>
+</div>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" data-alt="User avatar image" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCqYOWLovFPAqo8_2qlH0oVOq4CGtlWqmIDsGFazD0vXRP-E_TTtvHy70fFSFRO2RuNU35QzlgdxQjmNmN4aPC2fglh9mUovfIZU10Bo_gA5prAKctnweoy4QyLZMyVwVLuFMbLS0ruRXjlfhWNgbMteuT89gokhbfQ0JMHpWseCdpVEzpfjnAy3lZUS2_6uRtzXMN9OQ9dn99N4M7XVmlhy_U6xcAlfiJNo4EwMffDlX9dyyyZ4vav4__4_lu-QBE7N2NfymvzIpN5");'></div>
+</div>
+</header>
+<main class="px-4 sm:px-6 lg:px-8 py-5">
+<div class="layout-content-container flex flex-col max-w-7xl mx-auto flex-1 gap-6">
+<div class="flex flex-wrap justify-between items-center gap-4">
+<h1 class="text-4xl font-black leading-tight tracking-[-0.033em] min-w-72 text-gray-900 dark:text-white">Portfolio Analytics Dashboard</h1>
+</div>
+<div class="flex flex-wrap gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 items-center">
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-gray-100 dark:bg-gray-700 pl-3 pr-2 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600">
+<span class="material-symbols-outlined">domain</span>
+<p class="text-sm font-medium leading-normal">Projects: All</p>
+<span class="material-symbols-outlined">expand_more</span>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-gray-100 dark:bg-gray-700 pl-3 pr-2 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600">
+<span class="material-symbols-outlined">calendar_month</span>
+<p class="text-sm font-medium leading-normal">Date Range: Last 90 Days</p>
+<span class="material-symbols-outlined">expand_more</span>
+</button>
+<div class="flex-grow"></div>
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-primary px-4 text-white hover:bg-primary/90">
+<p class="text-sm font-medium leading-normal">Apply Filters</p>
+</button>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+<div class="flex flex-col gap-2 rounded-xl p-6 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+<p class="text-base font-medium leading-normal text-gray-600 dark:text-gray-400">Total Portfolio Value</p>
+<p class="tracking-light text-3xl font-bold leading-tight text-gray-900 dark:text-white">$125,780,000</p>
+<p class="text-green-600 dark:text-green-500 text-base font-medium leading-normal">+5.2%</p>
+</div>
+<div class="flex flex-col gap-2 rounded-xl p-6 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+<p class="text-base font-medium leading-normal text-gray-600 dark:text-gray-400">Number of Projects</p>
+<p class="tracking-light text-3xl font-bold leading-tight text-gray-900 dark:text-white">14</p>
+<p class="text-green-600 dark:text-green-500 text-base font-medium leading-normal">+2.1%</p>
+</div>
+<div class="flex flex-col gap-2 rounded-xl p-6 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+<p class="text-base font-medium leading-normal text-gray-600 dark:text-gray-400">Average Project Cost</p>
+<p class="tracking-light text-3xl font-bold leading-tight text-gray-900 dark:text-white">$8,984,285</p>
+<p class="text-red-600 dark:text-red-500 text-base font-medium leading-normal">-1.5%</p>
+</div>
+<div class="flex flex-col gap-2 rounded-xl p-6 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+<p class="text-base font-medium leading-normal text-gray-600 dark:text-gray-400">Total Vendors Used</p>
+<p class="tracking-light text-3xl font-bold leading-tight text-gray-900 dark:text-white">82</p>
+<p class="text-green-600 dark:text-green-500 text-base font-medium leading-normal">+7.8%</p>
+</div>
+</div>
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+<div class="flex flex-col gap-4 rounded-xl border border-gray-200 dark:border-gray-700 p-6 bg-white dark:bg-gray-800">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-lg font-semibold leading-normal text-gray-900 dark:text-white">Category Spend Comparison</p>
+<p class="text-sm font-normal leading-normal text-gray-500 dark:text-gray-400">Last 90 Days</p>
+</div>
+<button class="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
+<span class="material-symbols-outlined text-gray-500 dark:text-gray-400">more_vert</span>
+</button>
+</div>
+<div class="w-full h-80">
+<img class="w-full h-full object-contain" data-alt="Grouped bar chart showing category spend comparison" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCG72NXO0kDhdvcEfxOpSwUkl9ba8tubUFjJ5wDXyoPZ1zyKJILE5j4fX35semj_25XIsvTOrUB9BjMyFXp_xzzB2Iquiq_4tP0THIY5LmXHi1I3yJsbVi9a8d2pndRMsgRnBP7fW3eaNH3D9mozr04i4pAcxE1HtZQx5HTZSJObp7RYpIpkSt_M3lfCxlnTVlFAUo3YlNb7efpIv32NKWf6gWS4PQ9mSQTsSG39xQSGmrTuj6xwlkH5TDP4iNp0F7akgtdQwiQnzfA"/>
+</div>
+</div>
+<div class="flex flex-col gap-4 rounded-xl border border-gray-200 dark:border-gray-700 p-6 bg-white dark:bg-gray-800">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-lg font-semibold leading-normal text-gray-900 dark:text-white">Cost Trends Over Time</p>
+<p class="text-sm font-normal leading-normal text-gray-500 dark:text-gray-400">Last 90 Days</p>
+</div>
+<button class="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
+<span class="material-symbols-outlined text-gray-500 dark:text-gray-400">more_vert</span>
+</button>
+</div>
+<div class="w-full h-80">
+<img class="w-full h-full object-contain dark:invert" data-alt="Multi-line chart showing cost trends over time" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVB7KQammTwf90tpfyT1Kiz13wyWNfFHVTonie5oGSAZ_XCF89xKi9EX6sNWy8RKVHG7WUf9jkQacDtGhseVS9MRScs_k-7Nmju8aLE7tfZ0IBWr-_aaQdFOsdyw2ci9NvbQTteuYKR7Ppm3ymH71hGQPcRNhitUsAsQhym1NmKB3GFovXCEGvaZNuUJ4x9ODxUShBARp3KwgNXCEflZICJja0c7sbSmzz0KPNtIUvFqTH8pCGSkOnE7bZpXYChV3M6xOWgU4DdQwt"/>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-4 rounded-xl border border-gray-200 dark:border-gray-700 p-6 bg-white dark:bg-gray-800">
+<div class="flex justify-between items-center">
+<div>
+<h3 class="text-lg font-semibold text-gray-900 dark:text-white">Vendor Usage Across Portfolio</h3>
+<p class="text-sm text-gray-500 dark:text-gray-400">All active vendors</p>
+</div>
+<div class="flex items-center gap-2">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-gray-400">search</span>
+<input class="pl-8 pr-2 py-1.5 rounded-md border border-gray-300 dark:border-gray-600 bg-transparent text-sm focus:ring-primary focus:border-primary w-48 dark:placeholder-gray-400" placeholder="Search vendors..." type="text"/>
+</div>
+<button class="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
+<span class="material-symbols-outlined text-gray-500 dark:text-gray-400">filter_list</span>
+</button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+<thead class="bg-gray-50 dark:bg-gray-700/50">
+<tr>
+<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider" scope="col">
+                                            Vendor Name
+                                        </th>
+<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider" scope="col">
+                                            Service Category
+                                        </th>
+<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider" scope="col">
+                                            Number of Projects
+                                        </th>
+<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider" scope="col">
+                                            Total Spend
+                                        </th>
+</tr>
+</thead>
+<tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+<tr>
+<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">Apex Construction</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">General Contracting</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">8</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">$12,450,000</td>
+</tr>
+<tr>
+<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">Prestige Plumbing</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">Plumbing</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">12</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">$8,200,500</td>
+</tr>
+<tr>
+<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">Innovate Electrical</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">Electrical</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">11</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">$7,890,100</td>
+</tr>
+<tr>
+<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">Terra Firma Landscaping</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">Landscaping</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">5</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">$4,500,000</td>
+</tr>
+<tr>
+<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">Blueprint Architects</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">Architecture</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">9</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">$3,750,000</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="flex items-center justify-between pt-4">
+<p class="text-sm text-gray-600 dark:text-gray-400">Showing 1 to 5 of 82 vendors</p>
+<div class="flex items-center gap-2">
+<button class="px-3 py-1 text-sm rounded-md border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">Previous</button>
+<button class="px-3 py-1 text-sm rounded-md border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">Next</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</div>
+</body></html>

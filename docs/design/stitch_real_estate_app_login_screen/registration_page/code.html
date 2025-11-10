@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Create Account - Development Tracker</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+</head>
+<body class="font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden bg-background-light dark:bg-background-dark">
+<div class="layout-container flex h-full grow flex-col">
+<div class="flex flex-1 justify-center">
+<div class="layout-content-container flex flex-col w-full flex-1">
+<div class="grid grid-cols-1 md:grid-cols-2 min-h-screen">
+<!-- Left Panel: Image -->
+<div class="relative hidden md:flex h-full w-full flex-col">
+<div class="absolute inset-0 bg-center bg-no-repeat bg-cover" data-alt="Abstract architectural rendering of a modern building facade with geometric patterns." style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDEDNJ0MHMPrsOMa0e2ne9_GCgK2Orsk2r4GnKa6HtogONNJr48uY9lFzF7C8Yi37uOR7P4ZFj7DdL2WZVMRkwIhEQwPRtrwbEHIvJNTmQf3yq22DLzsOsSjVXhgongCrDDZu1DOuNlgGBbqRpia1sFcutXRxRkjG-LpDzOBEelSWKaARcJl3Z2W_SpppvcNmxkMANvj2TmYf4k5O8TZGZUZml5C51xmz82D-a9jOondFZwoOO3Ay3lQtAcN7Nzq2Di1T0xgGwVHpok");'>
+<div class="absolute inset-0 bg-slate-900/40"></div>
+</div>
+</div>
+<!-- Right Panel: Form -->
+<div class="flex w-full items-center justify-center bg-background-light dark:bg-background-dark p-6 sm:p-8 lg:p-12">
+<div class="flex flex-col max-w-md w-full gap-8">
+<!-- Logo Placeholder -->
+<div class="flex justify-start">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[#0A2540] dark:text-primary text-3xl">domain_add</span>
+<p class="text-xl font-bold text-[#0A2540] dark:text-white">DevTrack</p>
+</div>
+</div>
+<!-- Page Heading -->
+<div class="flex flex-col gap-2">
+<p class="text-[#333333] dark:text-slate-200 text-3xl font-black leading-tight tracking-tight">Create Your Account</p>
+<p class="text-slate-500 dark:text-slate-400 text-base font-normal leading-normal">Track your development projects with ease.</p>
+</div>
+<!-- Form -->
+<div class="flex flex-col gap-6">
+<!-- Full Name Field -->
+<label class="flex flex-col w-full">
+<p class="text-[#333333] dark:text-slate-300 text-sm font-medium leading-normal pb-2">Full Name</p>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#333333] dark:text-slate-100 focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-white dark:bg-background-dark h-12 placeholder:text-slate-400 dark:placeholder:text-slate-500 px-4 text-base font-normal leading-normal" placeholder="Enter your full name" type="text"/>
+</label>
+<!-- Email Field -->
+<label class="flex flex-col w-full">
+<p class="text-[#333333] dark:text-slate-300 text-sm font-medium leading-normal pb-2">Email Address</p>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#333333] dark:text-slate-100 focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-white dark:bg-background-dark h-12 placeholder:text-slate-400 dark:placeholder:text-slate-500 px-4 text-base font-normal leading-normal" placeholder="Enter your email address" type="email"/>
+</label>
+<!-- Password Field -->
+<label class="flex flex-col w-full">
+<p class="text-[#333333] dark:text-slate-300 text-sm font-medium leading-normal pb-2">Password</p>
+<div class="relative w-full">
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#333333] dark:text-slate-100 focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-white dark:bg-background-dark h-12 placeholder:text-slate-400 dark:placeholder:text-slate-500 px-4 pr-12 text-base font-normal leading-normal" placeholder="Enter your password" type="password"/>
+<button class="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300">
+<span class="material-symbols-outlined text-xl" data-icon="visibility">visibility</span>
+</button>
+</div>
+</label>
+<!-- Password Strength Indicator -->
+<div class="flex flex-col gap-2">
+<div class="flex gap-2 w-full">
+<div class="flex-1 h-1 rounded-full bg-[#E53935]/30">
+<div class="h-full w-full rounded-full bg-[#E53935]"></div>
+</div>
+<div class="flex-1 h-1 rounded-full bg-slate-200 dark:bg-slate-700"></div>
+<div class="flex-1 h-1 rounded-full bg-slate-200 dark:bg-slate-700"></div>
+</div>
+<p class="text-xs font-medium text-[#E53935]">Weak</p>
+</div>
+<!-- Terms of Service Checkbox -->
+<div class="flex items-center gap-3">
+<input class="h-4 w-4 rounded border-slate-300 dark:border-slate-600 text-[#0A2540] dark:text-primary focus:ring-[#0A2540]/50 dark:focus:ring-primary/50 bg-slate-100 dark:bg-slate-800" id="terms" type="checkbox"/>
+<label class="text-sm text-slate-600 dark:text-slate-400" for="terms">
+                                            I agree to the
+                                            <a class="font-medium text-[#007BFF] dark:text-primary/90 hover:underline" href="#">Terms of Service</a>.
+                                        </label>
+</div>
+<!-- Buttons -->
+<div class="flex flex-col gap-4 pt-2">
+<button class="flex items-center justify-center whitespace-nowrap rounded-lg h-12 px-6 text-sm font-semibold text-white bg-[#0A2540] hover:bg-[#0a2540e6] dark:bg-primary dark:hover:bg-primary/90 disabled:bg-slate-300 dark:disabled:bg-slate-700 disabled:text-slate-500 dark:disabled:text-slate-400 disabled:cursor-not-allowed">
+                                            Create Account
+                                        </button>
+<p class="text-center text-sm text-slate-600 dark:text-slate-400">
+                                            Already have an account?
+                                            <a class="font-medium text-[#007BFF] dark:text-primary/90 hover:underline" href="#">Log in</a>
+</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body></html>

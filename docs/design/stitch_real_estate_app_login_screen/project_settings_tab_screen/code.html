@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Project Settings</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "danger": "#DC3545",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        };
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark">
+<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+<div class="layout-container flex h-full grow flex-col">
+<header class="flex w-full justify-center border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-background-dark px-4">
+<div class="flex h-16 w-full max-w-7xl items-center justify-between whitespace-nowrap">
+<div class="flex items-center gap-4 text-slate-900 dark:text-white">
+<svg class="text-primary" fill="currentColor" height="24" viewbox="0 0 48 48" width="24" xmlns="http://www.w3.org/2000/svg">
+<path clip-rule="evenodd" d="M39.475 21.6262C40.358 21.4363 40.6863 21.5589 40.7581 21.5934C40.7876 21.655 40.8547 21.857 40.8082 22.3336C40.7408 23.0255 40.4502 24.0046 39.8572 25.2301C38.6799 27.6631 36.5085 30.6631 33.5858 33.5858C30.6631 36.5085 27.6632 38.6799 25.2301 39.8572C24.0046 40.4502 23.0255 40.7407 22.3336 40.8082C21.8571 40.8547 21.6551 40.7875 21.5934 40.7581C21.5589 40.6863 21.4363 40.358 21.6262 39.475C21.8562 38.4054 22.4689 36.9657 23.5038 35.2817C24.7575 33.2417 26.5497 30.9744 28.7621 28.762C30.9744 26.5497 33.2417 24.7574 35.2817 23.5037C36.9657 22.4689 38.4054 21.8562 39.475 21.6262ZM4.41189 29.2403L18.7597 43.5881C19.8813 44.7097 21.4027 44.9179 22.7217 44.7893C24.0585 44.659 25.5148 44.1631 26.9723 43.4579C29.9052 42.0387 33.2618 39.5667 36.4142 36.4142C39.5667 33.2618 42.0387 29.9052 43.4579 26.9723C44.1631 25.5148 44.659 24.0585 44.7893 22.7217C44.9179 21.4027 44.7097 19.8813 43.5881 18.7597L29.2403 4.41187C27.8527 3.02428 25.8765 3.02573 24.2861 3.36776C22.6081 3.72863 20.7334 4.58419 18.8396 5.74801C16.4978 7.18716 13.9881 9.18353 11.5858 11.5858C9.18354 13.988 7.18717 16.4978 5.74802 18.8396C4.58421 20.7334 3.72865 22.6081 3.36778 24.2861C3.02574 25.8765 3.02429 27.8527 4.41189 29.2403Z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+<h2 class="text-lg font-bold leading-tight tracking-[-0.015em] text-slate-900 dark:text-white">ConstructTrack</h2>
+</div>
+<div class="flex flex-1 justify-end gap-4">
+<div class="hidden items-center gap-6 md:flex">
+<a class="text-sm font-medium leading-normal text-slate-700 dark:text-slate-300" href="#">Dashboard</a>
+<a class="text-sm font-medium leading-normal text-slate-900 dark:text-white" href="#">Projects</a>
+<a class="text-sm font-medium leading-normal text-slate-700 dark:text-slate-300" href="#">Reports</a>
+<a class="text-sm font-medium leading-normal text-slate-700 dark:text-slate-300" href="#">Settings</a>
+</div>
+<div class="flex items-center gap-2">
+<button class="flex h-10 w-10 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+<span class="material-symbols-outlined text-xl">notifications</span>
+</button>
+<button class="flex h-10 w-10 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+<span class="material-symbols-outlined text-xl">help</span>
+</button>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" data-alt="User avatar" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDp1VBWGB-xpavHlq_D1WWky_VtEgi9nlDttLH-YiciByHKU2BFlJOLWpPGsgoP1CYkh80PYceuDt7eOhPuSpMpKoQVP9aES2hYPMUlUj-3fDc-eLGu9OHckihjna8-oGyDfr4m1KtJ_Bdv6KbMw6M46_rG-wXSWArzXg4-pCinaDPqXfCs3MEWFLY7KEkICzkdaGqnza50C2FyRdmZjHlytg1tKzgyJjVU_YFdRpMtXmxD2SpUocgNcnXKX0vyI-u-MiS7t9Jd7snH");'></div>
+</div>
+</div>
+</div></header>
+<main class="flex w-full flex-1 justify-center px-4 py-8 sm:px-6 lg:px-8">
+<div class="flex w-full max-w-4xl flex-col gap-8">
+<div>
+<div class="flex flex-wrap gap-2 pb-2">
+<a class="text-sm font-medium leading-normal text-primary/80 dark:text-primary/70" href="#">All Projects</a>
+<span class="text-sm font-medium leading-normal text-slate-500 dark:text-slate-400">/</span>
+<a class="text-sm font-medium leading-normal text-primary/80 dark:text-primary/70" href="#">Project Alpha</a>
+<span class="text-sm font-medium leading-normal text-slate-500 dark:text-slate-400">/</span>
+<span class="text-sm font-medium leading-normal text-slate-800 dark:text-slate-200">Settings</span>
+</div>
+<p class="text-3xl font-black leading-tight tracking-[-0.033em] text-slate-900 dark:text-white min-w-72">Project Alpha Settings</p>
+</div>
+<div class="flex flex-col gap-8">
+<!-- Card 1: Project Information -->
+<div class="flex flex-col rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
+<div class="border-b border-slate-200 dark:border-slate-800 px-6 py-4">
+<h3 class="text-lg font-bold leading-tight tracking-[-0.015em] text-slate-900 dark:text-white">Project Information</h3>
+<p class="text-sm text-slate-600 dark:text-slate-400">Update your project's basic details.</p>
+</div>
+<div class="flex flex-col gap-6 p-6">
+<label class="flex flex-col">
+<p class="text-sm font-medium leading-normal pb-2 text-slate-800 dark:text-slate-200">Project Name</p>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg border border-slate-300 bg-background-light p-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-0 focus:ring-2 focus:ring-primary/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500" value="Project Alpha"/>
+</label>
+<label class="flex flex-col">
+<p class="text-sm font-medium leading-normal pb-2 text-slate-800 dark:text-slate-200">Project Address</p>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg border border-slate-300 bg-background-light p-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-0 focus:ring-2 focus:ring-primary/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500" value="123 Innovation Drive, Metropolis, USA"/>
+</label>
+</div>
+<div class="flex justify-end gap-2 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-b-xl">
+<button class="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 bg-slate-200 px-4 text-sm font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-300">Cancel</button>
+<button class="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 bg-primary px-4 text-sm font-bold text-white">Save Changes</button>
+</div>
+</div>
+<!-- Card 2: Team Members -->
+<div class="flex flex-col rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
+<div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 px-6 py-4">
+<div>
+<h3 class="text-lg font-bold leading-tight tracking-[-0.015em] text-slate-900 dark:text-white">Team Members</h3>
+<p class="text-sm text-slate-600 dark:text-slate-400">Manage who has access to this project.</p>
+</div>
+<button class="flex h-10 cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-lg bg-primary px-4 text-sm font-bold text-white">
+<span class="material-symbols-outlined text-base">add</span>
+<span>Invite Member</span>
+</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left text-sm">
+<thead class="text-xs uppercase text-slate-500 dark:text-slate-400">
+<tr>
+<th class="px-6 py-3">Name</th>
+<th class="px-6 py-3">Email</th>
+<th class="px-6 py-3">Role</th>
+<th class="px-6 py-3 text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="text-slate-800 dark:text-slate-200">
+<tr class="border-t border-slate-200 dark:border-slate-800">
+<td class="px-6 py-4 font-medium">John Doe</td>
+<td class="px-6 py-4 text-slate-600 dark:text-slate-400">john.doe@example.com</td>
+<td class="px-6 py-4">Admin</td>
+<td class="px-6 py-4 text-right">
+<button class="h-8 w-8 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"><span class="material-symbols-outlined text-xl">more_horiz</span></button>
+</td>
+</tr>
+<tr class="border-t border-slate-200 dark:border-slate-800">
+<td class="px-6 py-4 font-medium">Jane Smith</td>
+<td class="px-6 py-4 text-slate-600 dark:text-slate-400">jane.smith@example.com</td>
+<td class="px-6 py-4">Partner</td>
+<td class="px-6 py-4 text-right">
+<button class="h-8 w-8 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"><span class="material-symbols-outlined text-xl">more_horiz</span></button>
+</td>
+</tr>
+<tr class="border-t border-slate-200 dark:border-slate-800">
+<td class="px-6 py-4 font-medium">Sam Wilson</td>
+<td class="px-6 py-4 text-slate-600 dark:text-slate-400">sam.wilson@example.com</td>
+<td class="px-6 py-4">Viewer</td>
+<td class="px-6 py-4 text-right">
+<button class="h-8 w-8 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"><span class="material-symbols-outlined text-xl">more_horiz</span></button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Card 3: Budget Settings -->
+<div class="flex flex-col rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
+<div class="border-b border-slate-200 dark:border-slate-800 px-6 py-4">
+<h3 class="text-lg font-bold leading-tight tracking-[-0.015em] text-slate-900 dark:text-white">Budget &amp; Financials</h3>
+<p class="text-sm text-slate-600 dark:text-slate-400">Set the financial parameters for this project.</p>
+</div>
+<div class="grid grid-cols-1 gap-6 p-6 sm:grid-cols-2">
+<label class="flex flex-col">
+<p class="text-sm font-medium leading-normal pb-2 text-slate-800 dark:text-slate-200">Total Estimated Budget</p>
+<div class="relative">
+<div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+<span class="text-slate-500 sm:text-sm">$</span>
+</div>
+<input class="form-input w-full rounded-lg border border-slate-300 bg-background-light p-3 pl-7 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-0 focus:ring-2 focus:ring-primary/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white" value="5,000,000.00"/>
+</div>
+</label>
+<label class="flex flex-col">
+<p class="text-sm font-medium leading-normal pb-2 text-slate-800 dark:text-slate-200">Currency</p>
+<select class="form-select w-full rounded-lg border border-slate-300 bg-background-light p-3 text-sm text-slate-900 focus:border-primary focus:outline-0 focus:ring-2 focus:ring-primary/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white">
+<option>USD - US Dollar</option>
+<option>EUR - Euro</option>
+<option>CAD - Canadian Dollar</option>
+</select>
+</label>
+</div>
+<div class="flex justify-end gap-2 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-b-xl">
+<button class="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 bg-slate-200 px-4 text-sm font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-300">Cancel</button>
+<button class="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 bg-primary px-4 text-sm font-bold text-white">Save Changes</button>
+</div>
+</div>
+<!-- Card 4: Danger Zone -->
+<div class="flex flex-col rounded-xl border border-danger/50 dark:border-danger/40 bg-white dark:bg-slate-900 shadow-sm">
+<div class="border-b border-danger/20 dark:border-danger/30 px-6 py-4">
+<h3 class="text-lg font-bold leading-tight tracking-[-0.015em] text-danger">Danger Zone</h3>
+</div>
+<div class="flex flex-col items-start gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
+<div>
+<p class="font-medium text-slate-800 dark:text-slate-200">Archive This Project</p>
+<p class="text-sm text-slate-600 dark:text-slate-400">Once archived, the project will be read-only. This action can be undone.</p>
+</div>
+<button class="flex h-10 cursor-pointer items-center justify-center overflow-hidden rounded-lg border border-danger bg-danger/5 px-4 text-sm font-bold text-danger hover:bg-danger hover:text-white dark:bg-danger/10 dark:hover:bg-danger">Archive This Project</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</div>
+</body></html>
