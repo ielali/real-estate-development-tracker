@@ -51,6 +51,23 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // New color system additions
+        success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
+        },
+        warning: {
+          DEFAULT: "hsl(var(--warning))",
+          foreground: "hsl(var(--warning-foreground))",
+        },
+        error: {
+          DEFAULT: "hsl(var(--error))",
+          foreground: "hsl(var(--error-foreground))",
+        },
+        gray: {
+          50: "hsl(var(--gray-50))",
+          900: "hsl(var(--gray-900))",
+        },
         // Custom brand color palette
         "primary-dark-blue": "#202240",
         "accent-blue": "#36a2b8",
