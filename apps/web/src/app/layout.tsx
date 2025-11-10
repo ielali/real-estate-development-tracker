@@ -7,7 +7,13 @@ import { OfflineBanner } from "@/components/ui/offline-banner"
 import { CommandPalette } from "@/components/search/CommandPalette"
 import "../styles/globals.css"
 
-const inter = Inter({ subsets: ["latin"] })
+// Configure Inter font with optimized loading strategy (Epic 10)
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+  fallback: ["system-ui", "-apple-system", "sans-serif"],
+})
 
 export const metadata = {
   title: "Real Estate Development Tracker",
@@ -28,8 +34,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const googleMapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
 
   return (
-    <html lang="en">
-      <body className={inter.className}>
+    <html lang="en" className={inter.variable}>
+      <body className="font-sans">
         {googleMapsApiKey && (
           <Script
             src={`https://maps.googleapis.com/maps/api/js?key=${googleMapsApiKey}&libraries=places&loading=async`}
