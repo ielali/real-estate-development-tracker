@@ -15,6 +15,7 @@
 
 import React, { useEffect } from "react"
 import Link from "next/link"
+import type { Route } from "next"
 import { usePathname } from "next/navigation"
 import { motion } from "framer-motion"
 import {
@@ -32,10 +33,9 @@ import { useAuth } from "@/components/providers/AuthProvider"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
-import { useEffect } from "react"
 
 export interface NavItem {
-  href: string
+  href: Route<string>
   label: string
   icon: LucideIcon
   requiresAuth?: boolean
@@ -54,11 +54,9 @@ const NAV_ITEMS: NavItem[] = [
 const sidebarVariants = {
   expanded: {
     width: 256,
-    transition: { duration: 0.2, ease: "easeInOut" },
   },
   collapsed: {
     width: 64,
-    transition: { duration: 0.2, ease: "easeInOut" },
   },
 }
 
@@ -66,12 +64,10 @@ const textVariants = {
   expanded: {
     opacity: 1,
     width: "auto",
-    transition: { duration: 0.2, ease: "easeInOut" },
   },
   collapsed: {
     opacity: 0,
     width: 0,
-    transition: { duration: 0.2, ease: "easeInOut" },
   },
 }
 
@@ -113,6 +109,7 @@ export function Sidebar() {
         initial={false}
         animate={isCollapsed ? "collapsed" : "expanded"}
         variants={sidebarVariants}
+        transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
         className="fixed left-0 top-0 z-40 h-screen flex flex-col bg-card border-r border-border hidden md:flex"
         data-collapsed={isCollapsed}
       >
@@ -123,6 +120,7 @@ export function Sidebar() {
               initial={false}
               animate="expanded"
               variants={textVariants}
+              transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
               className="flex items-center gap-2 overflow-hidden"
             >
               <Building2 className="w-6 h-6 shrink-0 text-primary" />
@@ -163,6 +161,7 @@ export function Sidebar() {
                         initial={false}
                         animate="expanded"
                         variants={textVariants}
+                        transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
                         className="text-sm font-medium whitespace-nowrap overflow-hidden"
                       >
                         {item.label}
@@ -209,6 +208,7 @@ export function Sidebar() {
                     initial={false}
                     animate="expanded"
                     variants={textVariants}
+                    transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
                     className="ml-2 text-sm overflow-hidden whitespace-nowrap"
                   >
                     Collapse

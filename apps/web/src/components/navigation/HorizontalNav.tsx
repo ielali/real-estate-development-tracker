@@ -14,13 +14,14 @@
 
 import { usePathname } from "next/navigation"
 import Link from "next/link"
+import type { Route } from "next"
 import { cn } from "@/lib/utils"
 import { Home, DollarSign, Calendar, FileText, Users, Settings as SettingsIcon } from "lucide-react"
 
 export interface NavItem {
   label: string
   icon: React.ElementType
-  href: string
+  href: Route<string>
   /**
    * When true, this nav item is only shown to non-partner users
    */
@@ -54,20 +55,24 @@ export function HorizontalNav({ projectId, isPartner = false }: HorizontalNavPro
 
   // Define navigation items
   const navItems: NavItem[] = [
-    { label: "Overview", icon: Home, href: `/projects/${projectId}` },
-    { label: "Costs", icon: DollarSign, href: `/projects/${projectId}/costs` },
-    { label: "Timeline", icon: Calendar, href: `/projects/${projectId}/events` },
-    { label: "Documents", icon: FileText, href: `/projects/${projectId}/documents` },
+    { label: "Overview", icon: Home, href: `/projects/${projectId}` as Route<string> },
+    { label: "Costs", icon: DollarSign, href: `/projects/${projectId}/costs` as Route<string> },
+    { label: "Timeline", icon: Calendar, href: `/projects/${projectId}/events` as Route<string> },
+    {
+      label: "Documents",
+      icon: FileText,
+      href: `/projects/${projectId}/documents` as Route<string>,
+    },
     {
       label: "Partners",
       icon: Users,
-      href: `/projects/${projectId}/partners`,
+      href: `/projects/${projectId}/partners` as Route<string>,
       adminOnly: true,
     },
     {
       label: "Settings",
       icon: SettingsIcon,
-      href: `/projects/${projectId}/settings`,
+      href: `/projects/${projectId}/settings` as Route<string>,
       adminOnly: true,
     },
   ]
@@ -90,7 +95,7 @@ export function HorizontalNav({ projectId, isPartner = false }: HorizontalNavPro
           return (
             <Link
               key={item.href}
-              href={item.href as never}
+              href={item.href}
               className={cn(
                 "flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap",
                 "border-b-2 transition-all duration-200",

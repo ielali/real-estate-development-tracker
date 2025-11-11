@@ -26,11 +26,9 @@ interface SidebarLayoutProps {
 const contentVariants = {
   expanded: {
     marginLeft: 256, // 256px when sidebar is expanded
-    transition: { duration: 0.2, ease: "easeInOut" },
   },
   collapsed: {
     marginLeft: 64, // 64px when sidebar is collapsed (AC: 10 - 192px savings)
-    transition: { duration: 0.2, ease: "easeInOut" },
   },
 }
 
@@ -51,6 +49,7 @@ export function SidebarLayout({ children, showNavbar = false }: SidebarLayoutPro
         initial={false}
         animate={isMobile ? false : isCollapsed ? "collapsed" : "expanded"}
         variants={contentVariants}
+        transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
         className="min-h-screen"
         style={isMobile ? { marginLeft: 0 } : undefined}
       >
