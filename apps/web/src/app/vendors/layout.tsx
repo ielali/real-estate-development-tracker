@@ -15,7 +15,7 @@ export default function VendorsLayout({ children }: { children: React.ReactNode 
   return (
     <>
       <Navbar />
-      {children}
+      <div className="pb-20 md:pb-0">{children}</div>
     </>
   )
 }

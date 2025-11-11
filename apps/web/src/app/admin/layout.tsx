@@ -41,7 +41,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname()
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen pb-20 md:pb-0">
       {/* Sidebar Navigation */}
       <aside className="hidden w-64 border-r bg-muted/10 lg:block">
         <div className="sticky top-0 space-y-4 py-6">

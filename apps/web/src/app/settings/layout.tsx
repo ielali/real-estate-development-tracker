@@ -49,7 +49,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
   return (
     <>
       <Navbar />
-      <div className="container max-w-7xl py-8">
+      <div className="container max-w-7xl py-8 pb-24 md:pb-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold">Settings</h1>
           <p className="mt-2 text-muted-foreground">Manage your account settings and preferences</p>
