@@ -43,8 +43,8 @@ describe("BottomTabBar", () => {
     expect(screen.getByLabelText("Home")).toBeInTheDocument()
     expect(screen.getByLabelText("Projects")).toBeInTheDocument()
     expect(screen.getByLabelText("Add")).toBeInTheDocument()
-    expect(screen.getByLabelText("Costs")).toBeInTheDocument()
-    expect(screen.getByLabelText("Files")).toBeInTheDocument()
+    expect(screen.getByLabelText("Vendors")).toBeInTheDocument()
+    expect(screen.getByLabelText("Profile")).toBeInTheDocument()
   })
 
   // AC #3: Center FAB button raised with shadow effect
@@ -104,8 +104,8 @@ describe("BottomTabBar", () => {
     expect(screen.getByLabelText("Home")).toHaveAttribute("href", "/")
     expect(screen.getByLabelText("Projects")).toHaveAttribute("href", "/projects")
     expect(screen.getByLabelText("Add")).toHaveAttribute("href", "/projects/new")
-    expect(screen.getByLabelText("Costs")).toHaveAttribute("href", "/costs")
-    expect(screen.getByLabelText("Files")).toHaveAttribute("href", "/documents")
+    expect(screen.getByLabelText("Vendors")).toHaveAttribute("href", "/vendors/dashboard")
+    expect(screen.getByLabelText("Profile")).toHaveAttribute("href", "/settings/profile")
   })
 
   // AC #7: iOS safe area padding
@@ -205,7 +205,7 @@ describe("BottomTabBar", () => {
 
     expect(screen.getByText("Home")).toBeInTheDocument()
     expect(screen.getByText("Projects")).toBeInTheDocument()
-    expect(screen.getByText("Costs")).toBeInTheDocument()
-    expect(screen.getByText("Files")).toBeInTheDocument()
+    expect(screen.getByText("Vendors")).toBeInTheDocument()
+    expect(screen.getByText("Profile")).toBeInTheDocument()
   })
 })

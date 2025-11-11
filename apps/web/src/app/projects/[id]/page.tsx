@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/dialog"
 import { useToast } from "@/hooks/use-toast"
 import { ProjectMap } from "@/components/maps/ProjectMap"
-import { Users, Settings as SettingsIcon, FileDown } from "lucide-react"
+import { FileDown } from "lucide-react"
 import { useUserRole } from "@/hooks/useUserRole"
 import { Breadcrumb, breadcrumbHelpers } from "@/components/ui/breadcrumb"
 import { ProjectQuickActions } from "@/components/navigation/quick-actions"
@@ -156,23 +156,8 @@ export default function ProjectDetailPage() {
             <FileDown className="mr-2 h-4 w-4" />
             Generate Report
           </Button>
-          <Link href={`/projects/${project.id}/documents` as never}>
-            <Button variant="outline">Documents</Button>
-          </Link>
           {!isPartner && (
             <>
-              <Link href={`/projects/${project.id}/partners` as never}>
-                <Button variant="outline">
-                  <Users className="mr-2 h-4 w-4" />
-                  Partners
-                </Button>
-              </Link>
-              <Link href={`/projects/${project.id}/settings` as never}>
-                <Button variant="outline">
-                  <SettingsIcon className="mr-2 h-4 w-4" />
-                  Settings
-                </Button>
-              </Link>
               <Link href={`/projects/${project.id}/edit` as never}>
                 <Button variant="outline" disabled={deleteMutation.isPending}>
                   Edit

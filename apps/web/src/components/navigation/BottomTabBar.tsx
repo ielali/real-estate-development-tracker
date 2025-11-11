@@ -10,7 +10,7 @@
 import { usePathname } from "next/navigation"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
-import { Home, FolderKanban, Plus, DollarSign, FileText } from "lucide-react"
+import { Home, FolderKanban, Plus, Users, User } from "lucide-react"
 
 export interface TabItem {
   icon: React.ElementType
@@ -30,8 +30,8 @@ const bottomTabs: TabItem[] = [
   { icon: Home, label: "Home", href: "/" },
   { icon: FolderKanban, label: "Projects", href: "/projects" },
   { icon: Plus, label: "Add", href: "/projects/new", isFloatingAction: true },
-  { icon: DollarSign, label: "Costs", href: "/costs" },
-  { icon: FileText, label: "Files", href: "/documents" },
+  { icon: Users, label: "Vendors", href: "/vendors/dashboard" },
+  { icon: User, label: "Profile", href: "/settings/profile" },
 ]
 
 export function BottomTabBar() {
