@@ -15,7 +15,6 @@ import { motion } from "framer-motion"
 import { Sidebar } from "./Sidebar"
 import { useCollapsedSidebar } from "@/hooks/useCollapsedSidebar"
 import { Navbar } from "./Navbar"
-import { BottomTabBar } from "@/components/navigation/BottomTabBar"
 import { useViewport } from "@/hooks/useViewport"
 
 interface SidebarLayoutProps {
@@ -61,9 +60,6 @@ export function SidebarLayout({ children, showNavbar = false }: SidebarLayoutPro
         {/* Page Content with mobile padding for bottom tab bar */}
         <main className={isMobile ? "w-full pb-20" : "w-full"}>{children}</main>
       </motion.div>
-
-      {/* Bottom Tab Bar - Mobile only (Story 10.5) */}
-      <BottomTabBar />
     </div>
   )
 }

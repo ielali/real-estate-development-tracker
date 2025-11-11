@@ -48,7 +48,7 @@ export default function HomePage() {
   // Loading state for authenticated users while role/projects load
   if (user && (roleLoading || (isPartner && projectsLoading))) {
     return (
-      <main className="min-h-screen bg-background">
+      <main className="min-h-screen bg-background pb-20 md:pb-0">
         <Navbar />
         <div className="container mx-auto p-6 space-y-6">
           <div className="flex items-center justify-between">
@@ -80,7 +80,7 @@ export default function HomePage() {
   // Error state for partner project loading
   if (isPartner && error) {
     return (
-      <main className="min-h-screen bg-background">
+      <main className="min-h-screen bg-background pb-20 md:pb-0">
         <Navbar />
         <div className="container mx-auto p-6">
           <Alert variant="destructive">
@@ -100,7 +100,7 @@ export default function HomePage() {
     // Empty state - no projects assigned
     if (projects.length === 0) {
       return (
-        <main className="min-h-screen bg-background">
+        <main className="min-h-screen bg-background pb-20 md:pb-0">
           <Navbar />
           <div className="container mx-auto p-6">
             <div className="flex items-center justify-between mb-6">
@@ -130,7 +130,7 @@ export default function HomePage() {
 
     // Partner Dashboard with projects
     return (
-      <main className="min-h-screen bg-gray-50">
+      <main className="min-h-screen bg-gray-50 pb-20 md:pb-0">
         <Navbar />
         <div className="container mx-auto p-6 space-y-6">
           {/* Header with Partner View indicator */}
@@ -199,7 +199,7 @@ export default function HomePage() {
   // Admin View - Welcome with quick navigation
   if (isAdmin) {
     return (
-      <main className="min-h-screen bg-background">
+      <main className="min-h-screen bg-background pb-20 md:pb-0">
         <Navbar />
         <div className="container mx-auto py-12">
           <div className="text-center space-y-6 max-w-2xl mx-auto">
@@ -228,7 +228,7 @@ export default function HomePage() {
 
   // Guest View - Marketing content
   return (
-    <main className="min-h-screen bg-background">
+    <main className="min-h-screen bg-background pb-20 md:pb-0">
       <Navbar />
       <div className="container mx-auto py-12">
         <div className="text-center space-y-6">

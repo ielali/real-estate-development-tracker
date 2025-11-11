@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/sonner"
 import { ErrorBoundary } from "@/components/error-boundary"
 import { OfflineBanner } from "@/components/ui/offline-banner"
 import { CommandPalette } from "@/components/search/CommandPalette"
+import { BottomTabBar } from "@/components/navigation/BottomTabBar"
 import "../styles/globals.css"
 
 // Configure Inter font with optimized loading strategy (Epic 10)
@@ -47,6 +48,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Providers>
             {children}
             <CommandPalette />
+            <BottomTabBar />
           </Providers>
           <Toaster />
         </ErrorBoundary>

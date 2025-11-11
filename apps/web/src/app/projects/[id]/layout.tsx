@@ -24,7 +24,7 @@ export default function ProjectDetailLayout({ children }: { children: React.Reac
   return (
     <>
       <Navbar />
-      <div className="flex flex-col h-[calc(100vh-4rem)]">
+      <div className="flex flex-col h-[calc(100vh-4rem)] pb-20 md:pb-0">
         {/* Horizontal Navigation - Sticky at top */}
         {projectId && <HorizontalNav projectId={projectId} isPartner={isPartner} />}
 
