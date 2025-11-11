@@ -15,6 +15,8 @@ import { motion } from "framer-motion"
 import { Sidebar } from "./Sidebar"
 import { useCollapsedSidebar } from "@/hooks/useCollapsedSidebar"
 import { Navbar } from "./Navbar"
+import { BottomTabBar } from "@/components/navigation/BottomTabBar"
+import { useViewport } from "@/hooks/useViewport"
 
 interface SidebarLayoutProps {
   children: ReactNode
@@ -35,27 +37,33 @@ const contentVariants = {
 
 export function SidebarLayout({ children, showNavbar = false }: SidebarLayoutProps) {
   const { isCollapsed } = useCollapsedSidebar()
+  const { isMobile } = useViewport()
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Sidebar Component */}
+      {/* Sidebar Component - Hidden on mobile (Story 10.5) */}
       <Sidebar />
 
       {/* Main Content Area */}
       {/* AC: 9 - Content area adjusts smoothly without jumps */}
       {/* AC: 10 - Achieves 192px space savings (256px - 64px = 192px) */}
+      {/* Story 10.5: Add padding-bottom on mobile for bottom tab bar */}
       <motion.div
         initial={false}
-        animate={isCollapsed ? "collapsed" : "expanded"}
+        animate={isMobile ? false : isCollapsed ? "collapsed" : "expanded"}
         variants={contentVariants}
         className="min-h-screen"
+        style={isMobile ? { marginLeft: 0 } : undefined}
       >
         {/* Optional: Keep existing navbar for backwards compatibility */}
         {showNavbar && <Navbar />}
 
-        {/* Page Content */}
-        <main className="w-full">{children}</main>
+        {/* Page Content with mobile padding for bottom tab bar */}
+        <main className={isMobile ? "w-full pb-20" : "w-full"}>{children}</main>
       </motion.div>
+
+      {/* Bottom Tab Bar - Mobile only (Story 10.5) */}
+      <BottomTabBar />
     </div>
   )
 }

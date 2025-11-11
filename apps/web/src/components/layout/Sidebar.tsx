@@ -113,7 +113,7 @@ export function Sidebar() {
         initial={false}
         animate={isCollapsed ? "collapsed" : "expanded"}
         variants={sidebarVariants}
-        className="fixed left-0 top-0 z-40 h-screen flex flex-col bg-card border-r border-border"
+        className="fixed left-0 top-0 z-40 h-screen flex flex-col bg-card border-r border-border hidden md:flex"
         data-collapsed={isCollapsed}
       >
         {/* Logo/Brand */}
