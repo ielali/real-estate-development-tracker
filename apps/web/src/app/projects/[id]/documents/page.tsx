@@ -2,7 +2,6 @@
 
 import { useParams, useRouter } from "next/navigation"
 import { api } from "@/lib/trpc/client"
-import { Navbar } from "@/components/layout/Navbar"
 import { DocumentsSection } from "@/components/documents/DocumentsSection"
 import { Breadcrumb, breadcrumbHelpers } from "@/components/ui/breadcrumb"
 
@@ -22,57 +21,46 @@ export default function ProjectDocumentsPage() {
 
   if (isLoading) {
     return (
-      <>
-        <Navbar />
-        <div className="container max-w-4xl py-10">
-          <div className="animate-pulse space-y-4">
-            <div className="h-8 bg-gray-200 rounded w-1/3"></div>
-            <div className="h-64 bg-gray-200 rounded"></div>
-          </div>
+      <div className="container max-w-4xl py-10">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-gray-200 rounded w-1/3"></div>
+          <div className="h-64 bg-gray-200 rounded"></div>
         </div>
-      </>
+      </div>
     )
   }
 
   if (error || !project) {
     return (
-      <>
-        <Navbar />
-        <div className="container max-w-4xl py-10">
-          <div className="text-center py-12">
-            <p className="text-red-600 mb-4">Failed to load project</p>
-            <button
-              onClick={() => router.push("/projects")}
-              className="text-blue-600 hover:underline"
-            >
-              Back to Projects
-            </button>
-          </div>
+      <div className="container max-w-4xl py-10">
+        <div className="text-center py-12">
+          <p className="text-red-600 mb-4">Failed to load project</p>
+          <button
+            onClick={() => router.push("/projects")}
+            className="text-blue-600 hover:underline"
+          >
+            Back to Projects
+          </button>
         </div>
-      </>
+      </div>
     )
   }
 
   return (
-    <>
-      <Navbar />
-      <div className="container max-w-4xl py-10">
-        {/* Breadcrumb */}
-        <div className="mb-6">
-          <Breadcrumb items={breadcrumbHelpers.projectDocuments(project.name, projectId)} />
-        </div>
-
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold">Documents</h1>
-          <p className="text-muted-foreground mt-2">
-            Upload and manage documents for {project.name}
-          </p>
-        </div>
-
-        {/* Documents Section */}
-        <DocumentsSection projectId={projectId} />
+    <div className="container max-w-4xl py-10">
+      {/* Breadcrumb */}
+      <div className="mb-6">
+        <Breadcrumb items={breadcrumbHelpers.projectDocuments(project.name, projectId)} />
       </div>
-    </>
+
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold">Documents</h1>
+        <p className="text-muted-foreground mt-2">Upload and manage documents for {project.name}</p>
+      </div>
+
+      {/* Documents Section */}
+      <DocumentsSection projectId={projectId} />
+    </div>
   )
 }
