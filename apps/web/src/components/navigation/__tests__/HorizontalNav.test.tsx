@@ -67,7 +67,8 @@ describe("HorizontalNav", () => {
 
     const overviewLink = screen.getByRole("link", { name: /overview/i })
     expect(overviewLink).toHaveClass("border-primary")
-    expect(overviewLink).toHaveClass("text-foreground")
+    expect(overviewLink).toHaveClass("text-primary") // Story 10.13: Updated from text-foreground
+    expect(overviewLink).toHaveClass("bg-primary-light") // Story 10.13: New active background
     expect(overviewLink).toHaveAttribute("aria-current", "page")
   })
 
@@ -144,6 +145,38 @@ describe("HorizontalNav", () => {
     const costsLink = screen.getByRole("link", { name: /costs/i })
     expect(costsLink).toHaveClass("border-primary")
     expect(costsLink).toHaveAttribute("aria-current", "page")
+  })
+
+  test("Overview is NOT active when on child routes (regression test)", () => {
+    // Bug: Overview was staying active when navigating to /costs, /events, etc.
+    // Fix: Overview should only match exact path, not child routes
+    mockUsePathname.mockReturnValue(`/projects/${projectId}/costs`)
+    render(<HorizontalNav projectId={projectId} />)
+
+    const overviewLink = screen.getByRole("link", { name: /overview/i })
+    const costsLink = screen.getByRole("link", { name: /costs/i })
+
+    // Overview should NOT be active
+    expect(overviewLink).toHaveClass("border-transparent")
+    expect(overviewLink).toHaveClass("text-muted-foreground")
+    expect(overviewLink).not.toHaveAttribute("aria-current")
+
+    // Costs should be active
+    expect(costsLink).toHaveClass("border-primary")
+    expect(costsLink).toHaveAttribute("aria-current", "page")
+  })
+
+  test("Overview is active ONLY on exact project path", () => {
+    mockUsePathname.mockReturnValue(`/projects/${projectId}`)
+    render(<HorizontalNav projectId={projectId} />)
+
+    const overviewLink = screen.getByRole("link", { name: /overview/i })
+    expect(overviewLink).toHaveClass("border-primary")
+    expect(overviewLink).toHaveAttribute("aria-current", "page")
+
+    // Other items should NOT be active
+    const costsLink = screen.getByRole("link", { name: /costs/i })
+    expect(costsLink).not.toHaveAttribute("aria-current")
   })
 
   test("navigation has horizontal scroll for mobile", () => {

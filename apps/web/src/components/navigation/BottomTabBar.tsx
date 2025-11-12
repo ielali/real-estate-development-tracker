@@ -2,6 +2,7 @@
  * BottomTabBar Component
  * Story 10.5: Bottom Tab Bar Navigation
  * Story 10.7: Floating Action Button with Speed Dial
+ * Story 10.13: Active states updated to use primary-light color
  *
  * Mobile-only bottom navigation with floating action button and speed dial menu
  */
@@ -76,8 +77,8 @@ export function BottomTabBar() {
               "min-h-[44px]",
               // Transitions
               "transition-colors duration-200",
-              // Active state colors (AC #4)
-              isActive ? "text-primary" : "text-muted-foreground"
+              // Active state colors (AC #4, Story 10.13)
+              isActive ? "text-primary bg-primary-light" : "text-muted-foreground"
             )}
             onClick={handleTabClick}
             aria-label={tab.label}
@@ -142,8 +143,8 @@ export function BottomTabBar() {
               "min-h-[44px]",
               // Transitions
               "transition-colors duration-200",
-              // Active state colors (AC #4)
-              isActive ? "text-primary" : "text-muted-foreground"
+              // Active state colors (AC #4, Story 10.13)
+              isActive ? "text-primary bg-primary-light" : "text-muted-foreground"
             )}
             onClick={handleTabClick}
             aria-label={tab.label}

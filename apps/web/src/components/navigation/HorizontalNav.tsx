@@ -2,6 +2,7 @@
  * HorizontalNav Component
  * Story 10.4: Horizontal Top Navigation for Subsections
  * Story 10.12: Layout Integration - Two-Tier Header System
+ * Story 10.13: Active states updated to use primary-light color
  *
  * Provides horizontal navigation for project subsections with:
  * - Icon + text labels
@@ -92,7 +93,11 @@ export function HorizontalNav({ projectId, isPartner = false }: HorizontalNavPro
         {visibleItems.map((item) => {
           const Icon = item.icon
           // Check if current path matches this nav item
-          const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`)
+          // Special case: Overview should only match exact path, not child routes
+          const isOverview = item.href === `/projects/${projectId}`
+          const isActive = isOverview
+            ? pathname === item.href
+            : pathname === item.href || pathname?.startsWith(`${item.href}/`)
 
           return (
             <Link
@@ -104,7 +109,7 @@ export function HorizontalNav({ projectId, isPartner = false }: HorizontalNavPro
                 "hover:text-foreground hover:bg-accent/50",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                 isActive
-                  ? "border-primary text-foreground"
+                  ? "border-primary text-primary bg-primary-light"
                   : "border-transparent text-muted-foreground"
               )}
               aria-current={isActive ? "page" : undefined}
