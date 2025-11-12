@@ -3,7 +3,6 @@
 import { useState } from "react"
 import { use } from "react"
 import { Button } from "@/components/ui/button"
-import { Navbar } from "@/components/layout/Navbar"
 import { InvitePartnerDialog } from "@/components/partners/InvitePartnerDialog"
 import { InvitationsList } from "@/components/partners/InvitationsList"
 import { UserPlus } from "lucide-react"
@@ -33,7 +32,6 @@ export default function PartnersPage({ params }: { params: Promise<{ id: string 
 
   return (
     <>
-      <Navbar />
       <div className="container mx-auto max-w-6xl space-y-6 p-4 md:p-8">
         {/* Breadcrumb */}
         {project && (

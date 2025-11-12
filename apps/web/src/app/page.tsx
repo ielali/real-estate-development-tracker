@@ -21,7 +21,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Navbar } from "@/components/layout/Navbar"
 import { AlertCircle, ArrowRight } from "lucide-react"
 
 export default function HomePage() {
@@ -49,7 +48,6 @@ export default function HomePage() {
   if (user && (roleLoading || (isPartner && projectsLoading))) {
     return (
       <main className="min-h-screen bg-background pb-20 md:pb-0">
-        <Navbar />
         <div className="container mx-auto p-6 space-y-6">
           <div className="flex items-center justify-between">
             <div>
@@ -81,7 +79,6 @@ export default function HomePage() {
   if (isPartner && error) {
     return (
       <main className="min-h-screen bg-background pb-20 md:pb-0">
-        <Navbar />
         <div className="container mx-auto p-6">
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
@@ -101,7 +98,6 @@ export default function HomePage() {
     if (projects.length === 0) {
       return (
         <main className="min-h-screen bg-background pb-20 md:pb-0">
-          <Navbar />
           <div className="container mx-auto p-6">
             <div className="flex items-center justify-between mb-6">
               <div>
@@ -131,7 +127,6 @@ export default function HomePage() {
     // Partner Dashboard with projects
     return (
       <main className="min-h-screen bg-gray-50 pb-20 md:pb-0">
-        <Navbar />
         <div className="container mx-auto p-6 space-y-6">
           {/* Header with Partner View indicator */}
           <div className="flex items-center justify-between">
@@ -200,7 +195,6 @@ export default function HomePage() {
   if (isAdmin) {
     return (
       <main className="min-h-screen bg-background pb-20 md:pb-0">
-        <Navbar />
         <div className="container mx-auto py-12">
           <div className="text-center space-y-6 max-w-2xl mx-auto">
             <h1 className="text-4xl font-bold tracking-tight text-foreground">
@@ -229,7 +223,6 @@ export default function HomePage() {
   // Guest View - Marketing content
   return (
     <main className="min-h-screen bg-background pb-20 md:pb-0">
-      <Navbar />
       <div className="container mx-auto py-12">
         <div className="text-center space-y-6">
           <h1 className="text-4xl font-bold tracking-tight text-foreground">

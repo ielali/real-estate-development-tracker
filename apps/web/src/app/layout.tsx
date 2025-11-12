@@ -7,6 +7,8 @@ import { OfflineBanner } from "@/components/ui/offline-banner"
 import { CommandPalette } from "@/components/search/CommandPalette"
 import { BottomTabBar } from "@/components/navigation/BottomTabBar"
 import { MobileNavigation } from "@/components/layout/MobileNavigation"
+import { Sidebar } from "@/components/layout/Sidebar"
+import { ContentWrapper } from "@/components/layout/ContentWrapper"
 import "../styles/globals.css"
 
 // Configure Inter font with optimized loading strategy (Epic 10)
@@ -47,7 +49,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ErrorBoundary>
           <OfflineBanner />
           <Providers>
-            {children}
+            {/* Desktop Sidebar - Story 10.3 */}
+            <Sidebar />
+
+            {/* Content Wrapper - Adjusts margin based on sidebar state */}
+            <ContentWrapper>{children}</ContentWrapper>
+
+            {/* Global Components */}
             <CommandPalette />
             <BottomTabBar />
             <MobileNavigation />
