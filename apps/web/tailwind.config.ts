@@ -73,6 +73,9 @@ const config: Config = {
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
+          // Story 10.13: Primary color variants
+          hover: "hsl(var(--primary-hover))",
+          light: "hsl(var(--primary-light))",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
@@ -115,6 +118,8 @@ const config: Config = {
           50: "hsl(var(--gray-50))",
           900: "hsl(var(--gray-900))",
         },
+        // Story 10.13: Tertiary background color
+        bgTertiary: "hsl(var(--bg-tertiary))",
         // Custom brand color palette
         "primary-dark-blue": "#202240",
         "accent-blue": "#36a2b8",

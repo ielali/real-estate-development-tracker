@@ -4,6 +4,7 @@
  * Sidebar - Collapsible Navigation Component with User Profile & Tools
  * Story 10.3: Collapsible Sidebar Navigation
  * Story 10.11: Enhanced Sidebar - User Profile & Tools Navigation
+ * Story 10.13: Active states updated to use primary-light color
  *
  * Features:
  * - Toggles between 256px (expanded) and 64px (collapsed)
@@ -307,7 +308,7 @@ export function Sidebar({ notificationCount = 0 }: SidebarProps) {
                     className={cn(
                       "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors",
                       "hover:bg-accent hover:text-accent-foreground",
-                      active && "bg-accent text-accent-foreground border-l-4 border-primary",
+                      active && "bg-primary-light text-primary border-l-4 border-primary",
                       !active && "text-muted-foreground",
                       isCollapsed && "justify-center"
                     )}
@@ -369,7 +370,7 @@ export function Sidebar({ notificationCount = 0 }: SidebarProps) {
                       className={cn(
                         "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors relative",
                         "hover:bg-accent hover:text-accent-foreground",
-                        active && "bg-accent text-accent-foreground border-l-4 border-primary",
+                        active && "bg-primary-light text-primary border-l-4 border-primary",
                         !active && "text-muted-foreground",
                         isCollapsed && "justify-center"
                       )}

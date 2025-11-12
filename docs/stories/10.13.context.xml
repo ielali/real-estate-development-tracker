@@ -1,0 +1,771 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<story-context>
+  <metadata>
+    <epicId>10.2</epicId>
+    <storyId>13</storyId>
+    <title>Color System Updates - Design System Alignment</title>
+    <status>drafted</status>
+    <priority>medium</priority>
+    <estimated-effort>0.5-1 day</estimated-effort>
+    <dependencies>
+      <dependency>Story 10.1 - Design System</dependency>
+      <dependency>Story 10.12 - Layout Integration (z-index context)</dependency>
+      <dependency>All existing navigation components</dependency>
+    </dependencies>
+  </metadata>
+
+  <story-summary>
+    Add missing color variants (--primary-hover, --primary-light, --bg-tertiary) to align with target design specification. Update success color from #0E9267 to #10B981. Ensure all new colors are WCAG AA compliant and support dark mode. Update navigation components to use new color tokens for consistent visual hierarchy.
+  </story-summary>
+
+  <artifacts>
+    <documentation>
+      <!-- Epic and Gap Analysis -->
+      <artifact>
+        <path>docs/epics/EPIC-10.2-Design-Alignment.md</path>
+        <reason>Story 10.13 scope and requirements (lines 133-153). Provides context for color system updates, WCAG AA compliance requirements, and estimated effort.</reason>
+        <key-sections>
+          <section lines="133-153">Story 10.13 description: Add primary-hover, primary-light, bg-tertiary color variants; update success color to #10B981; ensure WCAG AA compliance; low risk, additive changes</section>
+        </key-sections>
+      </artifact>
+
+      <artifact>
+        <path>docs/design/NAVIGATION_GAP_ANALYSIS.md</path>
+        <reason>Color System gap analysis (lines 21-84). Documents missing color variants, success color mismatch, and visual hierarchy needs. Critical reference for hex to HSL conversions.</reason>
+        <key-sections>
+          <section lines="21-84">Color System section: Missing primary-hover (#1D4ED8), primary-light (#DBEAFE), bg-tertiary (#F1F5F9); Success color mismatch (current #0E9267 vs target #10B981); Less visual hierarchy with 2 background tiers vs 3 in target</section>
+        </key-sections>
+      </artifact>
+
+      <artifact>
+        <path>docs/design/new-navigation-proposals/main-dashboard-redesign.html</path>
+        <reason>Target design specification (lines 11-40). Source of truth for hex color values that need to be converted to HSL format for shadcn/ui compatibility.</reason>
+        <key-sections>
+          <section lines="11-40">CSS color palette: --primary: #2563eb, --primary-hover: #1d4ed8, --primary-light: #dbeafe, --bg-tertiary: #f1f5f9, --success: #10B981</section>
+        </key-sections>
+      </artifact>
+
+      <!-- Architecture Documentation -->
+      <artifact>
+        <path>docs/architecture/coding-standards.md</path>
+        <reason>Color accessibility standards (lines 107-113), documentation requirements (lines 32-54), and animation standards. Defines WCAG AA minimum contrast ratio of 4.5:1.</reason>
+        <key-sections>
+          <section lines="107-113">Visual Accessibility: WCAG AA color contrast ratios (4.5:1 minimum), don't rely on color alone, support browser text resizing up to 200%</section>
+          <section lines="32-54">Code Documentation: JSDoc comments required for all public functions and components</section>
+        </key-sections>
+      </artifact>
+
+      <artifact>
+        <path>docs/architecture/unified-project-structure.md</path>
+        <reason>Project structure and file organization patterns. Defines where color system files are located and import path conventions.</reason>
+      </artifact>
+
+      <!-- Previous Story Context -->
+      <artifact>
+        <path>docs/stories/10.12.story.md</path>
+        <reason>Layout Integration story (completed). Provides z-index layering system (z-50 to z-0), animation standards (200ms, easing), and component hierarchy context for color application.</reason>
+        <key-sections>
+          <section lines="535-889">Dev Agent Record and Senior Developer Review: Z-index layering (Modals z-50, Sidebar z-40, TopHeaderBar z-30, HorizontalNav z-20, Content z-0); Animation standards (200ms, easing [0.4, 0, 0.2, 1]); Two-tier header architecture; APPROVED with LOW severity advisories about centralized constants</section>
+        </key-sections>
+      </artifact>
+
+      <!-- Story Context XML Reference -->
+      <artifact>
+        <path>docs/stories/10.12.context.xml</path>
+        <reason>Previous story context file. Demonstrates context XML structure and format for reference.</reason>
+      </artifact>
+    </documentation>
+
+    <code>
+      <!-- Color System Files (MODIFY) -->
+      <artifact>
+        <path>apps/web/src/styles/globals.css</path>
+        <reason>MODIFY - Add new color CSS custom properties in :root and .dark selectors. Current file has 110 lines. Add --primary-hover, --primary-light, --bg-tertiary in both light and dark modes. Update --success from 158 84% 34% to 158 64% 52%.</reason>
+        <current-state>
+          <colors>
+            <light-mode>
+              --primary: 217 91% 54% (matches target #2563EB ✓)
+              --success: 158 84% 34% (darker than target #10B981 ✗)
+              --secondary: 210 40% 96.1%
+              Missing: --primary-hover, --primary-light, --bg-tertiary
+            </light-mode>
+            <dark-mode>
+              --primary: 217 91% 60% (slightly lighter)
+              --success: 158 84% 45%
+              Missing: --primary-hover, --primary-light, --bg-tertiary
+            </dark-mode>
+          </colors>
+        </current-state>
+      </artifact>
+
+      <artifact>
+        <path>apps/web/tailwind.config.ts</path>
+        <reason>MODIFY - Expose new CSS custom properties as Tailwind utility classes. Add primary.hover, primary.light to existing primary color object (lines 73-76). Add bgTertiary at root colors level (line 123).</reason>
+        <current-state>
+          Current primary object (lines 73-76):
+          primary: {
+            DEFAULT: "hsl(var(--primary))",
+            foreground: "hsl(var(--primary-foreground))",
+          }
+
+          Need to add: hover, light properties
+
+          Success already exposed (lines 102-105): ✓
+          success: {
+            DEFAULT: "hsl(var(--success))",
+            foreground: "hsl(var(--success-foreground))",
+          }
+        </current-state>
+      </artifact>
+
+      <!-- Navigation Components (MODIFY - Active States) -->
+      <artifact>
+        <path>apps/web/src/components/layout/Sidebar.tsx</path>
+        <reason>MODIFY - Update active navigation item states from bg-accent to bg-primary-light, text-accent-foreground to text-primary. Component has user profile section (Story 10.11) and uses z-40. Active states need visual distinction with new primary-light color.</reason>
+        <integration-notes>
+          - Component from Story 10.11 (Enhanced Sidebar)
+          - Uses Framer Motion with 200ms animations
+          - Z-index: z-40 (fixed positioning)
+          - Active route highlighting needs bg-primary-light instead of bg-accent
+          - Collapsed state uses tooltips
+        </integration-notes>
+      </artifact>
+
+      <artifact>
+        <path>apps/web/src/components/navigation/HorizontalNav.tsx</path>
+        <reason>MODIFY - Update active tab states to use bg-primary-light and text-primary. Component from Story 10.4, updated in Story 10.12 (sticky top-16 z-20). Uses horizontal scroll on mobile.</reason>
+        <integration-notes>
+          - Component from Story 10.12 (Layout Integration)
+          - Position: sticky top-16 z-20 (below TopHeaderBar)
+          - Context-aware navigation for project pages
+          - Active tab indicator needs primary-light background
+        </integration-notes>
+      </artifact>
+
+      <artifact>
+        <path>apps/web/src/components/navigation/BottomTabBar.tsx</path>
+        <reason>MODIFY - Update active tab states to use bg-primary-light and text-primary. Mobile navigation component with z-30, shows on < 768px breakpoint.</reason>
+        <integration-notes>
+          - Mobile-only navigation (< 768px)
+          - Z-index: z-30 (same level as TopHeaderBar)
+          - Fixed positioning at bottom
+          - iOS safe area support
+        </integration-notes>
+      </artifact>
+
+      <!-- UI Components (MODIFY - Hover & Color States) -->
+      <artifact>
+        <path>apps/web/src/components/ui/button.tsx</path>
+        <reason>MODIFY - Update primary button variant hover state from hover:bg-primary/90 to hover:bg-primary-hover. Provides more intentional hover color instead of opacity-based darkening.</reason>
+        <current-approach>Uses opacity (hover:bg-primary/90) for primary button hover</current-approach>
+        <new-approach>Use explicit hover color (hover:bg-primary-hover) matching target design</new-approach>
+      </artifact>
+
+      <artifact>
+        <path>apps/web/src/components/ui/card.tsx</path>
+        <reason>REVIEW - Potential usage of bg-tertiary for subtle card backgrounds. Assess if any cards would benefit from third-tier background color for visual hierarchy.</reason>
+      </artifact>
+
+      <artifact>
+        <path>apps/web/src/components/ui/badge.tsx</path>
+        <reason>MODIFY - Update success variant badge to use new success color (#10B981). Ensure contrast with success-foreground meets WCAG AA.</reason>
+        <affected-variants>success variant using bg-success and text-success-foreground</affected-variants>
+      </artifact>
+
+      <artifact>
+        <path>apps/web/src/components/ui/alert.tsx</path>
+        <reason>MODIFY - Update success variant alert to use new success color. Success alerts likely have border or background using success color token.</reason>
+        <affected-variants>success variant using border-success or bg-success/10</affected-variants>
+      </artifact>
+
+      <!-- Package Dependencies -->
+      <artifact>
+        <path>apps/web/package.json</path>
+        <reason>Reference for color-related dependencies. Tailwind CSS v3.4.0, tailwindcss-animate v1.0.7 already installed. No new dependencies needed for color system updates.</reason>
+      </artifact>
+    </code>
+  </artifacts>
+
+  <interfaces>
+    <!-- CSS Custom Properties Interface -->
+    <interface>
+      <name>CSS Color Variables (globals.css)</name>
+      <definition>
+        <!-- Light Mode (:root) -->
+        --primary: 217 91% 54%           /* #2563EB - Bright blue (unchanged) */
+        --primary-hover: 217 91% 46%     /* #1D4ED8 - Darker blue for hover (NEW) */
+        --primary-light: 214 100% 92%    /* #DBEAFE - Light blue background (NEW) */
+        --bg-tertiary: 214 32% 96%       /* #F1F5F9 - Third-tier background (NEW) */
+        --success: 158 64% 52%           /* #10B981 - Updated from 158 84% 34% */
+
+        <!-- Dark Mode (.dark) -->
+        --primary: 217 91% 60%           /* Slightly lighter in dark mode */
+        --primary-hover: 217 91% 70%     /* Even lighter for hover (NEW) */
+        --primary-light: 217 91% 20%     /* Much darker for backgrounds (NEW) */
+        --bg-tertiary: 217.2 32.6% 15%   /* Slightly lighter than secondary (NEW) */
+        --success: 158 64% 45%           /* Darker in dark mode (UPDATED) */
+      </definition>
+      <format>HSL format without hsl() wrapper, space-separated: "H S% L%"</format>
+      <usage>Used in Tailwind config with hsl(var(--variable)) pattern</usage>
+    </interface>
+
+    <!-- Tailwind Color Utilities Interface -->
+    <interface>
+      <name>Tailwind Color Utilities (tailwind.config.ts)</name>
+      <definition>
+        colors: {
+          primary: {
+            DEFAULT: "hsl(var(--primary))",
+            foreground: "hsl(var(--primary-foreground))",
+            hover: "hsl(var(--primary-hover))",    // NEW
+            light: "hsl(var(--primary-light))",    // NEW
+          },
+          success: {
+            DEFAULT: "hsl(var(--success))",        // EXISTING (value changes in CSS)
+            foreground: "hsl(var(--success-foreground))",
+          },
+          bgTertiary: "hsl(var(--bg-tertiary))",   // NEW
+        }
+      </definition>
+      <generated-utilities>
+        bg-primary-hover, hover:bg-primary-hover, text-primary-hover
+        bg-primary-light, text-primary-light
+        bg-bgTertiary, border-bgTertiary
+        bg-success (updated color value), text-success
+      </generated-utilities>
+    </interface>
+
+    <!-- Component Color Usage Pattern -->
+    <interface>
+      <name>Navigation Active State Pattern</name>
+      <before>
+        className="bg-accent text-accent-foreground"  // Old: Light gray active state
+      </before>
+      <after>
+        className="bg-primary-light text-primary"     // New: Blue-tinted active state
+      </after>
+      <transition-duration>200ms (matching layout animation standards from Story 10.12)</transition-duration>
+      <easing>[0.4, 0, 0.2, 1] cubic-bezier</easing>
+    </interface>
+
+    <!-- Component Hover State Pattern -->
+    <interface>
+      <name>Button Hover State Pattern</name>
+      <before>
+        className="bg-primary hover:bg-primary/90"    // Old: Opacity-based hover
+      </before>
+      <after>
+        className="bg-primary hover:bg-primary-hover" // New: Explicit hover color
+      </after>
+      <transition>transition-colors duration-200 ease-in-out</transition>
+    </interface>
+
+    <!-- WCAG Contrast Interface -->
+    <interface>
+      <name>WCAG AA Contrast Requirements</name>
+      <minimum-ratios>
+        Normal text: 4.5:1
+        Large text (18pt+ / 14pt+ bold): 3:1
+        UI components: 3:1
+      </minimum-ratios>
+      <test-combinations>
+        primary-light (#DBEAFE) with text-primary (#0F172A): ~11:1 ✓ PASS
+        primary-hover (#1D4ED8) with white text: ~8:1 ✓ PASS
+        bg-tertiary (#F1F5F9) with text-primary (#0F172A): ~15:1 ✓ PASS
+        success (#10B981) with white text: ~4.6:1 ✓ PASS
+      </test-combinations>
+      <tool>WebAIM Contrast Checker (https://webaim.org/resources/contrastchecker/)</tool>
+    </interface>
+  </interfaces>
+
+  <constraints>
+    <!-- Architectural Constraints -->
+    <constraint category="architecture" priority="critical">
+      <title>Maintain shadcn/ui HSL-based Color System</title>
+      <description>All color tokens must use HSL format without hsl() wrapper, space-separated (e.g., "217 91% 54%"). This ensures compatibility with shadcn/ui's Tailwind CSS integration pattern.</description>
+      <rationale>Existing system uses HSL CSS custom properties. Changing to hex or RGB would require refactoring all Tailwind config and component color usage.</rationale>
+    </constraint>
+
+    <constraint category="architecture" priority="critical">
+      <title>No Breaking Changes to Existing Color Tokens</title>
+      <description>Do not remove or rename existing color tokens. Only ADD new variants (--primary-hover, --primary-light, --bg-tertiary) and UPDATE values (--success).</description>
+      <rationale>Components across the application reference existing tokens (bg-primary, text-primary, etc.). Breaking changes would affect ~50 pages already migrated.</rationale>
+    </constraint>
+
+    <constraint category="architecture" priority="high">
+      <title>Z-Index Context from Story 10.12</title>
+      <description>Color updates apply to components in established z-index hierarchy: Modals (z-50), Sidebar (z-40), TopHeaderBar (z-30), HorizontalNav (z-20), Content (z-0).</description>
+      <impact>Active states with primary-light must maintain visual hierarchy across all navigation layers.</impact>
+    </constraint>
+
+    <constraint category="architecture" priority="high">
+      <title>Dark Mode Variants Required for All New Colors</title>
+      <description>Every new color token added to :root must have corresponding variant in .dark selector. Dark mode colors should invert appropriately (lighter primary-hover, darker primary-light).</description>
+      <testing>Toggle dark mode in browser to verify all new colors render correctly in both themes.</testing>
+    </constraint>
+
+    <!-- UI/UX Constraints -->
+    <constraint category="ui-ux" priority="critical">
+      <title>WCAG AA Accessibility Compliance</title>
+      <description>All new color combinations must meet WCAG AA contrast ratio of minimum 4.5:1 for normal text, 3:1 for large text/UI components.</description>
+      <verification>Use WebAIM Contrast Checker to test all combinations: primary-light with text, primary-hover with white text, bg-tertiary with text, success with white text.</verification>
+      <documentation>Document all contrast ratios in Dev Notes for future reference.</documentation>
+    </constraint>
+
+    <constraint category="ui-ux" priority="high">
+      <title>Visual Hierarchy with 3-Tier Background System</title>
+      <description>New bg-tertiary provides third tier of background colors: background (white) → bg-secondary (very light gray) → bg-tertiary (light gray). Use bg-tertiary for subtle depth in cards or nested sections.</description>
+      <usage-guideline>background for main page, bg-secondary for containers, bg-tertiary for subtle nested elements</usage-guideline>
+    </constraint>
+
+    <constraint category="ui-ux" priority="high">
+      <title>Active State Visual Distinction</title>
+      <description>Active navigation items must use bg-primary-light (blue-tinted) instead of bg-accent (gray) for better visual feedback. Text should be text-primary for sufficient contrast.</description>
+      <affected-components>Sidebar, HorizontalNav, BottomTabBar</affected-components>
+    </constraint>
+
+    <constraint category="ui-ux" priority="medium">
+      <title>Smooth Color Transitions (200ms)</title>
+      <description>All color changes on hover/active must use 200ms transition duration with easing [0.4, 0, 0.2, 1] to match layout animation standards from Story 10.12.</description>
+      <implementation>Add transition-colors duration-200 to components or use Tailwind's default transition classes.</implementation>
+    </constraint>
+
+    <!-- Code Quality Constraints -->
+    <constraint category="code-quality" priority="high">
+      <title>Tailwind Utilities Only (No Direct CSS Custom Property Usage)</title>
+      <description>Components must use Tailwind utility classes (bg-primary-light, hover:bg-primary-hover) instead of directly accessing CSS custom properties (hsl(var(--primary-light))).</description>
+      <rationale>Tailwind utilities provide automatic responsive modifiers, dark mode support, and consistent class naming.</rationale>
+    </constraint>
+
+    <constraint category="code-quality" priority="high">
+      <title>Hex to HSL Conversion Accuracy</title>
+      <description>All hex colors from target design must be accurately converted to HSL format. Document conversion reference in Dev Notes.</description>
+      <conversion-reference>
+        #2563EB → hsl(217, 91%, 54%) (primary - already matches)
+        #1D4ED8 → hsl(217, 91%, 46%) (primary-hover - NEW)
+        #DBEAFE → hsl(214, 100%, 92%) (primary-light - NEW)
+        #F1F5F9 → hsl(214, 32%, 96%) (bg-tertiary - NEW)
+        #10B981 → hsl(158, 64%, 52%) (success - UPDATED)
+      </conversion-reference>
+      <tool>Use online hex to HSL converter or browser DevTools color picker for verification</tool>
+    </constraint>
+
+    <constraint category="code-quality" priority="medium">
+      <title>Component Documentation Updates</title>
+      <description>Update JSDoc comments for modified components to reference Story 10.13 color system updates.</description>
+      <example>
+        /**
+         * Sidebar - Collapsible Navigation Component
+         * Story 10.3: Collapsible Sidebar Navigation
+         * Story 10.11: Enhanced Sidebar - User Profile & Tools Navigation
+         * Story 10.13: Active states updated to use primary-light color
+         */
+      </example>
+    </constraint>
+
+    <!-- Testing Constraints -->
+    <constraint category="testing" priority="high">
+      <title>Visual Regression Testing for Color Changes</title>
+      <description>Test all navigation components (Sidebar, HorizontalNav, BottomTabBar) for visual changes. Ensure active states are visually distinct in both light and dark modes.</description>
+      <test-pages>Dashboard, Project Pages, Settings, Mobile Navigation</test-pages>
+    </constraint>
+
+    <constraint category="testing" priority="high">
+      <title>Cross-Browser Color Rendering</title>
+      <description>Test color rendering in Chrome, Safari, Firefox. HSL colors should render consistently across browsers. Watch for color space differences (sRGB vs DCI-P3).</description>
+    </constraint>
+
+    <constraint category="testing" priority="medium">
+      <title>Dark Mode Toggle Testing</title>
+      <description>Toggle between light and dark modes multiple times. Verify all new color tokens switch appropriately and maintain contrast requirements in both themes.</description>
+    </constraint>
+
+    <!-- Performance Constraints -->
+    <constraint category="performance" priority="medium">
+      <title>No Bundle Size Impact</title>
+      <description>Color system updates should not increase bundle size. Adding CSS custom properties and Tailwind utilities has negligible impact (< 1KB).</description>
+    </constraint>
+
+    <constraint category="performance" priority="low">
+      <title>Color Transition Performance</title>
+      <description>CSS color transitions are GPU-accelerated. 200ms transitions should be smooth on all devices. Use transition-colors for optimal performance (avoid transition: all).</description>
+    </constraint>
+  </constraints>
+
+  <test-ideas>
+    <!-- AC 1: Add --primary-hover color variant -->
+    <test ac="1">
+      <description>Verify --primary-hover CSS custom property is defined in globals.css</description>
+      <approach>Read globals.css and check :root section for --primary-hover: 217 91% 46%</approach>
+      <expected>Variable exists in both :root and .dark selectors with appropriate values</expected>
+    </test>
+
+    <test ac="1">
+      <description>Verify primary-hover Tailwind utility class is generated</description>
+      <approach>Inspect element with bg-primary-hover class and verify computed color matches #1D4ED8</approach>
+      <expected>bg-primary-hover, hover:bg-primary-hover, text-primary-hover utilities work</expected>
+    </test>
+
+    <test ac="1">
+      <description>Test primary button hover state uses primary-hover color</description>
+      <approach>Hover over primary button and verify background color changes to #1D4ED8 (HSL 217 91% 46%)</approach>
+      <expected>Hover state shows darker blue color, not opacity-based darkening</expected>
+    </test>
+
+    <!-- AC 2: Add --primary-light color variant -->
+    <test ac="2">
+      <description>Verify --primary-light CSS custom property is defined</description>
+      <approach>Read globals.css :root and .dark sections for --primary-light with correct HSL values</approach>
+      <expected>Light mode: 214 100% 92%, Dark mode: 217 91% 20% (inverted for backgrounds)</expected>
+    </test>
+
+    <test ac="2">
+      <description>Verify primary-light Tailwind utility class is generated</description>
+      <approach>Apply bg-primary-light to test element and verify computed color matches #DBEAFE in light mode</approach>
+      <expected>bg-primary-light, text-primary-light utilities render correctly</expected>
+    </test>
+
+    <test ac="2">
+      <description>Test Sidebar active navigation item uses primary-light background</description>
+      <approach>Navigate to different routes and verify active item has bg-primary-light (blue-tinted background)</approach>
+      <expected>Active items visually distinct from inactive (no longer gray accent color)</expected>
+    </test>
+
+    <!-- AC 3: Add --bg-tertiary color variant -->
+    <test ac="3">
+      <description>Verify --bg-tertiary CSS custom property is defined</description>
+      <approach>Read globals.css for --bg-tertiary in both :root (214 32% 96%) and .dark (217.2 32.6% 15%)</approach>
+      <expected>Third-tier background color available for subtle depth</expected>
+    </test>
+
+    <test ac="3">
+      <description>Verify bgTertiary Tailwind utility class is generated</description>
+      <approach>Apply bg-bgTertiary to element and verify computed color matches #F1F5F9</approach>
+      <expected>bg-bgTertiary utility works, renders light gray background</expected>
+    </test>
+
+    <test ac="3">
+      <description>Test bg-tertiary usage in card components (if applicable)</description>
+      <approach>Review card.tsx for potential bg-tertiary usage, test visual hierarchy</approach>
+      <expected>If used, provides subtle depth without overpowering main content</expected>
+    </test>
+
+    <!-- AC 4: Success color matches target (#10B981) -->
+    <test ac="4">
+      <description>Verify --success CSS variable updated to 158 64% 52%</description>
+      <approach>Read globals.css and confirm --success changed from 158 84% 34% to 158 64% 52%</approach>
+      <expected>Success color is now #10B981 (brighter green) instead of #0E9267 (darker green)</expected>
+    </test>
+
+    <test ac="4">
+      <description>Test success badge color matches target design</description>
+      <approach>Render success variant badge, inspect computed background color</approach>
+      <expected>Badge background is #10B981 (HSL 158 64% 52%)</expected>
+    </test>
+
+    <test ac="4">
+      <description>Test success alert color matches target design</description>
+      <approach>Render success variant alert, verify border or background uses new success color</approach>
+      <expected>Success alerts use #10B981 color</expected>
+    </test>
+
+    <!-- AC 5: All color variants support dark mode -->
+    <test ac="5">
+      <description>Verify all new colors have .dark selector variants</description>
+      <approach>Read globals.css .dark section and confirm --primary-hover, --primary-light, --bg-tertiary exist with inverted values</approach>
+      <expected>Dark mode variants: primary-hover lighter (70%), primary-light darker (20%), bg-tertiary lighter than secondary</expected>
+    </test>
+
+    <test ac="5">
+      <description>Toggle dark mode and verify new colors render correctly</description>
+      <approach>Switch between light/dark modes, inspect active navigation items, buttons, backgrounds</approach>
+      <expected>All new colors invert appropriately, maintain visual hierarchy in dark mode</expected>
+    </test>
+
+    <test ac="5">
+      <description>Test primary-light background readability in dark mode</description>
+      <approach>In dark mode, verify active nav items with bg-primary-light (dark blue) have sufficient contrast with text-primary</approach>
+      <expected>Dark mode primary-light is darker (20% lightness) for proper background usage</expected>
+    </test>
+
+    <!-- AC 6: New color variants available as Tailwind utilities -->
+    <test ac="6">
+      <description>Verify tailwind.config.ts exposes all new colors</description>
+      <approach>Read tailwind.config.ts colors section and confirm primary.hover, primary.light, bgTertiary are defined</approach>
+      <expected>All three new colors exposed with hsl(var(--variable)) pattern</expected>
+    </test>
+
+    <test ac="6">
+      <description>Test Tailwind utility class generation</description>
+      <approach>Run npm run build and verify no Tailwind errors. Test bg-primary-hover, bg-primary-light, bg-bgTertiary classes in browser</approach>
+      <expected>All utility classes available: bg-, text-, border-, hover: variants work</expected>
+    </test>
+
+    <test ac="6">
+      <description>Verify responsive and state modifiers work</description>
+      <approach>Test hover:bg-primary-hover, md:bg-primary-light, dark:bg-bgTertiary combinations</approach>
+      <expected>Tailwind modifiers (hover:, dark:, md:, etc.) work with new color utilities</expected>
+    </test>
+
+    <!-- AC 7: Components use new color variants appropriately -->
+    <test ac="7">
+      <description>Verify Sidebar uses primary-light for active states</description>
+      <approach>Navigate between routes, inspect active nav item className, verify bg-primary-light and text-primary</approach>
+      <expected>Active items have blue-tinted background instead of gray accent</expected>
+    </test>
+
+    <test ac="7">
+      <description>Verify HorizontalNav uses primary-light for active tabs</description>
+      <approach>On project page, click different tabs, inspect active tab styling</approach>
+      <expected>Active tab has bg-primary-light background with text-primary</expected>
+    </test>
+
+    <test ac="7">
+      <description>Verify BottomTabBar uses primary-light for active tab (mobile)</description>
+      <approach>Resize browser to < 768px, inspect active bottom tab styling</approach>
+      <expected>Active mobile tab uses bg-primary-light for consistency</expected>
+    </test>
+
+    <!-- AC 8: Active navigation items use primary-light background -->
+    <test ac="8">
+      <description>Test visual distinction of active navigation items</description>
+      <approach>Compare active vs inactive nav items side-by-side, verify blue tint is noticeable</approach>
+      <expected>Active items clearly distinguishable with blue-tinted background</expected>
+    </test>
+
+    <test ac="8">
+      <description>Verify active state consistency across all navigation components</description>
+      <approach>Test Sidebar, HorizontalNav, BottomTabBar all use same active state pattern</approach>
+      <expected>All three components use bg-primary-light text-primary for active items</expected>
+    </test>
+
+    <!-- AC 9: Hover states use primary-hover where appropriate -->
+    <test ac="9">
+      <description>Test primary button hover state uses primary-hover</description>
+      <approach>Hover over primary buttons in different contexts, verify color changes to #1D4ED8</approach>
+      <expected>Hover darkens to explicit hover color, not opacity-based</expected>
+    </test>
+
+    <test ac="9">
+      <description>Test navigation item hover states (if applicable)</description>
+      <approach>Hover over non-active nav items, check if hover:bg-primary-hover is used</approach>
+      <expected>Hover state provides visual feedback before click (may use different color like bg-secondary)</expected>
+    </test>
+
+    <!-- AC 10: No breaking changes to existing component colors -->
+    <test ac="10">
+      <description>Verify components not using new colors are unchanged</description>
+      <approach>Test components using bg-secondary, bg-muted, bg-card - ensure they still work</approach>
+      <expected>Existing color tokens unaffected, backward compatibility maintained</expected>
+    </test>
+
+    <test ac="10">
+      <description>Test pages not migrated to new active states</description>
+      <approach>Check admin pages, auth pages for any color regressions</approach>
+      <expected>No visual regressions on pages not explicitly updated in this story</expected>
+    </test>
+
+    <!-- AC 11: All colors meet WCAG AA contrast requirements -->
+    <test ac="11">
+      <description>Test primary-light background with text-primary contrast</description>
+      <approach>Use WebAIM Contrast Checker: #DBEAFE (bg) vs #0F172A (text)</approach>
+      <expected>Contrast ratio ~11:1, exceeds WCAG AA requirement of 4.5:1 ✓</expected>
+    </test>
+
+    <test ac="11">
+      <description>Test primary-hover background with white text contrast</description>
+      <approach>Check #1D4ED8 (bg) vs #FFFFFF (text) contrast ratio</approach>
+      <expected>Contrast ratio ~8:1, exceeds WCAG AA requirement ✓</expected>
+    </test>
+
+    <test ac="11">
+      <description>Test bg-tertiary with text-primary contrast</description>
+      <approach>Check #F1F5F9 (bg) vs #0F172A (text) contrast ratio</approach>
+      <expected>Contrast ratio ~15:1, well above WCAG AA requirement ✓</expected>
+    </test>
+
+    <test ac="11">
+      <description>Test success color with white text contrast</description>
+      <approach>Check #10B981 (bg) vs #FFFFFF (text) contrast ratio</approach>
+      <expected>Contrast ratio ~4.6:1, meets WCAG AA requirement ✓</expected>
+    </test>
+
+    <test ac="11">
+      <description>Document all contrast ratios in Dev Notes</description>
+      <approach>Create WCAG AA Contrast section in Dev Notes with all test results</approach>
+      <expected>All four color combinations documented with passing ratios</expected>
+    </test>
+
+    <!-- AC 12: Dark mode variants properly adjusted -->
+    <test ac="12">
+      <description>Test primary-hover in dark mode is lighter (70% vs 46%)</description>
+      <approach>Enable dark mode, inspect primary-hover computed color</approach>
+      <expected>Dark mode primary-hover is HSL 217 91% 70% (lighter for visibility on dark backgrounds)</expected>
+    </test>
+
+    <test ac="12">
+      <description>Test primary-light in dark mode is darker (20% vs 92%)</description>
+      <approach>Enable dark mode, inspect active nav items with bg-primary-light</approach>
+      <expected>Dark mode primary-light is HSL 217 91% 20% (dark blue for backgrounds, not light)</expected>
+    </test>
+
+    <test ac="12">
+      <description>Test bg-tertiary provides subtle depth in dark mode</description>
+      <approach>Enable dark mode, verify bg-tertiary (15%) is slightly lighter than bg-secondary (10%)</approach>
+      <expected>Tertiary background provides third tier of depth: background (4.9%) → secondary (10%) → tertiary (15%)</expected>
+    </test>
+
+    <test ac="12">
+      <description>Test success color in dark mode has adjusted lightness</description>
+      <approach>Enable dark mode, verify success color is 158 64% 45% (darker than light mode's 52%)</approach>
+      <expected>Success badges and alerts maintain contrast in dark mode</expected>
+    </test>
+
+    <!-- AC 13: Color transitions smooth (200ms) -->
+    <test ac="13">
+      <description>Test button hover transition duration</description>
+      <approach>Hover over primary button, measure transition time with browser DevTools animation panel</approach>
+      <expected>Color transition completes in ~200ms with smooth easing</expected>
+    </test>
+
+    <test ac="13">
+      <description>Verify transition easing matches layout animations</description>
+      <approach>Inspect computed styles, verify easing function is [0.4, 0, 0.2, 1] cubic-bezier (same as Story 10.12)</approach>
+      <expected>Consistent easing across all animations (layout + color)</expected>
+    </test>
+
+    <test ac="13">
+      <description>Test navigation active state transitions</description>
+      <approach>Click between routes, observe smooth color change from inactive to active state</approach>
+      <expected>No jarring color jumps, 200ms smooth transition</expected>
+    </test>
+
+    <!-- AC 14: Documentation updated with new color tokens -->
+    <test ac="14">
+      <description>Verify color conversion reference in Dev Notes</description>
+      <approach>Read story Dev Notes for hex → HSL conversion table</approach>
+      <expected>All five colors documented with hex and HSL values</expected>
+    </test>
+
+    <test ac="14">
+      <description>Verify component JSDoc updates reference Story 10.13</description>
+      <approach>Read modified component files (Sidebar, HorizontalNav, Button) for updated JSDoc comments</approach>
+      <expected>Components reference Story 10.13 color system updates</expected>
+    </test>
+
+    <test ac="14">
+      <description>Verify color usage guidelines documented</description>
+      <approach>Check for documentation of when to use each color (primary-light for active, primary-hover for hover, bg-tertiary for subtle depth)</approach>
+      <expected>Clear usage guidelines help future developers apply colors correctly</expected>
+    </test>
+
+    <!-- Integration Tests -->
+    <test ac="multiple">
+      <description>End-to-end visual test: Dashboard page color system</description>
+      <approach>Load dashboard, verify Sidebar active state (primary-light), buttons (primary-hover on hover), overall visual hierarchy</approach>
+      <expected>All color updates work together harmoniously on main page</expected>
+    </test>
+
+    <test ac="multiple">
+      <description>End-to-end visual test: Project page with HorizontalNav</description>
+      <approach>Load project detail page, verify HorizontalNav active tab (primary-light), TopHeaderBar, Sidebar coordination</approach>
+      <expected>Two-tier header system (from Story 10.12) works with new color system</expected>
+    </test>
+
+    <test ac="multiple">
+      <description>End-to-end visual test: Mobile navigation with BottomTabBar</description>
+      <approach>Resize to < 768px, verify BottomTabBar active tab uses primary-light, dark mode toggle works</approach>
+      <expected>Mobile navigation consistent with desktop active state colors</expected>
+    </test>
+
+    <test ac="multiple">
+      <description>Cross-browser compatibility test</description>
+      <approach>Test color rendering in Chrome, Safari, Firefox on both macOS and Windows</approach>
+      <expected>HSL colors render consistently, no browser-specific color space issues</expected>
+    </test>
+
+    <test ac="multiple">
+      <description>Build verification test</description>
+      <approach>Run npm run build && npm run type-check</approach>
+      <expected>Build succeeds with 0 errors, TypeScript compilation passes, no Tailwind config errors</expected>
+    </test>
+  </test-ideas>
+
+  <implementation-notes>
+    <note priority="critical">
+      **Hex to HSL Conversion Reference:**
+      Use this table for accurate color implementation in globals.css:
+
+      #2563EB (primary) → hsl(217, 91%, 54%) ✅ Already matches
+      #1D4ED8 (primary-hover) → hsl(217, 91%, 46%)
+      #DBEAFE (primary-light) → hsl(214, 100%, 92%)
+      #F1F5F9 (bg-tertiary) → hsl(214, 32%, 96%)
+      #10B981 (success) → hsl(158, 64%, 52%)
+
+      Note: Remove hsl() wrapper and use space-separated format for shadcn/ui compatibility.
+    </note>
+
+    <note priority="high">
+      **Component Update Order:**
+      1. Update globals.css (add CSS custom properties)
+      2. Update tailwind.config.ts (expose Tailwind utilities)
+      3. Update navigation components (Sidebar, HorizontalNav, BottomTabBar)
+      4. Update UI components (Button, Badge, Alert)
+      5. Test visual changes on all page types
+      6. Run WCAG contrast checks
+      7. Test dark mode toggle
+
+      This order ensures Tailwind utilities are available before components use them.
+    </note>
+
+    <note priority="high">
+      **Z-Index Context Integration:**
+      Color updates apply to components in the established hierarchy from Story 10.12:
+      - Modals (z-50): May use primary-hover for buttons
+      - Sidebar (z-40): Active states use primary-light
+      - TopHeaderBar (z-30): Buttons use primary-hover on hover
+      - HorizontalNav (z-20): Active tabs use primary-light
+      - Content (z-0): Cards may use bg-tertiary for depth
+
+      Ensure new colors maintain visual hierarchy across all z-index layers.
+    </note>
+
+    <note priority="medium">
+      **Dark Mode Inversion Strategy:**
+      - primary-hover: Lighter in dark mode (70% vs 46%) - hover should be lighter on dark backgrounds
+      - primary-light: Darker in dark mode (20% vs 92%) - "light" means background use, needs to be dark in dark theme
+      - bg-tertiary: Lighter than secondary in dark mode (15% vs 10%) - maintains hierarchy
+      - success: Slightly darker in dark mode (45% vs 52%) - maintains vibrancy
+
+      This inversion ensures colors work as backgrounds or foregrounds appropriately in both themes.
+    </note>
+
+    <note priority="medium">
+      **Animation Consistency:**
+      All color transitions must use 200ms duration with easing [0.4, 0, 0.2, 1] to match layout animation standards from Story 10.12. Use Tailwind's transition-colors utility for optimal performance.
+    </note>
+
+    <note priority="low">
+      **Future Enhancement Considerations:**
+      - Consider creating centralized z-index constants file (from Story 10.12 advisory)
+      - Consider adding visual regression tests for color changes (from Story 10.12 advisory)
+      - Document color system in design system documentation for future reference
+    </note>
+  </implementation-notes>
+
+  <acceptance-criteria-summary>
+    <total>14</total>
+    <breakdown>
+      <functional>5</functional>
+      <integration>5</integration>
+      <quality>4</quality>
+    </breakdown>
+    <all-testable>true</all-testable>
+    <traceability>
+      <epic-requirements>docs/epics/EPIC-10.2-Design-Alignment.md, lines 133-153</epic-requirements>
+      <gap-analysis>docs/design/NAVIGATION_GAP_ANALYSIS.md, lines 21-84</gap-analysis>
+      <target-design>docs/design/new-navigation-proposals/main-dashboard-redesign.html, lines 11-40</target-design>
+      <coding-standards>docs/architecture/coding-standards.md</coding-standards>
+    </traceability>
+  </acceptance-criteria-summary>
+</story-context>
