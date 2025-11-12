@@ -39,8 +39,9 @@ import {
   Bell,
   Settings,
   HelpCircle,
+  FilledIcon,
   type LucideIcon,
-} from "lucide-react"
+} from "@/components/icons"
 import { useCollapsedSidebar } from "@/hooks/useCollapsedSidebar"
 import { useAuth } from "@/components/providers/AuthProvider"
 import { Button } from "@/components/ui/button"
@@ -314,7 +315,12 @@ export function Sidebar({ notificationCount = 0 }: SidebarProps) {
                     )}
                     aria-current={active ? "page" : undefined}
                   >
-                    <Icon className="w-5 h-5 shrink-0" aria-hidden="true" />
+                    <FilledIcon
+                      icon={Icon}
+                      filled={active}
+                      className="w-5 h-5 shrink-0"
+                      aria-hidden="true"
+                    />
 
                     {!isCollapsed && (
                       <motion.span
@@ -376,7 +382,12 @@ export function Sidebar({ notificationCount = 0 }: SidebarProps) {
                       )}
                       aria-current={active ? "page" : undefined}
                     >
-                      <Icon className="w-5 h-5 shrink-0" aria-hidden="true" />
+                      <FilledIcon
+                        icon={Icon}
+                        filled={active}
+                        className="w-5 h-5 shrink-0"
+                        aria-hidden="true"
+                      />
 
                       {!isCollapsed && (
                         <>

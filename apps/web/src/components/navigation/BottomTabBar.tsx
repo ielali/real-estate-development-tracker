@@ -12,11 +12,11 @@
 import { usePathname } from "next/navigation"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
-import { Home, FolderKanban, Users, User } from "lucide-react"
+import { Home, FolderKanban, Users, User, FilledIcon, type LucideIcon } from "@/components/icons"
 import { FloatingActionButton } from "./FloatingActionButton"
 
 export interface TabItem {
-  icon: React.ElementType
+  icon: LucideIcon
   label: string
   href: string
   /**
@@ -85,12 +85,8 @@ export function BottomTabBar() {
             aria-current={isActive ? "page" : undefined}
           >
             <div className="relative">
-              {/* Icon with filled/outlined variants (AC #4) */}
-              <Icon
-                className="w-6 h-6"
-                fill={isActive ? "currentColor" : "none"}
-                aria-hidden="true"
-              />
+              {/* Icon with filled/outlined variants (AC #4, Story 10.14) */}
+              <FilledIcon icon={Icon} filled={isActive} className="w-6 h-6" aria-hidden="true" />
               {/* Badge notification (AC #5) */}
               {tab.badge && (
                 <span
@@ -151,12 +147,8 @@ export function BottomTabBar() {
             aria-current={isActive ? "page" : undefined}
           >
             <div className="relative">
-              {/* Icon with filled/outlined variants (AC #4) */}
-              <Icon
-                className="w-6 h-6"
-                fill={isActive ? "currentColor" : "none"}
-                aria-hidden="true"
-              />
+              {/* Icon with filled/outlined variants (AC #4, Story 10.14) */}
+              <FilledIcon icon={Icon} filled={isActive} className="w-6 h-6" aria-hidden="true" />
               {/* Badge notification (AC #5) */}
               {tab.badge && (
                 <span
