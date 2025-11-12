@@ -1,0 +1,1011 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Story Context: 10.14 - Icon System - Material Symbols vs Lucide Decision
+  Generated: 2025-11-12
+
+  This context provides all information needed to implement Story 10.14.
+  The story has TWO possible implementation paths (dual-path architecture):
+  - Path A: Switch to Material Symbols (bundle +3KB)
+  - Path B: Keep Lucide + Filled Wrapper (bundle +0.5KB) [RECOMMENDED]
+-->
+
+<story-context>
+  <story-id>10.14</story-id>
+  <title>Icon System - Material Symbols vs Lucide Decision</title>
+  <status>drafted</status>
+  <estimated-effort>1-2 days</estimated-effort>
+
+  <summary>
+    Decide on a single icon system and implement filled icon states for better visual feedback in navigation.
+    Target design uses Material Symbols with filled/outline variants, but current implementation uses Lucide React.
+    Story requires decision between two paths: switch to Material Symbols OR keep Lucide with filled wrapper component.
+    Recommendation: Keep Lucide + implement FilledIcon wrapper (lower risk, minimal bundle impact, acceptable visual result).
+  </summary>
+
+  <!-- ================================================================ -->
+  <!-- DOCUMENTATION ARTIFACTS                                          -->
+  <!-- ================================================================ -->
+
+  <documentation-artifacts>
+
+    <artifact id="doc-1">
+      <name>Story 10.14 - Icon System Decision</name>
+      <path>docs/stories/10.14.story.md</path>
+      <lines>1-438</lines>
+      <summary>
+        Complete story file with dual-path implementation guidance.
+        Includes 13 acceptance criteria, decision criteria, bundle size analysis, implementation options,
+        icon mapping table, and comprehensive dev notes.
+        Status: drafted (ready for implementation decision).
+      </summary>
+      <key-requirements>
+        - AC 1: Decision documented (Material Symbols OR Lucide)
+        - AC 4-5: Filled/outline icon variants for active/inactive states
+        - AC 6: All navigation components updated
+        - AC 7: Icon imports centralized
+        - AC 8: Icon sizes standardized (w-5 h-5)
+        - AC 11: Icons accessible (ARIA labels)
+        - AC 13: Bundle size increase &lt; 50KB (acceptable: +3KB or less)
+      </key-requirements>
+    </artifact>
+
+    <artifact id="doc-2">
+      <name>Epic 10.2 - Design Alignment</name>
+      <path>docs/epics/EPIC-10.2-Design-Alignment.md</path>
+      <lines>155-176</lines>
+      <summary>
+        Epic context for Story 10.14.
+        Recommendation: Keep Lucide + implement filled wrapper (lower risk, minimal bundle impact).
+        Risk: Medium (library switch impacts bundle size).
+        Priority: Medium.
+      </summary>
+      <key-points>
+        - Decide: Switch to Material Symbols OR keep Lucide
+        - Implement filled icon states (filled/outline variants improve feedback)
+        - Standardize icon sizes and usage
+        - Document icon system
+        - Bundle size constraint: &lt; 50KB increase
+      </key-points>
+    </artifact>
+
+    <artifact id="doc-3">
+      <name>Gap Analysis - Icon System</name>
+      <path>docs/design/NAVIGATION_GAP_ANALYSIS.md</path>
+      <lines>281-296</lines>
+      <summary>
+        Identifies icon system differences between target and current implementation.
+        Target: Material Symbols Outlined with filled/outline variants.
+        Current: Lucide React (Feather-based) with no filled variant.
+        Impact: Less visual distinction for active navigation items.
+      </summary>
+      <gaps>
+        - Icon library: Material Symbols vs Lucide React (different aesthetics)
+        - Filled icons: Target uses filled variant for active states, current always outline
+        - Icon examples: dashboard vs Home, apartment vs FolderKanban
+        - Bundle size: Material ~8KB vs Lucide ~5KB for 15 icons
+      </gaps>
+    </artifact>
+
+    <artifact id="doc-4">
+      <name>Story 10.13 - Color System (Completed)</name>
+      <path>docs/stories/10.13.story.md</path>
+      <lines>555-805</lines>
+      <summary>
+        Immediately preceding story that updated navigation component color system.
+        All navigation components now use bg-primary-light text-primary for active states.
+        Icon updates in Story 10.14 must integrate with these new colors.
+      </summary>
+      <integration-notes>
+        - Active states: bg-primary-light text-primary (established in 10.13)
+        - Icon colors should use design tokens (text-primary, text-muted-foreground)
+        - Icon transitions: 200ms duration for consistency
+        - Z-index context: Sidebar z-40, HorizontalNav z-20, BottomTabBar
+        - Dark mode: Icon states must work with dark mode color variants
+      </integration-notes>
+    </artifact>
+
+    <artifact id="doc-5">
+      <name>Architecture - Coding Standards</name>
+      <path>docs/architecture/coding-standards.md</path>
+      <lines>107-113</lines>
+      <summary>
+        Visual accessibility requirements for icons.
+        Icons must have proper ARIA labels, use aria-hidden for decorative icons,
+        ensure aria-label on icon-only buttons, don't rely on color alone.
+      </summary>
+    </artifact>
+
+    <artifact id="doc-6">
+      <name>Target Design Specification</name>
+      <path>docs/design/new-navigation-proposals/main-dashboard-redesign.html</path>
+      <summary>
+        Target design uses Material Symbols Outlined icon library.
+        Active navigation: Filled variant (e.g., dashboard filled).
+        Inactive navigation: Outline variant (e.g., dashboard outline).
+        Icon size: 20px (w-5 h-5) for navigation items.
+        Icon color: Inherits from text color (currentColor).
+      </summary>
+    </artifact>
+
+  </documentation-artifacts>
+
+  <!-- ================================================================ -->
+  <!-- CODE ARTIFACTS                                                   -->
+  <!-- ================================================================ -->
+
+  <code-artifacts>
+
+    <artifact id="code-1">
+      <name>Sidebar Component</name>
+      <path>apps/web/src/components/layout/Sidebar.tsx</path>
+      <lines>1-100</lines>
+      <current-state>
+        Imports icons from lucide-react: Home, FolderKanban, Briefcase, Users, Building2, Grid2x2, Menu, Bell, Settings, HelpCircle.
+        NAV_ITEMS array (lines 69-76): 6 main navigation items.
+        TOOLS_NAV_ITEMS array (lines 79-89): 3 tools navigation items.
+        No filled/outline variant logic - all icons always use same style.
+      </current-state>
+      <needed-changes>
+        Path A (Material Symbols): Replace all lucide-react imports with @mui/icons-material imports. Use filled/outlined variants conditionally based on active state.
+        Path B (Lucide Wrapper): Wrap icon usage with FilledIcon component, pass filled={active} prop.
+        Update icon imports to use centralized exports from components/icons/index.ts.
+      </needed-changes>
+    </artifact>
+
+    <artifact id="code-2">
+      <name>HorizontalNav Component</name>
+      <path>apps/web/src/components/navigation/HorizontalNav.tsx</path>
+      <summary>
+        Contextual navigation for project pages (Overview, Costs, Timeline, Documents, Reports tabs).
+        Currently imports icons from lucide-react.
+        Needs same icon system update as Sidebar (filled/outline variants for active tab).
+      </summary>
+    </artifact>
+
+    <artifact id="code-3">
+      <name>BottomTabBar Component</name>
+      <path>apps/web/src/components/navigation/BottomTabBar.tsx</path>
+      <summary>
+        Mobile navigation bar with 5 tabs: Home, Projects, Add, Vendors, More.
+        Currently imports icons from lucide-react: Home, FolderKanban, Plus, Building2, MoreHorizontal.
+        Needs same icon system update (filled/outline variants for active tab).
+      </summary>
+    </artifact>
+
+    <artifact id="code-4">
+      <name>MobileNavigation Component</name>
+      <path>apps/web/src/components/layout/MobileNavigation.tsx</path>
+      <summary>
+        Mobile navigation drawer with hamburger menu.
+        Imports icons from lucide-react for navigation items.
+        Needs same icon system update as other navigation components.
+      </summary>
+    </artifact>
+
+    <artifact id="code-5">
+      <name>Package.json</name>
+      <path>apps/web/package.json</path>
+      <lines>83</lines>
+      <current-state>
+        "lucide-react": "^0.544.0" in dependencies.
+        No Material Symbols library installed.
+      </current-state>
+      <needed-changes>
+        Path A (Material Symbols): Add "@mui/icons-material": "^6.x.x" and "@mui/material": "^6.x.x" to dependencies. Remove "lucide-react" after migration complete.
+        Path B (Lucide Wrapper): No package changes required. Keep lucide-react.
+      </needed-changes>
+    </artifact>
+
+    <artifact id="code-6">
+      <name>Button Component</name>
+      <path>apps/web/src/components/ui/button.tsx</path>
+      <summary>
+        May use icons in icon-only button variants.
+        Review for icon usage and ensure compatibility with chosen icon system.
+        Ensure aria-label on icon-only buttons for accessibility (AC 11).
+      </summary>
+    </artifact>
+
+  </code-artifacts>
+
+  <!-- ================================================================ -->
+  <!-- INTERFACES AND PATTERNS                                          -->
+  <!-- ================================================================ -->
+
+  <interfaces>
+
+    <interface>
+      <name>Icon System - Path A: Material Symbols</name>
+      <description>
+        If decision is to switch to Material Symbols icon library.
+        Install @mui/icons-material package, map Lucide icons to Material equivalents,
+        update all component imports, use filled/outlined variants directly.
+      </description>
+      <definition><![CDATA[
+// Install packages:
+npm install @mui/icons-material @mui/material @emotion/react @emotion/styled
+
+// Icon imports (centralized in components/icons/index.ts):
+import DashboardIcon from '@mui/icons-material/Dashboard'
+import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined'
+import ApartmentIcon from '@mui/icons-material/Apartment'
+import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined'
+import BusinessCenterIcon from '@mui/icons-material/BusinessCenter'
+import BusinessCenterOutlinedIcon from '@mui/icons-material/BusinessCenterOutlined'
+// ... etc for all 15 icons
+
+// Usage in navigation components:
+import { DashboardIcon, DashboardOutlinedIcon } from '@/components/icons'
+
+{active ? (
+  <DashboardIcon className="w-5 h-5" />
+) : (
+  <DashboardOutlinedIcon className="w-5 h-5" />
+)}
+
+// Bundle impact: +3KB gzipped (~8KB total for 15 icons)
+// Migration effort: High (replace all icon imports in 4+ components)
+// Visual result: Exact match with target design
+      ]]></definition>
+      <pros>
+        - Exact visual match with target design (Material Design aesthetic)
+        - Native filled/outlined variants (no custom wrapper needed)
+        - Comprehensive icon library (2000+ icons available)
+        - Well-maintained by Google/MUI team
+      </pros>
+      <cons>
+        - Bundle size increase: +3KB gzipped (acceptable but measurable)
+        - Requires @mui/material peer dependency (adds complexity)
+        - Breaking change (replace all icon imports)
+        - Different API than Lucide (component-based vs function-based)
+        - Team needs to learn new icon library
+      </cons>
+    </interface>
+
+    <interface>
+      <name>Icon System - Path B: Lucide Filled Wrapper (RECOMMENDED)</name>
+      <description>
+        Keep Lucide React, create FilledIcon wrapper component to simulate filled state.
+        No package changes, minimal bundle impact, lower migration effort.
+        Acceptable visual approximation of filled/outline distinction.
+      </description>
+      <definition><![CDATA[
+// No package installation needed (keep lucide-react)
+
+// Create FilledIcon wrapper component:
+// File: apps/web/src/components/icons/FilledIcon.tsx
+import { type LucideIcon } from "lucide-react"
+
+export interface FilledIconProps {
+  icon: LucideIcon
+  filled?: boolean
+  className?: string
+  [key: string]: unknown
+}
+
+export function FilledIcon({
+  icon: Icon,
+  filled = false,
+  className,
+  ...props
+}: FilledIconProps) {
+  return (
+    <Icon
+      className={className}
+      strokeWidth={filled ? 2.5 : 2}
+      fill={filled ? "currentColor" : "none"}
+      fillOpacity={filled ? 0.2 : 0}
+      {...props}
+    />
+  )
+}
+
+// Centralized icon exports (components/icons/index.ts):
+export { Home, FolderKanban, Briefcase, Users, Building2, Grid2x2, Menu, Bell, Settings, HelpCircle, Plus, MoreHorizontal } from 'lucide-react'
+export { FilledIcon } from './FilledIcon'
+
+// Usage in navigation components:
+import { Home } from '@/components/icons'
+import { FilledIcon } from '@/components/icons'
+
+<FilledIcon
+  icon={Home}
+  filled={active}
+  className="w-5 h-5"
+  aria-hidden={hasLabel}
+/>
+
+// Bundle impact: Minimal (~0.5KB for wrapper component)
+// Migration effort: Low (add wrapper, update usage, no import changes)
+// Visual result: Acceptable approximation (strokeWidth + fill creates visual distinction)
+      ]]></definition>
+      <pros>
+        - Minimal bundle impact: ~0.5KB (wrapper component only)
+        - No package changes required (keep lucide-react)
+        - Low migration effort (wrapper + usage updates)
+        - Team already familiar with Lucide
+        - Easy to revert if needed
+        - Future flexibility: Can switch to Material later if needed
+      </pros>
+      <cons>
+        - Not exact visual match with Material Symbols (approximation)
+        - Custom wrapper requires maintenance
+        - Fill effect may not look identical to native filled icons
+        - Requires strokeWidth + fillOpacity tuning for best appearance
+      </cons>
+    </interface>
+
+    <interface>
+      <name>Icon Mapping - Lucide to Material Symbols</name>
+      <description>
+        Mapping table for converting Lucide React icons to Material Symbols equivalents.
+        Use this table if implementing Path A (Material Symbols).
+      </description>
+      <definition><![CDATA[
+Lucide Icon       | Material Symbols     | Material Filled Variant
+------------------+----------------------+-------------------------
+Home              | Dashboard / Home     | Dashboard / Home
+FolderKanban      | Apartment            | Apartment
+Briefcase         | BusinessCenter       | BusinessCenter
+Users             | Group / Contacts     | Group / Contacts
+Building2         | Store / Business     | Store / Business
+Grid2x2           | Category             | Category
+Bell              | Notifications        | Notifications
+Settings          | Settings             | Settings
+HelpCircle        | Help                 | Help
+Menu              | Menu                 | Menu
+Search            | Search               | Search
+Plus              | Add                  | Add
+MoreHorizontal    | MoreHoriz            | MoreHoriz
+
+Total icons to migrate: 13 icons across 4 navigation components
+      ]]></definition>
+    </interface>
+
+    <interface>
+      <name>Icon Accessibility Pattern</name>
+      <description>
+        ARIA labels and accessibility patterns for icons in navigation components.
+        Required to meet AC 11 (icons accessible with screen readers).
+      </description>
+      <definition><![CDATA[
+// Decorative icons (next to visible label text):
+<FilledIcon
+  icon={Home}
+  filled={active}
+  className="w-5 h-5"
+  aria-hidden="true"  // Hide from screen readers (label text is sufficient)
+/>
+<span>Home</span>
+
+// Icon-only buttons (no visible label):
+<button aria-label="Open notifications">
+  <FilledIcon
+    icon={Bell}
+    filled={false}
+    className="w-5 h-5"
+  />
+</button>
+
+// Navigation items with tooltips (collapsed sidebar):
+<TooltipProvider>
+  <Tooltip>
+    <TooltipTrigger asChild>
+      <Link href="/projects" aria-label="Projects">
+        <FilledIcon icon={FolderKanban} filled={active} className="w-5 h-5" />
+      </Link>
+    </TooltipTrigger>
+    <TooltipContent>Projects</TooltipContent>
+  </Tooltip>
+</TooltipProvider>
+      ]]></definition>
+    </interface>
+
+    <interface>
+      <name>Icon Size Standards</name>
+      <description>
+        Standardized icon sizes across all components (AC 8).
+        Use Tailwind utility classes for consistent sizing.
+      </description>
+      <definition><![CDATA[
+Context                 | Size Class | Pixels | Usage
+------------------------+------------+--------+---------------------------
+Navigation items        | w-5 h-5    | 20px   | Sidebar, HorizontalNav, BottomTabBar
+Buttons (small)         | w-4 h-4    | 16px   | Icon buttons, inline actions
+Headers/emphasis        | w-6 h-6    | 24px   | Page headers, large CTAs
+Mobile touch targets    | w-6 h-6    | 24px   | Mobile navigation (44px min touch)
+
+Standard: w-5 h-5 (20px) for all navigation icons
+      ]]></definition>
+    </interface>
+
+    <interface>
+      <name>Centralized Icon Exports</name>
+      <description>
+        Single source of truth for icon imports (AC 7).
+        All components import icons from components/icons/index.ts.
+      </description>
+      <definition><![CDATA[
+// File: apps/web/src/components/icons/index.ts
+
+// Path A (Material Symbols):
+export { default as DashboardIcon } from '@mui/icons-material/Dashboard'
+export { default as DashboardOutlinedIcon } from '@mui/icons-material/DashboardOutlined'
+// ... all other Material icons
+
+// Path B (Lucide Wrapper):
+export {
+  Home,
+  FolderKanban,
+  Briefcase,
+  Users,
+  Building2,
+  Grid2x2,
+  Menu,
+  Bell,
+  Settings,
+  HelpCircle,
+  Plus,
+  MoreHorizontal,
+  Search,
+  type LucideIcon,
+} from 'lucide-react'
+export { FilledIcon } from './FilledIcon'
+
+// Usage in components:
+import { Home, FilledIcon } from '@/components/icons'
+// NOT: import { Home } from 'lucide-react' (scattered imports)
+
+Benefits:
+- Easy to swap icon libraries (change one file)
+- Type safety (centralized exports)
+- Prevents import duplication
+- Tree-shaking still works (re-exports are tree-shakeable)
+      ]]></definition>
+    </interface>
+
+  </interfaces>
+
+  <!-- ================================================================ -->
+  <!-- CONSTRAINTS AND REQUIREMENTS                                     -->
+  <!-- ================================================================ -->
+
+  <constraints>
+
+    <constraint type="architectural" priority="high">
+      <description>Z-Index Layering System</description>
+      <details>
+        Icon updates apply to components in established z-index hierarchy:
+        - Sidebar: z-40 (desktop navigation with icons)
+        - HorizontalNav: z-20 (contextual tabs with icons)
+        - BottomTabBar: z-30 (mobile navigation with icons)
+        Icon rendering must not create z-index conflicts.
+      </details>
+    </constraint>
+
+    <constraint type="integration" priority="high">
+      <description>Color System Integration (Story 10.13)</description>
+      <details>
+        Icons must integrate with new color system from Story 10.13:
+        - Active states: bg-primary-light text-primary (blue tinted backgrounds)
+        - Icon color inherits from text color (currentColor)
+        - Must work with dark mode color variants
+        - Filled/outline distinction must be visible on both light and dark backgrounds
+      </details>
+    </constraint>
+
+    <constraint type="performance" priority="high">
+      <description>Bundle Size Constraint</description>
+      <details>
+        Bundle size increase must be &lt; 50KB gzipped (Epic 10.2 constraint, AC 13).
+        - Material Symbols: +3KB gzipped (~8KB for 15 icons) - ACCEPTABLE
+        - Lucide Wrapper: +0.5KB gzipped (wrapper only) - ACCEPTABLE
+        Both options meet constraint. Recommend Lucide Wrapper for minimal impact.
+      </details>
+    </constraint>
+
+    <constraint type="accessibility" priority="high">
+      <description>WCAG AA Icon Accessibility (AC 11)</description>
+      <details>
+        - Icons next to labels: Use aria-hidden="true" (decorative)
+        - Icon-only buttons: Must have aria-label describing action
+        - Tooltips: Provide accessible names for collapsed sidebar icons
+        - Don't rely on icon alone to convey information (pair with text or labels)
+        - Test with screen reader (VoiceOver, NVDA)
+      </details>
+    </constraint>
+
+    <constraint type="ui-ux" priority="high">
+      <description>Animation Standards (Story 10.12)</description>
+      <details>
+        Icon transitions must use 200ms duration for consistency with layout animations.
+        - Icon swap (filled ↔ outline): transition-all duration-200 ease-in-out
+        - Color transitions: transition-colors duration-200
+        - No jarring icon changes on hover/active state
+        Easing curve: [0.4, 0, 0.2, 1] (cubic-bezier)
+      </details>
+    </constraint>
+
+    <constraint type="technical" priority="medium">
+      <description>Dual-Path Implementation</description>
+      <details>
+        Story has TWO valid implementation paths:
+        - Path A: Material Symbols (exact design match, +3KB)
+        - Path B: Lucide Wrapper (approximation, +0.5KB) [RECOMMENDED]
+        Decision must be made in Phase 1 (Task 1-2).
+        All subsequent tasks depend on path chosen.
+        Document decision rationale in Dev Agent Record.
+      </details>
+    </constraint>
+
+    <constraint type="code-quality" priority="medium">
+      <description>Icon Import Centralization (AC 7)</description>
+      <details>
+        All icon imports must be centralized in components/icons/index.ts.
+        NO scattered imports from lucide-react or @mui/icons-material in components.
+        Benefits: Easy to swap libraries, type safety, prevents duplication.
+        Create components/icons/index.ts in Phase 5 (Task 7).
+      </details>
+    </constraint>
+
+    <constraint type="testing" priority="medium">
+      <description>Cross-Browser Icon Rendering (AC 10)</description>
+      <details>
+        Icons must render correctly on:
+        - Desktop: Chrome, Firefox, Safari, Edge
+        - Mobile: iOS Safari, Android Chrome
+        - No icon distortion or sizing issues
+        - Filled/outline distinction visible on all platforms
+        Test on both Retina and non-Retina displays.
+      </details>
+    </constraint>
+
+    <constraint type="compatibility" priority="medium">
+      <description>Backward Compatibility</description>
+      <details>
+        Path A (Material Symbols): Breaking change requires removing lucide-react.
+        Path B (Lucide Wrapper): Non-breaking (additive component).
+        Ensure no other components outside navigation use lucide-react icons before removal (Path A only).
+        Run global search for "lucide-react" imports before finalizing Path A.
+      </details>
+    </constraint>
+
+    <constraint type="documentation" priority="medium">
+      <description>Icon System Documentation (AC 1, Phase 7)</description>
+      <details>
+        Document chosen icon library, usage guidelines, available icons, filled/outline pattern.
+        Create icon usage guidelines in coding-standards.md or separate icon-system.md file.
+        Include code examples, size standards, accessibility patterns.
+        List all available icons with visual reference.
+      </details>
+    </constraint>
+
+  </constraints>
+
+  <!-- ================================================================ -->
+  <!-- TEST IDEAS AND VALIDATION                                        -->
+  <!-- ================================================================ -->
+
+  <test-ideas>
+
+    <!-- AC 1: Decision documented -->
+    <test-idea id="test-1" acceptance-criteria="AC-1">
+      <description>Verify icon system decision is documented in Dev Agent Record</description>
+      <steps>
+        1. Read story file Dev Agent Record section
+        2. Verify decision is clearly stated: "Material Symbols" OR "Lucide with filled wrapper"
+        3. Verify decision rationale is documented (3-5 bullet points)
+        4. Verify decision approval is noted (stakeholder or team lead)
+      </steps>
+      <expected>Dev Agent Record contains decision, rationale, and approval</expected>
+    </test-idea>
+
+    <!-- AC 2: Material Symbols installed (if chosen) -->
+    <test-idea id="test-2" acceptance-criteria="AC-2">
+      <description>Verify Material Symbols package installed (Path A only)</description>
+      <steps>
+        1. Check package.json dependencies for "@mui/icons-material"
+        2. Check package.json dependencies for "@mui/material"
+        3. Run npm ls @mui/icons-material to verify installation
+        4. Verify version is 6.x or later
+      </steps>
+      <expected>Package.json contains @mui/icons-material and @mui/material in dependencies (Path A only)</expected>
+    </test-idea>
+
+    <!-- AC 3: Lucide filled wrapper created (if chosen) -->
+    <test-idea id="test-3" acceptance-criteria="AC-3">
+      <description>Verify FilledIcon wrapper component created (Path B only)</description>
+      <steps>
+        1. Check apps/web/src/components/icons/FilledIcon.tsx exists
+        2. Verify component accepts icon, filled, className props
+        3. Verify strokeWidth changes based on filled prop (2.5 filled, 2 outline)
+        4. Verify fill and fillOpacity set correctly
+        5. Run TypeScript compilation to verify types
+      </steps>
+      <expected>FilledIcon.tsx exists with correct props and filled state logic (Path B only)</expected>
+    </test-idea>
+
+    <!-- AC 4: Active navigation items show filled variant -->
+    <test-idea id="test-4" acceptance-criteria="AC-4">
+      <description>Verify active navigation items show filled/bold icon variant</description>
+      <steps>
+        1. Navigate to / (Home should be active)
+        2. Inspect Home icon in Sidebar - verify filled variant rendered
+        3. Navigate to /projects (Projects should be active)
+        4. Inspect Projects icon in Sidebar - verify filled variant rendered
+        5. Inspect Home icon - verify outline variant now rendered
+        6. Repeat for HorizontalNav tabs (project detail pages)
+        7. Repeat for BottomTabBar tabs (mobile)
+      </steps>
+      <expected>Active navigation items display filled/bold icon variant; inactive display outline</expected>
+    </test-idea>
+
+    <!-- AC 5: Inactive navigation items show outline variant -->
+    <test-idea id="test-5" acceptance-criteria="AC-5">
+      <description>Verify inactive navigation items show outline/regular variant</description>
+      <steps>
+        1. Navigate to / (all other nav items should be inactive)
+        2. Inspect Projects, Portfolio, Contacts, Vendors, Categories icons - verify outline
+        3. Hover over Projects (should still be outline until clicked)
+        4. Verify visual distinction between active (filled) and inactive (outline)
+      </steps>
+      <expected>Inactive navigation items display outline/regular icon variant</expected>
+    </test-idea>
+
+    <!-- AC 6: All navigation components updated -->
+    <test-idea id="test-6" acceptance-criteria="AC-6">
+      <description>Verify all navigation components updated with chosen icon system</description>
+      <steps>
+        1. Check Sidebar.tsx for updated icon imports and usage
+        2. Check HorizontalNav.tsx for updated icon imports and usage
+        3. Check BottomTabBar.tsx for updated icon imports and usage
+        4. Check MobileNavigation.tsx for updated icon imports and usage
+        5. Verify no direct imports from lucide-react (should use centralized exports)
+        6. Verify filled/outline logic implemented in all components
+      </steps>
+      <expected>All 4 navigation components updated with chosen icon system and filled/outline logic</expected>
+    </test-idea>
+
+    <!-- AC 7: Icon imports centralized -->
+    <test-idea id="test-7" acceptance-criteria="AC-7">
+      <description>Verify icon imports centralized in components/icons/index.ts</description>
+      <steps>
+        1. Check apps/web/src/components/icons/index.ts exists
+        2. Verify all icons exported from single file
+        3. Run grep "from 'lucide-react'" across components (should only be index.ts)
+        4. Run grep "from '@mui/icons-material'" across components (should only be index.ts, Path A)
+        5. Verify components import from '@/components/icons'
+      </steps>
+      <expected>Icon imports centralized; no scattered imports in navigation components</expected>
+    </test-idea>
+
+    <!-- AC 8: Icon sizes standardized -->
+    <test-idea id="test-8" acceptance-criteria="AC-8">
+      <description>Verify icon sizes standardized to w-5 h-5 (20px) for navigation</description>
+      <steps>
+        1. Inspect all Sidebar navigation icons - verify w-5 h-5 class
+        2. Inspect all HorizontalNav tab icons - verify w-5 h-5 class
+        3. Inspect all BottomTabBar icons - verify w-5 h-5 or w-6 h-6 (mobile)
+        4. Measure rendered icon size in DevTools - verify 20px × 20px (or 24px mobile)
+        5. Check for any inconsistent sizes (w-4, custom width, etc.)
+      </steps>
+      <expected>All navigation icons use consistent size: w-5 h-5 (desktop) or w-6 h-6 (mobile touch targets)</expected>
+    </test-idea>
+
+    <!-- AC 9: Icon color follows design system tokens -->
+    <test-idea id="test-9" acceptance-criteria="AC-9">
+      <description>Verify icon colors use design system tokens from Story 10.13</description>
+      <steps>
+        1. Inspect active Sidebar item - icon should be text-primary (#2563EB)
+        2. Inspect inactive Sidebar item - icon should inherit text color
+        3. Toggle dark mode - verify icon colors adjust correctly
+        4. Verify no hardcoded icon colors (should use currentColor or design tokens)
+        5. Check hover states - icon color should transition smoothly
+      </steps>
+      <expected>Icon colors use design system tokens; work correctly in light and dark modes</expected>
+    </test-idea>
+
+    <!-- AC 10: Icons render correctly on all screen sizes -->
+    <test-idea id="test-10" acceptance-criteria="AC-10">
+      <description>Verify icons render correctly on all screen sizes and browsers</description>
+      <steps>
+        1. Test desktop (1920×1080): Chrome, Firefox, Safari, Edge
+        2. Test tablet (768×1024): iPad Safari, Chrome
+        3. Test mobile (375×667): iPhone Safari, Android Chrome
+        4. Verify no icon distortion or pixelation
+        5. Verify filled/outline distinction visible on all devices
+        6. Test on Retina and non-Retina displays
+      </steps>
+      <expected>Icons render correctly without distortion on all screen sizes and browsers</expected>
+    </test-idea>
+
+    <!-- AC 11: Icons accessible with screen readers -->
+    <test-idea id="test-11" acceptance-criteria="AC-11">
+      <description>Verify icons have proper ARIA labels for accessibility</description>
+      <steps>
+        1. Enable VoiceOver (Mac) or NVDA (Windows)
+        2. Navigate through Sidebar - verify icon+label combinations read correctly
+        3. Test collapsed Sidebar - verify tooltips provide accessible names
+        4. Test icon-only buttons (notifications, menu) - verify aria-label present
+        5. Inspect icons next to labels - verify aria-hidden="true"
+        6. Run axe DevTools accessibility audit - verify no icon-related issues
+      </steps>
+      <expected>All icons have proper ARIA attributes; no accessibility errors</expected>
+    </test-idea>
+
+    <!-- AC 12: Icon transitions smooth -->
+    <test-idea id="test-12" acceptance-criteria="AC-12">
+      <description>Verify icon transitions smooth when toggling active state</description>
+      <steps>
+        1. Navigate from Home to Projects - observe icon transition
+        2. Verify icon swap (filled ↔ outline) is smooth, not jarring
+        3. Verify transition duration is 200ms (matches layout animations)
+        4. Hover over inactive item - verify icon color transition is smooth
+        5. Toggle dark mode - verify icon transitions smoothly
+        6. Check DevTools Rendering tab - verify no layout thrashing
+      </steps>
+      <expected>Icon transitions smooth with 200ms duration; no jarring changes</expected>
+    </test-idea>
+
+    <!-- AC 13: Bundle size increase acceptable -->
+    <test-idea id="test-13" acceptance-criteria="AC-13">
+      <description>Verify bundle size increase is less than 50KB gzipped</description>
+      <steps>
+        1. Build production bundle: npm run build
+        2. Check build output for bundle sizes
+        3. Compare before/after bundle sizes:
+           - Before: Baseline with lucide-react only
+           - After Path A: +3KB expected (Material Symbols)
+           - After Path B: +0.5KB expected (Lucide wrapper)
+        4. Verify tree-shaking works (only used icons included)
+        5. Run npm run analyze to view bundle composition
+        6. Verify increase is &lt; 50KB gzipped (both paths well under limit)
+      </steps>
+      <expected>Bundle size increase &lt; 50KB gzipped (actual: +0.5-3KB)</expected>
+    </test-idea>
+
+    <!-- Integration Tests -->
+    <test-idea id="test-14" acceptance-criteria="multiple">
+      <description>Integration test: Icon system works with color system (Story 10.13)</description>
+      <steps>
+        1. Verify active items: bg-primary-light + text-primary + filled icon
+        2. Verify inactive items: default bg + default text + outline icon
+        3. Test dark mode: filled/outline icons visible on dark backgrounds
+        4. Test hover states: icon color transitions match button hover colors
+        5. Verify z-index layering: icons render correctly in Sidebar (z-40), HorizontalNav (z-20)
+      </steps>
+      <expected>Icon system integrates seamlessly with color system from Story 10.13</expected>
+    </test-idea>
+
+    <test-idea id="test-15" acceptance-criteria="multiple">
+      <description>Visual regression test: Compare with target design</description>
+      <steps>
+        1. Take screenshots of Sidebar (expanded, collapsed)
+        2. Take screenshots of HorizontalNav (active tab)
+        3. Take screenshots of BottomTabBar (mobile)
+        4. Compare with target design (main-dashboard-redesign.html)
+        5. Verify filled/outline distinction matches target (90%+ accuracy acceptable)
+        6. Document any intentional divergence (if Path B chosen)
+      </steps>
+      <expected>Visual appearance matches target design (exact for Path A, 90%+ for Path B)</expected>
+    </test-idea>
+
+    <test-idea id="test-16" acceptance-criteria="multiple">
+      <description>Performance test: Verify no regressions</description>
+      <steps>
+        1. Run Lighthouse audit before and after icon changes
+        2. Verify Performance score unchanged (or improved)
+        3. Measure Time to Interactive (TTI) - should not increase
+        4. Check for any new rendering issues (paint flashing)
+        5. Verify icon rendering doesn't cause layout shifts (CLS)
+      </steps>
+      <expected>No performance regressions; Lighthouse score unchanged</expected>
+    </test-idea>
+
+  </test-ideas>
+
+  <!-- ================================================================ -->
+  <!-- IMPLEMENTATION GUIDANCE                                          -->
+  <!-- ================================================================ -->
+
+  <implementation-notes>
+
+    <note priority="critical">
+      <title>Decision Required in Phase 1</title>
+      <content>
+        This story has TWO valid implementation paths. A decision must be made in Phase 1 (Task 1-2) before proceeding:
+
+        Path A: Switch to Material Symbols
+        - Exact design match
+        - Bundle: +3KB gzipped
+        - Effort: High (replace all imports)
+        - Risk: Medium (breaking change)
+
+        Path B: Keep Lucide + Filled Wrapper (RECOMMENDED)
+        - Acceptable approximation
+        - Bundle: +0.5KB gzipped
+        - Effort: Low (wrapper + usage updates)
+        - Risk: Low (additive change)
+
+        Recommendation: Path B (Lucide Wrapper) for lower risk and minimal bundle impact.
+        Document decision and rationale in Dev Agent Record.
+      </content>
+    </note>
+
+    <note priority="high">
+      <title>Integration with Story 10.13 Color System</title>
+      <content>
+        Icon updates must integrate with color system from Story 10.13:
+        - Active states: bg-primary-light text-primary
+        - Icon color inherits from text color (currentColor)
+        - Filled icons on blue-tinted backgrounds (primary-light)
+        - Outline icons on default backgrounds
+        - Must work in dark mode with inverted colors
+
+        Test filled/outline distinction on both light and dark backgrounds.
+      </content>
+    </note>
+
+    <note priority="high">
+      <title>Accessibility is Non-Negotiable</title>
+      <content>
+        AC 11 (icon accessibility) is a hard requirement:
+        - Icons next to labels: aria-hidden="true"
+        - Icon-only buttons: aria-label="Action description"
+        - Collapsed sidebar: tooltips provide accessible names
+        - Test with screen reader (VoiceOver, NVDA)
+        - Don't rely on icon alone to convey information
+
+        Accessibility issues block story completion. Test early.
+      </content>
+    </note>
+
+    <note priority="medium">
+      <title>Bundle Size Monitoring</title>
+      <content>
+        AC 13 requires bundle size increase &lt; 50KB gzipped.
+        Both paths well under this limit, but monitor during implementation:
+
+        Before implementation:
+        - Run: npm run build
+        - Note baseline bundle size
+
+        After implementation:
+        - Run: npm run build
+        - Compare bundle sizes
+        - Verify increase matches expectation (+0.5KB or +3KB)
+        - Run: npm run analyze (if available)
+        - Verify tree-shaking works (only used icons in bundle)
+      </content>
+    </note>
+
+    <note priority="medium">
+      <title>Centralized Icon Exports Pattern</title>
+      <content>
+        AC 7 requires centralized icon imports for maintainability:
+
+        Create: apps/web/src/components/icons/index.ts
+        Export all icons from this file
+        Components import from '@/components/icons' only
+
+        Benefits:
+        - Easy to swap icon libraries later (change one file)
+        - Type safety (centralized types)
+        - Prevents import duplication
+        - Tree-shaking still works (re-exports are tree-shakeable)
+
+        Implement in Phase 5 (Task 7) after choosing path.
+      </content>
+    </note>
+
+    <note priority="low">
+      <title>Future Flexibility</title>
+      <content>
+        Path B (Lucide Wrapper) provides future flexibility:
+        - If visual result unsatisfactory, can switch to Path A later
+        - Centralized exports make library swap easier
+        - FilledIcon wrapper can be enhanced (strokeWidth tuning, fill strategies)
+
+        Path A (Material Symbols) is more committed:
+        - Harder to revert (breaking change)
+        - But provides exact design match from day 1
+
+        Consider team comfort level and long-term maintenance when deciding.
+      </content>
+    </note>
+
+  </implementation-notes>
+
+  <!-- ================================================================ -->
+  <!-- RISKS AND MITIGATION                                             -->
+  <!-- ================================================================ -->
+
+  <risks>
+
+    <risk level="medium" phase="phase-1">
+      <title>Decision Paralysis</title>
+      <description>
+        Team may struggle to choose between Material Symbols and Lucide wrapper.
+        Two valid paths with different tradeoffs can cause indecision.
+      </description>
+      <mitigation>
+        - Use decision criteria in story Dev Notes
+        - Recommendation: Path B (Lucide Wrapper) for most cases
+        - Time-box decision to 2 hours max
+        - If still unclear, default to Path B (lower risk)
+        - Get stakeholder input on visual accuracy requirements
+      </mitigation>
+    </risk>
+
+    <risk level="medium" phase="phase-3-or-4">
+      <title>Visual Distinction Insufficient (Path B)</title>
+      <description>
+        If implementing Path B (Lucide Wrapper), filled icon state may not be visually distinct enough.
+        strokeWidth + fill approach is approximation, not native filled variant.
+      </description>
+      <mitigation>
+        - Create FilledIcon wrapper early (Phase 2B)
+        - Test filled vs outline appearance immediately
+        - Adjust strokeWidth (try 2.5, 3) and fillOpacity (try 0.2, 0.3, 0.4)
+        - Get design review/approval on visual result
+        - If insufficient, pivot to Path A (Material Symbols) before updating all components
+      </mitigation>
+    </risk>
+
+    <risk level="low" phase="phase-3-or-4">
+      <title>Bundle Size Exceeds Limit (Path A)</title>
+      <description>
+        If implementing Path A (Material Symbols), bundle size may exceed expectations.
+        @mui/material peer dependency adds base overhead.
+      </description>
+      <mitigation>
+        - Install packages and build immediately (Phase 2A)
+        - Check bundle size before proceeding to full migration
+        - Verify tree-shaking works (only used icons in bundle)
+        - If over limit, pivot to Path B (Lucide Wrapper)
+        - Consider code splitting if bundle still too large
+      </mitigation>
+    </risk>
+
+    <risk level="low" phase="phase-5">
+      <title>Accessibility Issues Missed</title>
+      <description>
+        Icon accessibility (AC 11) may be overlooked during implementation.
+        ARIA labels, screen reader testing often forgotten.
+      </description>
+      <mitigation>
+        - Add ARIA attributes from start (don't defer to end)
+        - Test with screen reader early (Phase 5, after first component update)
+        - Run axe DevTools audit after each component update
+        - Use accessibility checklist in Test Ideas (test-11)
+        - Block story completion if accessibility issues found
+      </mitigation>
+    </risk>
+
+  </risks>
+
+  <!-- ================================================================ -->
+  <!-- DEFINITION OF DONE                                               -->
+  <!-- ================================================================ -->
+
+  <definition-of-done>
+    <item>Icon system decision documented and approved (Material Symbols OR Lucide)</item>
+    <item>Chosen icon library installed (if Path A) or FilledIcon wrapper created (if Path B)</item>
+    <item>All navigation components updated: Sidebar, HorizontalNav, BottomTabBar, MobileNavigation</item>
+    <item>Filled/outline variants implemented for active/inactive states</item>
+    <item>Icon imports centralized in components/icons/index.ts</item>
+    <item>Icon sizes standardized (w-5 h-5 for nav, w-6 h-6 for mobile)</item>
+    <item>Icons accessible: ARIA labels, aria-hidden, tooltips for collapsed sidebar</item>
+    <item>Icons render correctly on all browsers: Chrome, Firefox, Safari, Edge</item>
+    <item>Icon transitions smooth (200ms duration)</item>
+    <item>Bundle size increase acceptable: &lt; 50KB gzipped (actual: +0.5-3KB)</item>
+    <item>Lucide removed if switching to Material (Path A only)</item>
+    <item>Icon system documentation updated (usage guidelines, available icons, examples)</item>
+    <item>All tests pass: unit tests, visual regression, accessibility audit</item>
+    <item>Build succeeds with no errors: npm run build</item>
+    <item>TypeScript compilation passes: npm run type-check</item>
+    <item>Code reviewed and approved by senior developer</item>
+    <item>Story status updated to "Done"</item>
+  </definition-of-done>
+
+</story-context>

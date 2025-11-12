@@ -19,11 +19,20 @@ import { usePathname } from "next/navigation"
 import Link from "next/link"
 import type { Route } from "next"
 import { cn } from "@/lib/utils"
-import { Home, DollarSign, Calendar, FileText, Users, Settings as SettingsIcon } from "lucide-react"
+import {
+  Home,
+  DollarSign,
+  Calendar,
+  FileText,
+  Users,
+  Settings as SettingsIcon,
+  FilledIcon,
+  type LucideIcon,
+} from "@/components/icons"
 
 export interface NavItem {
   label: string
-  icon: React.ElementType
+  icon: LucideIcon
   href: Route<string>
   /**
    * When true, this nav item is only shown to non-partner users
@@ -114,7 +123,7 @@ export function HorizontalNav({ projectId, isPartner = false }: HorizontalNavPro
               )}
               aria-current={isActive ? "page" : undefined}
             >
-              <Icon className="h-4 w-4" aria-hidden="true" />
+              <FilledIcon icon={Icon} filled={isActive} className="h-5 w-5" aria-hidden="true" />
               <span>{item.label}</span>
             </Link>
           )
