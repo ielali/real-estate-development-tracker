@@ -145,7 +145,7 @@ export default function PortfolioPage() {
   if (!projectsLoading && projectsData && projectsData.totalCount < 2) {
     return (
       <>
-        <div className="container mx-auto p-6">
+        <div className="px-6 py-6 max-w-7xl">
           <div className="mb-6">
             <Breadcrumb items={breadcrumbHelpers.portfolio()} />
           </div>
@@ -174,7 +174,7 @@ export default function PortfolioPage() {
   if (projectsLoading || analyticsLoading) {
     return (
       <>
-        <div className="container mx-auto p-6">
+        <div className="px-6 py-6 max-w-7xl">
           <div className="mb-6">
             <Breadcrumb items={breadcrumbHelpers.portfolio()} />
           </div>
@@ -198,7 +198,7 @@ export default function PortfolioPage() {
   if (projectsError) {
     return (
       <>
-        <div className="container mx-auto p-6">
+        <div className="px-6 py-6 max-w-7xl">
           <div className="mb-6">
             <Breadcrumb items={breadcrumbHelpers.portfolio()} />
           </div>
@@ -220,7 +220,7 @@ export default function PortfolioPage() {
 
   return (
     <>
-      <div className="container mx-auto p-6">
+      <div className="px-6 py-6 max-w-7xl">
         <div className="mb-6">
           <Breadcrumb items={breadcrumbHelpers.portfolio()} />
         </div>

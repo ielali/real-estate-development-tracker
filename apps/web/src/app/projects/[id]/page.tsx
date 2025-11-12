@@ -92,7 +92,7 @@ export default function ProjectDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="container max-w-4xl py-10">
+      <div className="px-6 py-10 max-w-4xl">
         <div className="animate-pulse space-y-4">
           <div className="h-8 bg-gray-200 rounded w-1/3"></div>
           <div className="h-64 bg-gray-200 rounded"></div>
@@ -103,7 +103,7 @@ export default function ProjectDetailPage() {
 
   if (error || !project) {
     return (
-      <div className="container max-w-4xl py-10">
+      <div className="px-6 py-10 max-w-4xl">
         <div className="text-center py-12">
           <p className="text-red-600 mb-4">Failed to load project</p>
           <Button onClick={() => router.push("/projects" as never)}>Back to Projects</Button>
@@ -128,7 +128,7 @@ export default function ProjectDetailPage() {
   }
 
   return (
-    <div className="container max-w-7xl py-10">
+    <div className="px-6 py-10 max-w-4xl">
       {/* Breadcrumb and Project Switcher */}
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <Breadcrumb items={breadcrumbHelpers.project(project.name, project.id)} />

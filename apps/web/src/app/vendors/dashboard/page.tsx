@@ -49,7 +49,7 @@ export default function VendorDashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto py-6 px-4 sm:px-6 lg:px-8">
+      <div className="px-6 py-6 max-w-7xl">
         <div className="flex items-center justify-center py-12">
           <Spinner />
         </div>
@@ -59,7 +59,7 @@ export default function VendorDashboardPage() {
 
   if (isError) {
     return (
-      <div className="container mx-auto py-6 px-4 sm:px-6 lg:px-8">
+      <div className="px-6 py-6 max-w-7xl">
         <ErrorState
           message="Failed to load vendor dashboard"
           action={<Button onClick={() => refetch()}>Try Again</Button>}
@@ -76,7 +76,7 @@ export default function VendorDashboardPage() {
       data.recentVendors.length > 0)
 
   return (
-    <div className="container mx-auto py-6 px-4 sm:px-6 lg:px-8">
+    <div className="px-6 py-6 max-w-7xl">
       {/* Breadcrumb */}
       <div className="mb-6">
         <Breadcrumb

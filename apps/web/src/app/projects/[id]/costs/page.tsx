@@ -136,7 +136,7 @@ export default function ProjectCostsPage() {
 
   if (!projectId || !project) {
     return (
-      <div className="container max-w-7xl py-10">
+      <div className="px-6 py-10 max-w-7xl">
         <div className="text-center py-12">
           <p className="text-muted-foreground">Loading project costs...</p>
         </div>
@@ -145,7 +145,7 @@ export default function ProjectCostsPage() {
   }
 
   return (
-    <div className="container max-w-7xl py-10">
+    <div className="px-6 py-10 max-w-7xl">
       {/* Category Spending Breakdown */}
       <Suspense fallback={<div className="h-64 animate-pulse bg-gray-200 rounded mb-6"></div>}>
         <CategorySpendingBreakdown projectId={projectId} showChart={true} />

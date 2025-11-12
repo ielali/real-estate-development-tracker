@@ -32,7 +32,7 @@ export default function PartnersPage({ params }: { params: Promise<{ id: string 
 
   return (
     <>
-      <div className="container mx-auto max-w-6xl space-y-6 p-4 md:p-8">
+      <div className="px-6 py-8 max-w-7xl space-y-6">
         {/* Breadcrumb */}
         {project && (
           <div className="mb-6">

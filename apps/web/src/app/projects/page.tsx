@@ -21,7 +21,7 @@ export default function ProjectsListPage() {
   if (isLoading) {
     return (
       <>
-        <div className="container py-10">
+        <div className="px-6 py-10 max-w-7xl">
           <div className="mb-6">
             <Breadcrumb items={breadcrumbHelpers.projects()} />
           </div>
@@ -38,7 +38,7 @@ export default function ProjectsListPage() {
   if (error) {
     return (
       <>
-        <div className="container py-10">
+        <div className="px-6 py-10 max-w-7xl">
           <div className="mb-6">
             <Breadcrumb items={breadcrumbHelpers.projects()} />
           </div>
@@ -57,7 +57,7 @@ export default function ProjectsListPage() {
 
   return (
     <>
-      <div className="container py-10">
+      <div className="px-6 py-10 max-w-7xl">
         <div className="mb-6">
           <Breadcrumb items={breadcrumbHelpers.projects()} />
         </div>

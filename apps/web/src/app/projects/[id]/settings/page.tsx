@@ -37,7 +37,7 @@ export default function ProjectSettingsPage() {
   if (isLoading || roleLoading) {
     return (
       <div>
-        <div className="container mx-auto px-4 py-8">
+        <div className="px-6 py-8 max-w-4xl">
           <div className="flex items-center justify-center py-12">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
           </div>
@@ -49,7 +49,7 @@ export default function ProjectSettingsPage() {
   if (error || !project) {
     return (
       <div>
-        <div className="container mx-auto px-4 py-8">
+        <div className="px-6 py-8 max-w-4xl">
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Error</AlertTitle>
@@ -67,7 +67,7 @@ export default function ProjectSettingsPage() {
   if (!isOwner) {
     return (
       <div>
-        <div className="container mx-auto px-4 py-8">
+        <div className="px-6 py-8 max-w-4xl">
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Access Denied</AlertTitle>
@@ -82,7 +82,7 @@ export default function ProjectSettingsPage() {
 
   return (
     <div>
-      <div className="container mx-auto px-4 py-6">
+      <div className="px-6 py-6 max-w-4xl">
         {/* Navigation Header */}
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">

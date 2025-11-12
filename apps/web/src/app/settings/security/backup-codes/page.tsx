@@ -107,7 +107,7 @@ export default function BackupCodesPage() {
 
   if (isPending) {
     return (
-      <div className="container max-w-4xl py-8">
+      <div className="px-6 py-8 max-w-4xl">
         <div className="flex items-center justify-center py-12">
           <Spinner className="h-8 w-8" />
         </div>
@@ -122,7 +122,7 @@ export default function BackupCodesPage() {
   ]
 
   return (
-    <div className="container max-w-4xl py-8">
+    <div className="px-6 py-8 max-w-4xl">
       <div className="mb-6">
         <Breadcrumb items={breadcrumbs} className="mb-4" />
         <h1 className="text-3xl font-bold">Backup Codes</h1>

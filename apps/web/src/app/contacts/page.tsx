@@ -89,7 +89,7 @@ export default function ContactsPage(): JSX.Element {
         <DeepLinkHandler onOpenCreate={handleCreateClick} />
       </Suspense>
 
-      <div className="container mx-auto py-6 px-4 sm:px-6 lg:px-8">
+      <div className="px-6 py-6 max-w-7xl">
         {/* Breadcrumb */}
         <div className="mb-6">
           <Breadcrumb items={[{ label: "Contacts" }]} />

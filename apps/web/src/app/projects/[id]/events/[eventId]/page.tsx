@@ -44,7 +44,7 @@ export default function EventDetailPage() {
   if (isLoading) {
     return (
       <>
-        <div className="container max-w-4xl py-8">
+        <div className="px-6 py-8 max-w-4xl">
           <div className="text-center py-12">
             <p className="text-muted-foreground">Loading event...</p>
           </div>
@@ -56,7 +56,7 @@ export default function EventDetailPage() {
   if (!project || !event) {
     return (
       <>
-        <div className="container max-w-4xl py-8">
+        <div className="px-6 py-8 max-w-4xl">
           <div className="text-center py-12">
             <p className="text-red-600 mb-4">
               {!project ? "Project not found" : "Event not found"}
@@ -92,7 +92,7 @@ export default function EventDetailPage() {
 
   return (
     <>
-      <div className="container max-w-4xl py-8">
+      <div className="px-6 py-8 max-w-4xl">
         {/* Breadcrumb */}
         <div className="mb-6">
           <Breadcrumb items={breadcrumbItems} />

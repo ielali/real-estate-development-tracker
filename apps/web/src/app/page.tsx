@@ -48,7 +48,7 @@ export default function HomePage() {
   if (user && (roleLoading || (isPartner && projectsLoading))) {
     return (
       <main className="min-h-screen bg-background pb-20 md:pb-0">
-        <div className="container mx-auto p-6 space-y-6">
+        <div className="px-6 py-6 max-w-7xl space-y-6">
           <div className="flex items-center justify-between">
             <div>
               <Skeleton className="h-8 w-48 mb-2" />
@@ -79,7 +79,7 @@ export default function HomePage() {
   if (isPartner && error) {
     return (
       <main className="min-h-screen bg-background pb-20 md:pb-0">
-        <div className="container mx-auto p-6">
+        <div className="px-6 py-6 max-w-7xl">
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Error</AlertTitle>
@@ -98,7 +98,7 @@ export default function HomePage() {
     if (projects.length === 0) {
       return (
         <main className="min-h-screen bg-background pb-20 md:pb-0">
-          <div className="container mx-auto p-6">
+          <div className="px-6 py-6 max-w-7xl">
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h1 className="text-2xl font-bold">My Projects</h1>
@@ -127,7 +127,7 @@ export default function HomePage() {
     // Partner Dashboard with projects
     return (
       <main className="min-h-screen bg-gray-50 pb-20 md:pb-0">
-        <div className="container mx-auto p-6 space-y-6">
+        <div className="px-6 py-6 max-w-7xl space-y-6">
           {/* Header with Partner View indicator */}
           <div className="flex items-center justify-between">
             <div>
@@ -195,7 +195,7 @@ export default function HomePage() {
   if (isAdmin) {
     return (
       <main className="min-h-screen bg-background pb-20 md:pb-0">
-        <div className="container mx-auto py-12">
+        <div className="px-6 py-12 max-w-7xl">
           <div className="text-center space-y-6 max-w-2xl mx-auto">
             <h1 className="text-4xl font-bold tracking-tight text-foreground">
               Welcome back, {user?.name || user?.email}!
@@ -223,7 +223,7 @@ export default function HomePage() {
   // Guest View - Marketing content
   return (
     <main className="min-h-screen bg-background pb-20 md:pb-0">
-      <div className="container mx-auto py-12">
+      <div className="px-6 py-12 max-w-7xl">
         <div className="text-center space-y-6">
           <h1 className="text-4xl font-bold tracking-tight text-foreground">
             Real Estate Development Tracker

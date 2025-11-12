@@ -31,7 +31,7 @@ export default function NewCostPage() {
 
   return (
     <>
-      <div className="container max-w-2xl py-8">
+      <div className="px-6 py-8 max-w-2xl">
         {/* Breadcrumb */}
         {project && (
           <div className="mb-6">
