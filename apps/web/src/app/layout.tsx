@@ -50,13 +50,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ErrorBoundary>
           <OfflineBanner />
           <Providers>
-            {/* Desktop Sidebar - Story 10.3 */}
+            {/* Desktop Sidebar - Story 10.3, 10.11 (z-40) */}
             <Sidebar />
 
-            {/* Top Header Bar - Story 10.10 */}
+            {/* Top Header Bar - Story 10.10, 10.12 (z-30, fixed top) */}
             <TopHeaderBar />
 
-            {/* Content Wrapper - Adjusts margin based on sidebar state */}
+            {/* Content Wrapper - Story 10.9, 10.10, 10.12 (adjusts for sidebar + header) */}
             <ContentWrapper>{children}</ContentWrapper>
 
             {/* Global Components */}

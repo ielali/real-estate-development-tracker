@@ -3,6 +3,7 @@
 /**
  * TopHeaderBar - Global Header Bar with Search and Quick Actions
  * Story 10.10: Top Header Bar - Global Search & Actions
+ * Story 10.12: Layout Integration - Two-Tier Header System (sidebar coordination)
  *
  * Features:
  * - Global search bar (UI only, functionality separate)
@@ -11,12 +12,12 @@
  * - Fixed positioning at top of main content area
  * - Responsive behavior (mobile vs desktop)
  * - Coordinates with sidebar collapse state
- * - Smooth animations with Framer Motion
+ * - Smooth animations with Framer Motion (200ms)
  * - Full keyboard accessibility
  *
  * Positioning:
- * - Desktop: Adjusts left margin based on sidebar state (256px expanded, 64px collapsed)
- * - Mobile: Full width (no left margin)
+ * - Desktop: left offset animates with sidebar (left-256 expanded, left-64 collapsed)
+ * - Mobile: Full width (left: 0)
  * - Z-index: 30 (below Sidebar z-40, above HorizontalNav z-20)
  *
  * @param notificationCount - Number of unread notifications (shows badge if > 0)
@@ -39,6 +40,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useViewport } from "@/hooks/useViewport"
 import { useCollapsedSidebar } from "@/hooks/useCollapsedSidebar"
+import { useAuth } from "@/components/providers/AuthProvider"
 import { cn } from "@/lib/utils"
 
 export interface TopHeaderBarProps {
@@ -58,16 +60,6 @@ export interface TopHeaderBarProps {
   className?: string
 }
 
-// Animation variants for smooth transitions
-const headerVariants = {
-  expanded: {
-    marginLeft: 256, // When sidebar is expanded
-  },
-  collapsed: {
-    marginLeft: 64, // When sidebar is collapsed
-  },
-}
-
 // Badge animation for notification indicator
 const badgeVariants = {
   initial: { scale: 0.8, opacity: 0 },
@@ -84,23 +76,25 @@ export function TopHeaderBar({
 }: TopHeaderBarProps) {
   const { isMobile } = useViewport()
   const { isCollapsed } = useCollapsedSidebar()
+  const { user } = useAuth()
+
+  // Calculate the left offset value
+  // For authenticated desktop: use sidebar state, for mobile/unauthenticated: 0
+  const left = !isMobile && user ? (isCollapsed ? 64 : 256) : 0
 
   return (
     <motion.header
-      initial={false}
-      animate={isMobile ? false : isCollapsed ? "collapsed" : "expanded"}
-      variants={headerVariants}
+      animate={{ left }}
       transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
       className={cn(
         "fixed top-0 right-0 h-16 bg-background border-b border-border z-30",
         "transition-all duration-200",
         className
       )}
-      style={isMobile ? { left: 0, marginLeft: 0 } : { left: 0 }}
     >
       <div className="h-full px-6 flex items-center justify-between gap-4">
-        {/* Search Bar - Desktop Only */}
-        {!isMobile && (
+        {/* Search Bar - Desktop Only, Authenticated Users */}
+        {!isMobile && user && (
           <div className="flex-1 max-w-xl">
             <div className="relative">
               <Search
@@ -118,8 +112,11 @@ export function TopHeaderBar({
           </div>
         )}
 
-        {/* Search Button - Mobile Only */}
-        {isMobile && (
+        {/* Spacer for unauthenticated users */}
+        {!user && <div className="flex-1" />}
+
+        {/* Search Button - Mobile Only, Authenticated Users */}
+        {isMobile && user && (
           <Button
             variant="ghost"
             size="icon"
@@ -130,37 +127,39 @@ export function TopHeaderBar({
           </Button>
         )}
 
-        {/* Right Actions */}
-        <div className="flex items-center gap-3">
-          {/* Notification Button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="relative min-h-12 min-w-12"
-            aria-label={`Notifications${notificationCount > 0 ? ` (${notificationCount} unread)` : ""}`}
-          >
-            <Bell className="w-5 h-5" />
-            {notificationCount > 0 && (
-              <motion.span
-                variants={badgeVariants}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                transition={{ duration: 0.2 }}
-                className="absolute top-1 right-1 w-2 h-2 bg-destructive rounded-full"
-                aria-hidden="true"
-              />
-            )}
-          </Button>
-
-          {/* Primary CTA - Desktop Only */}
-          {!isMobile && (
-            <Button onClick={ctaAction} className="gap-2" aria-label={ctaLabel}>
-              <Plus className="w-4 h-4" />
-              {ctaLabel}
+        {/* Right Actions - Only for Authenticated Users */}
+        {user && (
+          <div className="flex items-center gap-3">
+            {/* Notification Button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="relative min-h-12 min-w-12"
+              aria-label={`Notifications${notificationCount > 0 ? ` (${notificationCount} unread)` : ""}`}
+            >
+              <Bell className="w-5 h-5" />
+              {notificationCount > 0 && (
+                <motion.span
+                  variants={badgeVariants}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                  transition={{ duration: 0.2 }}
+                  className="absolute top-1 right-1 w-2 h-2 bg-destructive rounded-full"
+                  aria-hidden="true"
+                />
+              )}
             </Button>
-          )}
-        </div>
+
+            {/* Primary CTA - Desktop Only */}
+            {!isMobile && (
+              <Button onClick={ctaAction} className="gap-2" aria-label={ctaLabel}>
+                <Plus className="w-4 h-4" />
+                {ctaLabel}
+              </Button>
+            )}
+          </div>
+        )}
       </div>
     </motion.header>
   )

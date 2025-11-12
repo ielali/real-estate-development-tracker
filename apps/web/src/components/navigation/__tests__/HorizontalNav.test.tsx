@@ -1,6 +1,7 @@
 /**
  * HorizontalNav Component Tests
  * Story 10.4: Horizontal Top Navigation for Subsections
+ * Story 10.12: Layout Integration - Two-Tier Header System (sticky below TopHeaderBar)
  */
 
 import React from "react"
@@ -51,13 +52,13 @@ describe("HorizontalNav", () => {
     expect(nav).toHaveAttribute("aria-label", "Project navigation")
   })
 
-  test("navigation is sticky positioned", () => {
+  test("navigation is sticky positioned below TopHeaderBar", () => {
     render(<HorizontalNav projectId={projectId} />)
 
     const nav = screen.getByRole("navigation")
     expect(nav).toHaveClass("sticky")
-    expect(nav).toHaveClass("top-0")
-    expect(nav).toHaveClass("z-10")
+    expect(nav).toHaveClass("top-16") // 64px below TopHeaderBar (Story 10.12)
+    expect(nav).toHaveClass("z-20") // Below TopHeaderBar z-30, above content (Story 10.12)
   })
 
   test("active item has correct styling and aria-current", () => {

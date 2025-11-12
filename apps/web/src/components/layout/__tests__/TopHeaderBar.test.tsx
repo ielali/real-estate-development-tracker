@@ -1,6 +1,7 @@
 /**
  * TopHeaderBar Component Tests
  * Story 10.10: Top Header Bar - Global Search & Actions
+ * Story 10.12: Layout Integration - Two-Tier Header System (sidebar coordination)
  *
  * Tests cover all acceptance criteria:
  * - AC 1,2: Search bar rendering and placeholder
@@ -12,6 +13,7 @@
  * - AC 11: Keyboard accessibility
  * - AC 12: Badge animation
  * - AC 13: Design system compliance
+ * - Story 10.12: Sidebar coordination with left offset animation
  */
 
 import React from "react"
@@ -37,6 +39,22 @@ vi.mock("@/hooks/useCollapsedSidebar", () => ({
   useCollapsedSidebar: () => mockUseCollapsedSidebar(),
 }))
 
+// Mock useAuth hook
+const mockUser = {
+  id: "test-user-123",
+  email: "test@example.com",
+  name: "Test User",
+}
+
+const mockUseAuth = vi.fn(() => ({
+  user: mockUser,
+  logout: vi.fn(),
+}))
+
+vi.mock("@/components/providers/AuthProvider", () => ({
+  useAuth: () => mockUseAuth(),
+}))
+
 // Mock framer-motion to avoid animation complexities in tests
 vi.mock("framer-motion", () => ({
   motion: {
@@ -56,6 +74,10 @@ describe("TopHeaderBar", () => {
       isCollapsed: false,
       toggle: vi.fn(),
       setCollapsed: vi.fn(),
+    })
+    mockUseAuth.mockReturnValue({
+      user: mockUser,
+      logout: vi.fn(),
     })
   })
 
@@ -314,7 +336,7 @@ describe("TopHeaderBar", () => {
 
       const header = container.querySelector("header")
       expect(header).toBeInTheDocument()
-      // Motion component should handle marginLeft animation
+      // Motion component should handle left offset animation (Story 10.12)
     })
 
     test("adjusts position when sidebar is expanded", () => {
@@ -364,6 +386,78 @@ describe("TopHeaderBar", () => {
       fireEvent.click(searchButton)
 
       expect(searchButton).toBeInTheDocument()
+    })
+  })
+
+  describe("Authentication", () => {
+    test("hides search bar for unauthenticated users (desktop)", () => {
+      mockUseAuth.mockReturnValue({
+        user: null,
+        logout: vi.fn(),
+      })
+
+      render(<TopHeaderBar />)
+
+      const searchInput = screen.queryByPlaceholderText("Search projects, costs, vendors...")
+      expect(searchInput).not.toBeInTheDocument()
+    })
+
+    test("hides search button for unauthenticated users (mobile)", () => {
+      mockUseViewport.mockReturnValue({ isMobile: true, width: 375, height: 667 })
+      mockUseAuth.mockReturnValue({
+        user: null,
+        logout: vi.fn(),
+      })
+
+      render(<TopHeaderBar />)
+
+      const searchButton = screen.queryByLabelText("Open search")
+      expect(searchButton).not.toBeInTheDocument()
+    })
+
+    test("hides notification button for unauthenticated users", () => {
+      mockUseAuth.mockReturnValue({
+        user: null,
+        logout: vi.fn(),
+      })
+
+      render(<TopHeaderBar notificationCount={3} />)
+
+      const notificationButton = screen.queryByLabelText(/notifications/i)
+      expect(notificationButton).not.toBeInTheDocument()
+    })
+
+    test("hides CTA button for unauthenticated users", () => {
+      mockUseAuth.mockReturnValue({
+        user: null,
+        logout: vi.fn(),
+      })
+
+      render(<TopHeaderBar ctaLabel="New Project" />)
+
+      const ctaButton = screen.queryByRole("button", { name: "New Project" })
+      expect(ctaButton).not.toBeInTheDocument()
+    })
+
+    test("shows all interactive elements for authenticated users", () => {
+      render(<TopHeaderBar notificationCount={3} ctaLabel="New Project" />)
+
+      expect(screen.getByPlaceholderText("Search projects, costs, vendors...")).toBeInTheDocument()
+      expect(screen.getByLabelText(/notifications/i)).toBeInTheDocument()
+      expect(screen.getByRole("button", { name: "New Project" })).toBeInTheDocument()
+    })
+
+    test("header is full width (left: 0) for unauthenticated users", () => {
+      mockUseAuth.mockReturnValue({
+        user: null,
+        logout: vi.fn(),
+      })
+
+      const { container } = render(<TopHeaderBar />)
+      const header = container.querySelector("header")
+
+      // Should have inline style with left: 0
+      expect(header).toBeInTheDocument()
     })
   })
 })

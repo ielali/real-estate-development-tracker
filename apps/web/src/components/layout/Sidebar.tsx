@@ -135,6 +135,8 @@ export function Sidebar({ notificationCount = 0 }: SidebarProps) {
 
   // Keyboard shortcut (Cmd/Ctrl + B)
   useEffect(() => {
+    if (!user) return
+
     const handleKeyPress = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "b") {
         e.preventDefault()
@@ -144,7 +146,7 @@ export function Sidebar({ notificationCount = 0 }: SidebarProps) {
 
     window.addEventListener("keydown", handleKeyPress)
     return () => window.removeEventListener("keydown", handleKeyPress)
-  }, [toggle])
+  }, [toggle, user])
 
   // Filter navigation items based on auth status
   const visibleNavItems = NAV_ITEMS.filter((item) => !item.requiresAuth || user)
@@ -170,6 +172,11 @@ export function Sidebar({ notificationCount = 0 }: SidebarProps) {
   const handleLogout = async () => {
     await logout()
     router.push("/")
+  }
+
+  // Hide sidebar for unauthenticated users (after all hooks)
+  if (!user) {
+    return null
   }
 
   return (

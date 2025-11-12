@@ -153,11 +153,13 @@ describe("Sidebar - Story 10.11", () => {
       expect(avatarFallback?.textContent).toBe("JD")
     })
 
-    test("handles missing user name gracefully", () => {
+    test("does not render sidebar for unauthenticated users", () => {
       mockUseAuth.mockReturnValue({ user: null, logout: mockLogout })
       render(<Sidebar />)
 
-      expect(screen.getByText("Guest User")).toBeInTheDocument()
+      // Sidebar should not render at all when user is null
+      const sidebar = screen.queryByRole("complementary")
+      expect(sidebar).not.toBeInTheDocument()
     })
 
     test("shows default role when user has no role", () => {
@@ -368,12 +370,13 @@ describe("Sidebar - Story 10.11", () => {
       expect(avatarFallback?.textContent).toBe("B")
     })
 
-    test('displays "U" when user is null', () => {
+    test("does not render avatar when user is null", () => {
       mockUseAuth.mockReturnValue({ user: null, logout: mockLogout })
       const { container } = render(<Sidebar />)
 
+      // Sidebar should not render at all when user is null
       const avatarFallback = container.querySelector(".bg-primary")
-      expect(avatarFallback?.textContent).toBe("U")
+      expect(avatarFallback).not.toBeInTheDocument()
     })
   })
 

@@ -1,11 +1,13 @@
 /**
  * HorizontalNav Component
  * Story 10.4: Horizontal Top Navigation for Subsections
+ * Story 10.12: Layout Integration - Two-Tier Header System
  *
  * Provides horizontal navigation for project subsections with:
  * - Icon + text labels
  * - Active state with 2px bottom border
- * - Sticky positioning
+ * - Sticky positioning below TopHeaderBar (top-16 = 64px)
+ * - Z-index: 20 (below TopHeaderBar z-30, above content)
  * - Smooth 200ms transitions
  * - Mobile responsive with horizontal scroll
  */
@@ -42,7 +44,7 @@ interface HorizontalNavProps {
  * Features:
  * - URL-based routing with Next.js Link
  * - Active state indication with 2px bottom border
- * - Sticky positioning at top (z-10)
+ * - Sticky positioning below TopHeaderBar (top-16 = 64px, z-20)
  * - Icons paired with text labels
  * - Responsive with horizontal scroll on mobile
  * - 200ms smooth transitions
@@ -82,7 +84,7 @@ export function HorizontalNav({ projectId, isPartner = false }: HorizontalNavPro
 
   return (
     <nav
-      className="sticky top-0 z-10 bg-background border-b"
+      className="sticky top-16 z-20 bg-background border-b"
       role="navigation"
       aria-label="Project navigation"
     >
