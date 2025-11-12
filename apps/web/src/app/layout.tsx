@@ -6,7 +6,7 @@ import { ErrorBoundary } from "@/components/error-boundary"
 import { OfflineBanner } from "@/components/ui/offline-banner"
 import { CommandPalette } from "@/components/search/CommandPalette"
 import { BottomTabBar } from "@/components/navigation/BottomTabBar"
-import { MobileNavigationDrawer } from "@/components/navigation/MobileNavigationDrawer"
+import { MobileNavigation } from "@/components/layout/MobileNavigation"
 import "../styles/globals.css"
 
 // Configure Inter font with optimized loading strategy (Epic 10)
@@ -50,7 +50,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             {children}
             <CommandPalette />
             <BottomTabBar />
-            <MobileNavigationDrawer />
+            <MobileNavigation />
           </Providers>
           <Toaster />
         </ErrorBoundary>
