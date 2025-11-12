@@ -2,7 +2,6 @@
 
 import { useParams, useRouter } from "next/navigation"
 import { api } from "@/lib/trpc/client"
-import { Navbar } from "@/components/layout/Navbar"
 import { Breadcrumb, breadcrumbHelpers } from "@/components/ui/breadcrumb"
 import { ProjectQuickActions } from "@/components/navigation/quick-actions"
 import { ProjectSwitcher } from "@/components/navigation/project-switcher"
@@ -38,7 +37,6 @@ export default function ProjectSettingsPage() {
   if (isLoading || roleLoading) {
     return (
       <div>
-        <Navbar />
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center justify-center py-12">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
@@ -51,7 +49,6 @@ export default function ProjectSettingsPage() {
   if (error || !project) {
     return (
       <div>
-        <Navbar />
         <div className="container mx-auto px-4 py-8">
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
@@ -70,7 +67,6 @@ export default function ProjectSettingsPage() {
   if (!isOwner) {
     return (
       <div>
-        <Navbar />
         <div className="container mx-auto px-4 py-8">
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
@@ -86,7 +82,6 @@ export default function ProjectSettingsPage() {
 
   return (
     <div>
-      <Navbar />
       <div className="container mx-auto px-4 py-6">
         {/* Navigation Header */}
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

@@ -2,7 +2,6 @@
 
 import { useParams, useRouter } from "next/navigation"
 import { api } from "@/lib/trpc/client"
-import { Navbar } from "@/components/layout/Navbar"
 import { ProjectEditForm } from "@/components/projects/ProjectEditForm"
 import { Breadcrumb, breadcrumbHelpers } from "@/components/ui/breadcrumb"
 
@@ -22,7 +21,6 @@ export default function ProjectEditPage() {
   if (isLoading) {
     return (
       <>
-        <Navbar />
         <div className="container max-w-2xl py-10">
           <div className="animate-pulse space-y-4">
             <div className="h-8 bg-gray-200 rounded w-1/3"></div>
@@ -36,7 +34,6 @@ export default function ProjectEditPage() {
   if (error || !project) {
     return (
       <>
-        <Navbar />
         <div className="container max-w-2xl py-10">
           <div className="text-center py-12">
             <p className="text-red-600 mb-4">Failed to load project</p>
@@ -51,7 +48,6 @@ export default function ProjectEditPage() {
 
   return (
     <>
-      <Navbar />
       <div className="container max-w-2xl py-10">
         {/* Breadcrumb */}
         <div className="mb-6">

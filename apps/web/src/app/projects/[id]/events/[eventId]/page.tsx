@@ -4,7 +4,6 @@ import { useParams, useRouter } from "next/navigation"
 import { format } from "date-fns"
 import { Calendar, Clock, User, ArrowLeft } from "lucide-react"
 import { api } from "@/lib/trpc/client"
-import { Navbar } from "@/components/layout/Navbar"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -45,7 +44,6 @@ export default function EventDetailPage() {
   if (isLoading) {
     return (
       <>
-        <Navbar />
         <div className="container max-w-4xl py-8">
           <div className="text-center py-12">
             <p className="text-muted-foreground">Loading event...</p>
@@ -58,7 +56,6 @@ export default function EventDetailPage() {
   if (!project || !event) {
     return (
       <>
-        <Navbar />
         <div className="container max-w-4xl py-8">
           <div className="text-center py-12">
             <p className="text-red-600 mb-4">
@@ -95,7 +92,6 @@ export default function EventDetailPage() {
 
   return (
     <>
-      <Navbar />
       <div className="container max-w-4xl py-8">
         {/* Breadcrumb */}
         <div className="mb-6">

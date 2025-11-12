@@ -3,7 +3,6 @@
 import { useParams, useRouter } from "next/navigation"
 import { ArrowLeft, Download, FileIcon } from "lucide-react"
 import { api } from "@/lib/trpc/client"
-import { Navbar } from "@/components/layout/Navbar"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -138,7 +137,6 @@ export default function DocumentDetailPage() {
   if (isLoading) {
     return (
       <>
-        <Navbar />
         <div className="container max-w-4xl py-8">
           <div className="text-center py-12">
             <p className="text-muted-foreground">Loading document...</p>
@@ -151,7 +149,6 @@ export default function DocumentDetailPage() {
   if (!project || !document) {
     return (
       <>
-        <Navbar />
         <div className="container max-w-4xl py-8">
           <div className="text-center py-12">
             <p className="text-red-600 mb-4">
@@ -173,7 +170,6 @@ export default function DocumentDetailPage() {
 
   return (
     <>
-      <Navbar />
       <div className="container max-w-4xl py-8">
         {/* Breadcrumb */}
         <div className="mb-6">

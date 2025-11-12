@@ -3,7 +3,6 @@
 import Link from "next/link"
 import { api } from "@/lib/trpc/client"
 import { Button } from "@/components/ui/button"
-import { Navbar } from "@/components/layout/Navbar"
 import { ProjectCard } from "@/components/projects/ProjectCard"
 import { ProjectListSkeleton } from "@/components/skeletons/project-list-skeleton"
 import { EmptyState } from "@/components/ui/empty-state"
@@ -22,7 +21,6 @@ export default function ProjectsListPage() {
   if (isLoading) {
     return (
       <>
-        <Navbar />
         <div className="container py-10">
           <div className="mb-6">
             <Breadcrumb items={breadcrumbHelpers.projects()} />
@@ -40,7 +38,6 @@ export default function ProjectsListPage() {
   if (error) {
     return (
       <>
-        <Navbar />
         <div className="container py-10">
           <div className="mb-6">
             <Breadcrumb items={breadcrumbHelpers.projects()} />
@@ -60,7 +57,6 @@ export default function ProjectsListPage() {
 
   return (
     <>
-      <Navbar />
       <div className="container py-10">
         <div className="mb-6">
           <Breadcrumb items={breadcrumbHelpers.projects()} />

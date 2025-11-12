@@ -7,7 +7,6 @@ import { api } from "@/lib/trpc/client"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Breadcrumb } from "@/components/ui/breadcrumb"
-import { Navbar } from "@/components/layout/Navbar"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Dialog,
@@ -112,7 +111,6 @@ export default function ContactDetailPage({ params }: ContactDetailPageProps): J
   if (!contactId || isLoading) {
     return (
       <>
-        <Navbar />
         <div className="container mx-auto py-6 px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-center py-12">
             <Spinner />
@@ -126,7 +124,6 @@ export default function ContactDetailPage({ params }: ContactDetailPageProps): J
   if (isError || !data) {
     return (
       <>
-        <Navbar />
         <div className="container mx-auto py-6 px-4 sm:px-6 lg:px-8">
           <ErrorState
             message="Failed to load contact details"
@@ -149,7 +146,6 @@ export default function ContactDetailPage({ params }: ContactDetailPageProps): J
 
   return (
     <>
-      <Navbar />
       <div className="container mx-auto py-6 px-4 sm:px-6 lg:px-8">
         {/* Breadcrumb */}
         <div className="mb-6">

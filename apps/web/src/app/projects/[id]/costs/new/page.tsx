@@ -4,7 +4,6 @@ import { Suspense } from "react"
 import { useParams } from "next/navigation"
 import { CostEntryForm } from "@/components/costs/CostEntryForm"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Navbar } from "@/components/layout/Navbar"
 import { Breadcrumb } from "@/components/ui/breadcrumb"
 import { api } from "@/lib/trpc/client"
 
@@ -32,7 +31,6 @@ export default function NewCostPage() {
 
   return (
     <>
-      <Navbar />
       <div className="container max-w-2xl py-8">
         {/* Breadcrumb */}
         {project && (
