@@ -1,0 +1,391 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>10</epicId>
+    <storyId>11</storyId>
+    <title>Enhanced Sidebar - User Profile & Tools Navigation</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-12</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/10.11.story.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>user</asA>
+    <iWant>an enhanced sidebar with my profile and quick access to tools</iWant>
+    <soThat>I can see my identity and access settings/help easily</soThat>
+    <tasks>
+      <phase n="1" title="Refactor Sidebar Structure">
+        <task id="1" acs="1,2,4">Restructure Sidebar layout
+          - Read existing Sidebar.tsx
+          - Refactor header section (add hamburger toggle)
+          - Remove bottom toggle button
+          - Add user profile section container
+          - Add secondary navigation section
+          - Add visual divider between sections
+        </task>
+      </phase>
+      <phase n="2" title="Header Section">
+        <task id="2" acs="1,6">Implement new header with hamburger
+          - Replace ChevronLeft icon with Menu (hamburger) icon
+          - Move toggle button to header (flex justify-between)
+          - Update icon rotation logic (no rotation needed for hamburger)
+          - Adjust header layout: [Logo] [DevTrack] [☰]
+          - Test collapse/expand animation
+          - Update keyboard shortcut tooltip
+        </task>
+      </phase>
+      <phase n="3" title="User Profile Section">
+        <task id="3" acs="2,7,8">Create user profile component
+          - Add profile section below header with border-b
+          - Create avatar component (circular, 40px)
+          - Fetch user data from auth context
+          - Display user name (font-medium, text-sm)
+          - Display user role (text-xs, text-tertiary)
+          - Generate avatar from initials or image URL
+          - Handle collapsed state (show avatar only)
+        </task>
+        <task id="4" acs="3,13">Implement user dropdown menu
+          - Make profile section clickable
+          - Create dropdown menu component (using shadcn DropdownMenu)
+          - Add menu items: Profile, Settings, Logout
+          - Position dropdown correctly (side="right" in collapsed)
+          - Add keyboard navigation (Arrow keys, Enter, Escape)
+          - Implement menu actions (navigate or trigger)
+          - Add dividers between menu sections
+        </task>
+      </phase>
+      <phase n="4" title="Secondary Tools Navigation">
+        <task id="5" acs="4,9">Create Tools navigation section
+          - Add border-top divider above Tools section
+          - Add "TOOLS" label (text-xs, uppercase, text-tertiary)
+          - Hide label in collapsed state
+          - Style similar to main navigation items
+        </task>
+        <task id="6" acs="5">Add Notifications item
+          - Add Notifications navigation item
+          - Use Bell icon
+          - Implement badge component (red, circular)
+          - Display badge count from notifications context
+          - Animate badge on count change (scale animation)
+          - Position badge absolute (top-right of item)
+          - Link to notifications page
+        </task>
+        <task id="7" acs="9">Add Settings and Help items
+          - Add Settings navigation item (Cog icon)
+          - Link to /settings page
+          - Add Help item (HelpCircle icon)
+          - Link to help/docs page
+          - Test hover states
+          - Add tooltips for collapsed state
+        </task>
+      </phase>
+      <phase n="5" title="Animation & Polish">
+        <task id="8" acs="10,11">Update animations for new structure
+          - Animate user profile section (fade name/role in collapsed)
+          - Animate Tools section label (fade in expanded)
+          - Ensure badge stays visible in collapsed state
+          - Test all animations at 200ms duration
+          - Verify smooth transitions
+        </task>
+      </phase>
+      <phase n="6" title="Icon Updates">
+        <task id="9" acs="12">Update icons to match design
+          - Decide: Keep Lucide or switch to Material Symbols
+          - Update hamburger icon (Menu from Lucide)
+          - Update notification icon (Bell)
+          - Update settings icon (Settings or Cog)
+          - Update help icon (HelpCircle)
+          - Ensure consistent icon size (w-5 h-5)
+          - Document icon choices
+        </task>
+      </phase>
+      <phase n="7" title="Testing & Integration">
+        <task id="10" acs="6,7,8,10,11,13">Component testing
+          - Test sidebar expand/collapse with new structure
+          - Test user profile display (with/without avatar)
+          - Test dropdown menu (mouse and keyboard)
+          - Test notification badge updates
+          - Test tooltips in collapsed state
+          - Test navigation to Settings, Help, Notifications
+          - Verify keyboard shortcuts still work (Cmd/Ctrl + B)
+        </task>
+      </phase>
+      <phase n="8" title="Documentation">
+        <task id="11">Update documentation
+          - Update Sidebar component JSDoc
+          - Document new props (user, notificationCount)
+          - Update architecture docs with new structure
+          - Add usage examples
+          - Document dropdown menu behavior
+        </task>
+      </phase>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <ac id="1" category="functional">Hamburger toggle button in sidebar header (replaces bottom toggle)</ac>
+    <ac id="2" category="functional">User profile section displays avatar, name, and role</ac>
+    <ac id="3" category="functional">User profile clickable to open dropdown menu</ac>
+    <ac id="4" category="functional">Secondary "Tools" navigation section with visual divider</ac>
+    <ac id="5" category="functional">Notifications item shows badge count when > 0</ac>
+    <ac id="6" category="integration">Works with existing sidebar collapse/expand animation</ac>
+    <ac id="7" category="integration">User data pulled from auth context</ac>
+    <ac id="8" category="integration">Avatar generates from user initials or profile image</ac>
+    <ac id="9" category="integration">Tools section includes: Notifications, Settings, Help</ac>
+    <ac id="10" category="quality">All sections animate smoothly during collapse</ac>
+    <ac id="11" category="quality">Tooltips show in collapsed state for all items</ac>
+    <ac id="12" category="quality">Icons match target design style (Material Symbols or equivalent)</ac>
+    <ac id="13" category="quality">User dropdown menu accessible via keyboard</ac>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <artifact>
+        <path>docs/epics/EPIC-10.2-Design-Alignment.md</path>
+        <title>EPIC 10.2: Design Alignment with Target Specification</title>
+        <section>Story 10.11: Enhanced Sidebar - User Profile & Tools Navigation (lines 89-108)</section>
+        <snippet>Goal: Refactor Sidebar with hamburger toggle at top, add user profile section (avatar, name, role), add secondary "Tools" navigation with Notifications, Settings, Help items. Medium risk - refactoring existing component.</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/design/new-navigation-proposals/main-dashboard-redesign.html</path>
+        <title>Target Design Specification - Main Dashboard Redesign</title>
+        <section>Sidebar Design (lines 95-186)</section>
+        <snippet>Visual design for sidebar with hamburger toggle in header, user profile section (40px avatar, name, role), Tools section with divider and badge counts. Provides HTML/CSS implementation reference.</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/stories/10.10.story.md</path>
+        <title>Story 10.10: Top Header Bar - Global Search & Actions</title>
+        <section>Dev Agent Record - Learnings (lines 369-410)</section>
+        <snippet>Previous story created TopHeaderBar at z-30. Sidebar MUST maintain z-40 (above header). Established patterns: Framer Motion animations (200ms), shadcn/ui DropdownMenu, accessibility with ARIA labels, AAA test structure. Files modified: layout.tsx, ContentWrapper.tsx (pt-16 header offset).</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/architecture/coding-standards.md</path>
+        <title>Coding Standards</title>
+        <section>TypeScript Standards, UI/UX Standards, Testing Patterns</section>
+        <snippet>TypeScript strict mode required, JSDoc for all public functions, WCAG AA accessibility (keyboard nav, ARIA labels, 4.5:1 contrast), responsive mobile-first design (375px minimum), React Hook Form + Zod + shadcn/ui pattern for forms. AAA test pattern (Arrange-Act-Assert) with Vitest + React Testing Library.</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/architecture/testing-strategy.md</path>
+        <title>Testing Strategy</title>
+        <section>Test Organization and Patterns</section>
+        <snippet>Component tests co-located in __tests__/ subfolder. Vitest with React Testing Library. Test structure: Frontend tests (components, hooks, lib), Backend tests (server), E2E tests (Playwright). AAA pattern required. All interactive components need comprehensive test coverage.</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/architecture/unified-project-structure.md</path>
+        <title>Unified Project Structure</title>
+        <section>Monorepo Structure</section>
+        <snippet>Turborepo monorepo. Working in apps/web/ (Next.js fullstack). Components at apps/web/src/components/. Import patterns: @/components/ui/* (shadcn), @/hooks/*, @/components/providers/*, lucide-react for icons. Tests co-located with components.</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/architecture/components.md</path>
+        <title>Component Architecture</title>
+        <section>TopHeaderBar Component (lines 36-58)</section>
+        <snippet>TopHeaderBar at z-30 with global search, notifications, CTA. Fixed positioning, coordinates with Sidebar collapse via margin-left. Framer Motion animations, mobile adaptations. Reference implementation pattern for new dropdown menus and responsive behavior.</snippet>
+      </artifact>
+    </docs>
+    <code>
+      <artifact>
+        <path>apps/web/src/components/layout/Sidebar.tsx</path>
+        <kind>component</kind>
+        <symbol>Sidebar</symbol>
+        <lines>1-200+</lines>
+        <reason>Existing Sidebar component to be refactored. Current features: 256px/64px toggle, Framer Motion animations, tooltip support, Cmd/Ctrl+B shortcut, localStorage persistence, active route highlighting. Uses useCollapsedSidebar hook, Building2/ChevronLeft icons from lucide-react.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/web/src/components/layout/TopHeaderBar.tsx</path>
+        <kind>component</kind>
+        <symbol>TopHeaderBar</symbol>
+        <lines>1-200+</lines>
+        <reason>Recently implemented (Story 10.10). Reference for z-index coordination (z-30), Framer Motion animation patterns, responsive mobile adaptations, notification badge implementation. Demonstrates proper dropdown positioning and accessibility patterns.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/web/src/hooks/useCollapsedSidebar.ts</path>
+        <kind>hook</kind>
+        <symbol>useCollapsedSidebar</symbol>
+        <lines>all</lines>
+        <reason>Existing hook managing sidebar collapse state with localStorage persistence. Provides isCollapsed boolean and toggle function. Must continue to work with refactored structure.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/web/src/components/providers/AuthProvider.tsx</path>
+        <kind>provider</kind>
+        <symbol>AuthProvider, useAuth</symbol>
+        <lines>all</lines>
+        <reason>Authentication context providing user data (user object with name, email, role, image). Required for user profile section. Hook returns { user, signOut, session }.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/web/src/components/ui/dropdown-menu.tsx</path>
+        <kind>ui-component</kind>
+        <symbol>DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator</symbol>
+        <lines>all</lines>
+        <reason>shadcn/ui DropdownMenu components for user profile dropdown. Radix UI based with built-in accessibility (keyboard navigation, focus management, ARIA support).</reason>
+      </artifact>
+      <artifact>
+        <path>apps/web/src/components/ui/avatar.tsx</path>
+        <kind>ui-component</kind>
+        <symbol>Avatar, AvatarImage, AvatarFallback</symbol>
+        <lines>all</lines>
+        <reason>shadcn/ui Avatar components for user profile picture. Supports image URL with automatic fallback to initials. Circular 40px design per target spec.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/web/src/components/ui/badge.tsx</path>
+        <kind>ui-component</kind>
+        <symbol>Badge</symbol>
+        <lines>all</lines>
+        <reason>shadcn/ui Badge component for notification count display. Supports destructive variant for red badge indicator.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <framework name="Next.js" version="15.5.4">App Router, React Server Components, client components</framework>
+      <framework name="React" version="18.3.0">Hooks, Context API, component patterns</framework>
+      <ui>
+        <library name="shadcn/ui">Radix UI based components - DropdownMenu, Avatar, Badge, Tooltip, Button</library>
+        <library name="lucide-react" version="0.544.0">Icon library - Menu, Bell, Settings, HelpCircle, Building2</library>
+        <library name="framer-motion" version="12.23.24">Animation library for sidebar transitions (200ms duration standard)</library>
+        <library name="tailwindcss" version="3.4.0">Utility-first CSS framework for styling</library>
+      </ui>
+      <state-management>
+        <library name="@tanstack/react-query" version="5.90.2">Server state management, potential for notifications query</library>
+      </state-management>
+      <auth>
+        <library name="better-auth" version="1.3.23">Authentication library providing user session and data</library>
+      </auth>
+      <testing>
+        <library name="vitest" version="3.2.4">Test runner</library>
+        <library name="@testing-library/react" version="16.3.0">Component testing utilities</library>
+        <library name="@testing-library/jest-dom" version="6.8.0">DOM matchers</library>
+        <library name="@testing-library/user-event" version="14.6.1">User interaction simulation</library>
+      </testing>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <architectural>
+      <constraint critical="true">MUST maintain Sidebar z-index at z-40 (above TopHeaderBar z-30, above HorizontalNav z-20)</constraint>
+      <constraint critical="true">MUST preserve existing collapse/expand animation (200ms duration, ease-in-out)</constraint>
+      <constraint critical="true">MUST maintain backward compatibility with existing navigation items and useCollapsedSidebar hook</constraint>
+      <constraint>Framer Motion animations standard: 200ms duration with easing [0.4, 0, 0.2, 1]</constraint>
+      <constraint>User profile dropdown positioning: side="right" in collapsed state for proper visibility</constraint>
+      <constraint>Tools navigation must use similar styling patterns as main navigation for consistency</constraint>
+      <constraint>Hamburger icon should NOT rotate on toggle (unlike previous ChevronLeft which rotated)</constraint>
+    </architectural>
+    <ui-ux>
+      <constraint>Mobile-first responsive design: 375px minimum width, test at 375px/768px/1024px breakpoints</constraint>
+      <constraint>All touch targets minimum 44x44px for mobile usability</constraint>
+      <constraint>WCAG AA compliance: color contrast 4.5:1, keyboard navigation, screen reader support</constraint>
+      <constraint>Tooltips required for all items in collapsed state</constraint>
+      <constraint>User profile must gracefully handle missing data (no user name, no image)</constraint>
+      <constraint>Notification badge should animate on count change with scale transition</constraint>
+      <constraint>Preserve existing keyboard shortcut: Cmd/Ctrl + B for sidebar toggle</constraint>
+    </ui-ux>
+    <code-quality>
+      <constraint>TypeScript strict mode - all functions must have explicit return types</constraint>
+      <constraint>JSDoc comments required for all public functions and components</constraint>
+      <constraint>Use descriptive names (no abbreviations except standard React conventions)</constraint>
+      <constraint>Prefer composition: extract sub-components only if Sidebar exceeds ~300 lines</constraint>
+      <constraint>Co-locate tests with component in __tests__/ subfolder</constraint>
+    </code-quality>
+    <testing>
+      <constraint>AAA pattern (Arrange-Act-Assert) for all test cases</constraint>
+      <constraint>Test all 13 acceptance criteria with dedicated test cases</constraint>
+      <constraint>Mock useAuth hook, useCollapsedSidebar hook, and Framer Motion for unit tests</constraint>
+      <constraint>Accessibility testing: verify ARIA labels, keyboard navigation, screen reader announcements</constraint>
+      <constraint>Minimum coverage: All new user profile and tools sections must have comprehensive tests</constraint>
+    </testing>
+    <security>
+      <constraint>Never trust client-provided user data - use ctx.user from authenticated session only</constraint>
+      <constraint>Sanitize user-provided name/role data for XSS prevention (React handles this by default)</constraint>
+      <constraint>Ensure dropdown menu actions verify authentication state before navigation</constraint>
+    </security>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>useAuth</name>
+      <kind>React Hook</kind>
+      <signature>() => { user: User | null, signOut: () => Promise<void>, session: Session | null }</signature>
+      <path>apps/web/src/components/providers/AuthProvider.tsx</path>
+      <usage>Provides authenticated user data for profile section. User object contains: { id, name, email, role, image }.</usage>
+    </interface>
+    <interface>
+      <name>useCollapsedSidebar</name>
+      <kind>React Hook</kind>
+      <signature>() => { isCollapsed: boolean, toggle: () => void, setCollapsed: (value: boolean) => void }</signature>
+      <path>apps/web/src/hooks/useCollapsedSidebar.ts</path>
+      <usage>Manages sidebar collapse state with localStorage persistence. Used for conditional rendering of profile/tools sections.</usage>
+    </interface>
+    <interface>
+      <name>NavItem</name>
+      <kind>TypeScript Interface</kind>
+      <signature>{ href: Route<string>, label: string, icon: LucideIcon, requiresAuth?: boolean }</signature>
+      <path>apps/web/src/components/layout/Sidebar.tsx</path>
+      <usage>Existing interface for navigation items. Tools navigation items should follow same pattern with optional badge property.</usage>
+    </interface>
+    <interface>
+      <name>DropdownMenu Components</name>
+      <kind>shadcn/ui Components</kind>
+      <signature>DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator</signature>
+      <path>apps/web/src/components/ui/dropdown-menu.tsx</path>
+      <usage>Use for user profile dropdown menu. DropdownMenuTrigger wraps clickable profile section. DropdownMenuContent receives side="right" prop in collapsed state.</usage>
+    </interface>
+    <interface>
+      <name>Avatar Components</name>
+      <kind>shadcn/ui Components</kind>
+      <signature>Avatar, AvatarImage, AvatarFallback</signature>
+      <path>apps/web/src/components/ui/avatar.tsx</path>
+      <usage>Use for user profile picture. AvatarImage src={user?.image}, AvatarFallback contains user initials (e.g., "JD" for "John Doe").</usage>
+    </interface>
+    <interface>
+      <name>Framer Motion Variants</name>
+      <kind>Animation Configuration</kind>
+      <signature>{ expanded: { width: 256, opacity: 1 }, collapsed: { width: 64, opacity: 0 } }</signature>
+      <path>apps/web/src/components/layout/Sidebar.tsx</path>
+      <usage>Existing animation variants for sidebar and text. Extend for user profile name/role fade animations and tools label animations.</usage>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+Component tests must use Vitest with React Testing Library following AAA pattern (Arrange-Act-Assert). All tests co-located in apps/web/src/components/layout/__tests__/Sidebar.test.tsx. Mock external hooks (useAuth, useCollapsedSidebar) and Framer Motion components. Test accessibility with screen reader queries (getByLabelText, getByRole) and keyboard event simulation (fireEvent.keyDown). Verify ARIA labels, focus management, and keyboard navigation. Minimum 90% coverage for new code sections (user profile, tools navigation). Follow existing test patterns from TopHeaderBar.test.tsx for dropdown menu and badge testing.</standards>
+    <locations>
+      <location>apps/web/src/components/layout/__tests__/Sidebar.test.tsx</location>
+      <location>apps/web/src/components/layout/__tests__/TopHeaderBar.test.tsx (reference pattern)</location>
+    </locations>
+    <ideas>
+      <test ac="1">Renders hamburger toggle button in header (Menu icon present)</test>
+      <test ac="1">Clicking hamburger toggle calls useCollapsedSidebar toggle function</test>
+      <test ac="1">Bottom toggle button is removed (not present in DOM)</test>
+      <test ac="2">User profile section displays avatar when user data present</test>
+      <test ac="2">User profile section displays name and role from useAuth</test>
+      <test ac="2">User profile handles missing user data gracefully (shows placeholder)</test>
+      <test ac="3">User profile section is clickable (button or clickable div)</test>
+      <test ac="3">Clicking user profile opens dropdown menu</test>
+      <test ac="3">Dropdown menu contains Profile, Settings, Logout items</test>
+      <test ac="4">Tools section renders with visual divider (border-top)</test>
+      <test ac="4">Tools label "TOOLS" displays in expanded state</test>
+      <test ac="4">Tools label hidden in collapsed state</test>
+      <test ac="5">Notifications item displays badge when count > 0</test>
+      <test ac="5">Notifications badge hidden when count = 0</test>
+      <test ac="5">Badge displays correct count number</test>
+      <test ac="6">Sidebar expand/collapse animation works with new sections</test>
+      <test ac="6">Animation duration is 200ms</test>
+      <test ac="7">User data pulled from useAuth hook (mock verification)</test>
+      <test ac="8">Avatar fallback shows user initials when no image</test>
+      <test ac="8">Avatar shows image when user.image URL provided</test>
+      <test ac="9">Tools section includes Notifications, Settings, Help items</test>
+      <test ac="9">Tools navigation items link to correct routes</test>
+      <test ac="10">User profile name/role fade out in collapsed state</test>
+      <test ac="10">Tools label animates smoothly during collapse</test>
+      <test ac="11">Tooltips show for all tools items in collapsed state</test>
+      <test ac="11">User profile has tooltip in collapsed state</test>
+      <test ac="12">Icons match design (Menu, Bell, Settings, HelpCircle)</test>
+      <test ac="12">All icons have consistent size (w-5 h-5)</test>
+      <test ac="13">Dropdown menu accessible via keyboard (Tab, Enter)</test>
+      <test ac="13">Dropdown menu closes on Escape key</test>
+      <test ac="13">Dropdown menu items navigable with Arrow keys</test>
+      <test>Existing Cmd/Ctrl + B keyboard shortcut still works</test>
+      <test>Mobile responsiveness: Sidebar hidden on small screens (md:flex)</test>
+      <test>Accessibility: All interactive elements have ARIA labels</test>
+      <test>Accessibility: Focus indicators visible on all elements</test>
+    </ideas>
+  </tests>
+</story-context>
