@@ -33,6 +33,29 @@ interface MobileNavigationProps {
 **Responsibility:** Mobile-optimized bottom navigation with contextual quick actions
 **Technology Stack:** Responsive design with Tailwind, Framer Motion for tab transitions
 
+**TopHeaderBar** _(Story 10.10)_
+
+```typescript
+interface TopHeaderBarProps {
+  notificationCount?: number
+  ctaLabel?: string
+  ctaAction?: () => void
+  onSearchChange?: (query: string) => void
+  className?: string
+}
+```
+
+**Responsibility:** Global header bar providing search, notifications, and quick actions accessible from all pages
+**Technology Stack:** Fixed positioning (z-30), Framer Motion animations, responsive design with mobile adaptations
+**Features:**
+
+- Global search bar (desktop only, UI placeholder for future functionality)
+- Notification button with animated badge indicator
+- Context-aware primary CTA button
+- Coordinates with Sidebar collapse state (left margin adjustment)
+- Mobile adaptations: Hides search/CTA, shows icon buttons
+  **Z-Index Layering:** z-30 (below Sidebar z-40, above HorizontalNav z-20)
+
 ### Business Components
 
 **ProjectDashboard**

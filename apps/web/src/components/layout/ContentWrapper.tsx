@@ -1,10 +1,12 @@
 /**
- * ContentWrapper - Adjusts content margin based on sidebar state
+ * ContentWrapper - Adjusts content margin based on sidebar and header state
  * Story 10.9: Update All Existing Pages
+ * Story 10.10: Top Header Bar (added padding-top for header height)
  *
- * Wraps page content to adjust left margin based on:
- * - Desktop: Sidebar state (256px expanded, 64px collapsed)
- * - Mobile: No margin adjustment (sidebar hidden)
+ * Wraps page content to adjust:
+ * - Left margin based on sidebar state (256px expanded, 64px collapsed)
+ * - Top padding for TopHeaderBar (64px fixed height)
+ * - Mobile: No left margin (sidebar hidden), padding-top for header
  */
 
 "use client"
@@ -38,7 +40,7 @@ export function ContentWrapper({ children }: ContentWrapperProps) {
       animate={isMobile ? false : isCollapsed ? "collapsed" : "expanded"}
       variants={contentVariants}
       transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
-      className="min-h-screen"
+      className="min-h-screen pt-16"
       style={isMobile ? { marginLeft: 0 } : undefined}
     >
       {children}

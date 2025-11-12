@@ -1,0 +1,343 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>10</epicId>
+    <storyId>10</storyId>
+    <title>Top Header Bar - Global Search &amp; Actions</title>
+    <status>todo</status>
+    <generatedAt>2025-11-12</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/10.10.story.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>user</asA>
+    <iWant>a global header bar with search and quick actions</iWant>
+    <soThat>I can quickly find content and perform common tasks from anywhere</soThat>
+    <tasks>
+### Phase 1: Component Foundation
+- [ ] Task 1: Create TopHeaderBar component (AC: 1,2,3,4,5)
+  - Create file: `components/layout/TopHeaderBar.tsx`
+  - Define component props interface
+  - Implement fixed positioning (h-16, z-30)
+  - Add white background and bottom border
+  - Create flex layout (justify-between)
+  - Add horizontal padding (px-6)
+
+### Phase 2: Search Implementation
+- [ ] Task 2: Implement global search bar (AC: 1,2,11)
+  - Create search input wrapper (flex-1, max-w-xl)
+  - Add search icon (Material Symbol or Lucide)
+  - Style input: bg-secondary, border, rounded-lg
+  - Add placeholder: "Search projects, costs, vendors..."
+  - Implement focus styles (border-primary, ring)
+  - Add keyboard accessibility (Tab, Escape)
+  - Create search handler (UI only, functionality separate)
+
+### Phase 3: Action Buttons
+- [ ] Task 3: Implement notification button (AC: 3,12)
+  - Create notification button (p-2, hover:bg-secondary)
+  - Add bell icon (notifications)
+  - Implement badge component (absolute positioning)
+  - Add badge count display (red dot or number)
+  - Add badge animation (scale, fade)
+  - Connect to notification context/hook
+  - Add click handler (navigate to notifications)
+
+- [ ] Task 4: Implement primary CTA button (AC: 4)
+  - Create primary button (bg-primary, text-white)
+  - Add + icon on left
+  - Make label context-aware (e.g., "New Project", "Add Cost")
+  - Add hover state (bg-primary-hover)
+  - Implement click handler (modal or navigation)
+  - Add keyboard accessibility (Enter, Space)
+
+### Phase 4: Responsive Behavior
+- [ ] Task 5: Implement mobile adaptations (AC: 9)
+  - Hide search bar on mobile (&lt; 768px)
+  - Show search icon button instead (opens modal/drawer)
+  - Adjust button sizes for touch (min 48x48px)
+  - Test on various screen sizes
+  - Ensure no horizontal overflow
+
+### Phase 5: Layout Integration
+- [ ] Task 6: Integrate with root layout (AC: 6,7,8)
+  - Update `app/layout.tsx` to include TopHeaderBar
+  - Position after Sidebar, before ContentWrapper
+  - Adjust ContentWrapper to account for header height
+  - Test on dashboard page
+  - Test on project detail pages (HorizontalNav below)
+  - Test on pages without nested navigation
+
+### Phase 6: Testing &amp; Polish
+- [ ] Task 7: Component testing (AC: 10,11,12,13)
+  - Test search input focus behavior
+  - Test notification badge updates
+  - Test CTA button navigation
+  - Test keyboard accessibility (Tab order)
+  - Test screen reader compatibility
+  - Verify design system colors
+  - Check spacing consistency (4px/8px grid)
+
+### Phase 7: Documentation
+- [ ] Task 8: Document component usage
+  - Add JSDoc comments to component
+  - Document props and types
+  - Add usage examples
+  - Document search hook integration (for future)
+  - Update architecture docs
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+**Functional Requirements:**
+1. Global search bar displayed prominently on left side
+2. Search input has placeholder text "Search projects, costs, vendors..."
+3. Notification button shows badge when unread notifications exist
+4. Primary CTA button visible on desktop (context-aware label)
+5. Header bar fixed at top of main content area
+
+**Integration Requirements:**
+6. Header integrates with root layout without breaking pages
+7. Header positioned above existing HorizontalNav on project pages
+8. ContentWrapper adjusts for header height (margin-top or padding-top)
+9. Mobile behavior: Search collapses/adapts, CTA may hide
+
+**Quality Requirements:**
+10. Header maintains consistent height (64px) across all pages
+11. Search input accessible via keyboard (focus, tab navigation)
+12. Notification badge animates when count changes
+13. Component follows design system colors and spacing
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/epics/EPIC-10.2-Design-Alignment.md</path>
+        <title>EPIC 10.2: Design Alignment with Target Specification</title>
+        <section>Epic Overview and Story 10.10 Details</section>
+        <snippet>Story 10.10: Top Header Bar - Global Search &amp; Actions. Create TopHeaderBar component with global search, notification button with badge, primary CTA button (context-aware), fixed at top of main content area. Component architecture: z-30 layering, 64px height, responsive behavior.</snippet>
+      </doc>
+      <doc>
+        <path>docs/design/new-navigation-proposals/main-dashboard-redesign.html</path>
+        <title>Target Design Specification - Main Dashboard</title>
+        <section>Header Bar Reference (lines 191-214)</section>
+        <snippet>Reference design showing fixed header bar with search input (left, max-w-xl), notification button with badge, primary CTA button. Uses Material Symbols icons, --primary color (#2563EB), 64px height, white background with bottom border. Full responsive pattern with mobile adaptations.</snippet>
+      </doc>
+      <doc>
+        <path>docs/design/stitch_real_estate_app_login_screen/global_search_/_command_palette_modal/code.html</path>
+        <title>Global Search Design Pattern</title>
+        <section>Search Input Implementation</section>
+        <snippet>Search UI pattern with icon positioning (absolute left-3), placeholder text, keyboard shortcuts (⌘+K), rounded input with border, focus states. Demonstrates search modal/command palette approach for future enhancement.</snippet>
+      </doc>
+      <doc>
+        <path>docs/design/stitch_real_estate_app_login_screen/notification_center_dropdown/code.html</path>
+        <title>Notification Center Design Pattern</title>
+        <section>Notification Button and Badge</section>
+        <snippet>Notification button with badge indicator, dropdown panel with header "Notifications", "Mark all as read" action. Badge styling: small red dot (absolute top-1 right-1), hover states, professional blue primary color.</snippet>
+      </doc>
+      <doc>
+        <path>docs/components/README.md</path>
+        <title>Component Documentation Standards</title>
+        <section>Component Structure and Patterns</section>
+        <snippet>Components use Shadcn/ui + Radix UI + Tailwind. Layout components in app/ directory. JSDoc documentation required. Props interfaces with TypeScript. Accessibility standards (WCAG AA). State management via React Hook Form + Zod for forms, React Query for server state.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture/components.md</path>
+        <title>Component Architecture</title>
+        <section>Core Layout Components and Z-Index Layering</section>
+        <snippet>AppShell main layout pattern. Z-index system: z-50 (modals), z-40 (Sidebar), z-30 (TopHeaderBar, BottomTabBar), z-20 (HorizontalNav), z-10 (tooltips), z-0 (content). MobileNavigation with responsive design and Framer Motion transitions.</snippet>
+      </doc>
+      <doc>
+        <path>docs/guides/testing.md</path>
+        <title>Testing Guide</title>
+        <section>Component Testing Patterns</section>
+        <snippet>Vitest + Testing Library for component tests. Test behavior not implementation. Accessibility testing required. Coverage targets: 80% statements/functions/lines, 75% branches. Test keyboard navigation, screen reader compatibility, responsive behavior.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>apps/web/src/app/layout.tsx</path>
+        <kind>layout</kind>
+        <symbol>RootLayout</symbol>
+        <lines>1-69</lines>
+        <reason>Root layout where TopHeaderBar will be integrated. Currently has Sidebar, ContentWrapper, and mobile navigation. Shows integration pattern for adding header between Sidebar and ContentWrapper.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/web/src/components/layout/Sidebar.tsx</path>
+        <kind>component</kind>
+        <symbol>Sidebar</symbol>
+        <lines>1-100</lines>
+        <reason>Existing sidebar component showing pattern for fixed positioning (z-40), Framer Motion animations, collapse state management, keyboard shortcuts. TopHeaderBar should coordinate with sidebar using z-30.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/web/src/components/layout/ContentWrapper.tsx</path>
+        <kind>component</kind>
+        <symbol>ContentWrapper</symbol>
+        <lines>1-48</lines>
+        <reason>Wrapper that adjusts margin-left based on sidebar state. Must be updated to also account for TopHeaderBar height (padding-top or margin-top adjustment).</reason>
+      </artifact>
+      <artifact>
+        <path>apps/web/src/components/navigation/HorizontalNav.tsx</path>
+        <kind>component</kind>
+        <symbol>HorizontalNav</symbol>
+        <lines>1-80</lines>
+        <reason>Existing horizontal navigation component (z-20) that appears on project pages. TopHeaderBar (z-30) must position above this component without conflicts.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/web/src/hooks/useViewport.ts</path>
+        <kind>hook</kind>
+        <symbol>useViewport</symbol>
+        <lines>1-79</lines>
+        <reason>Hook for mobile detection (768px breakpoint). TopHeaderBar should use this for responsive behavior (hide search on mobile, show icon button).</reason>
+      </artifact>
+      <artifact>
+        <path>apps/web/src/hooks/useCollapsedSidebar.ts</path>
+        <kind>hook</kind>
+        <symbol>useCollapsedSidebar</symbol>
+        <lines>1-51</lines>
+        <reason>Hook for sidebar collapse state with localStorage persistence. TopHeaderBar should coordinate with this to adjust left positioning (left-0 md:left-64 when collapsed, md:left-256 when expanded).</reason>
+      </artifact>
+      <artifact>
+        <path>apps/web/src/components/ui/button.tsx</path>
+        <kind>component</kind>
+        <symbol>Button</symbol>
+        <lines>1-49</lines>
+        <reason>Shadcn/ui Button component with variants (default, ghost, icon) and sizes. Use for notification button (variant="ghost" size="icon") and CTA button (variant="default").</reason>
+      </artifact>
+      <artifact>
+        <path>apps/web/src/components/ui/input.tsx</path>
+        <kind>component</kind>
+        <symbol>Input</symbol>
+        <lines>1-24</lines>
+        <reason>Shadcn/ui Input component with consistent styling. Use for search input with type="search" and custom className for bg-secondary styling.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/web/src/components/ui/badge.tsx</path>
+        <kind>component</kind>
+        <symbol>Badge</symbol>
+        <lines>1-36</lines>
+        <reason>Shadcn/ui Badge component with variants. Use for notification badge indicator (can use as reference, but story shows simple red dot approach).</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <node>
+        <package name="next" version="^15.5.4">Next.js framework with App Router</package>
+        <package name="react" version="^18.3.0">React library</package>
+        <package name="framer-motion" version="^12.23.24">Animation library for smooth transitions</package>
+        <package name="lucide-react" version="^0.544.0">Icon library (Search, Bell, Plus icons)</package>
+        <package name="@radix-ui/react-slot" version="^1.2.3">Shadcn/ui Button dependency</package>
+        <package name="class-variance-authority">CVA for component variants</package>
+        <package name="tailwindcss">Utility-first CSS framework</package>
+      </node>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>Component must be client-side ("use client") due to hooks and interactivity</constraint>
+    <constraint>Z-index layering: TopHeaderBar at z-30 (below Sidebar z-40, above HorizontalNav z-20)</constraint>
+    <constraint>Fixed positioning: top-0, adjusts left based on sidebar state (left-0 md:left-64 collapsed, md:left-256 expanded)</constraint>
+    <constraint>Height must be exactly 64px (h-16) to match target design and ContentWrapper calculations</constraint>
+    <constraint>Mobile breakpoint: 768px (use useViewport hook, consistent with existing pattern)</constraint>
+    <constraint>Animation duration: 200ms with ease-in-out (consistent with Sidebar and ContentWrapper)</constraint>
+    <constraint>Search functionality: UI only, handler is placeholder (actual search is future story)</constraint>
+    <constraint>Notification system: Badge indicator only, real notifications future story</constraint>
+    <constraint>Must not break existing pages: Test on dashboard, project pages, settings</constraint>
+    <constraint>Accessibility: WCAG AA compliance, keyboard navigation, screen reader labels</constraint>
+    <constraint>Design system: Use Tailwind classes, shadcn/ui components, Lucide icons</constraint>
+    <constraint>Documentation: JSDoc comments required with props, features, examples</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>TopHeaderBarProps</name>
+      <kind>component-props</kind>
+      <signature>
+interface TopHeaderBarProps {
+  notificationCount?: number
+  ctaLabel?: string
+  ctaAction?: () => void
+  onSearchChange?: (query: string) => void
+}
+      </signature>
+      <path>apps/web/src/components/layout/TopHeaderBar.tsx</path>
+    </interface>
+    <interface>
+      <name>useViewport</name>
+      <kind>hook</kind>
+      <signature>
+export function useViewport(): {
+  isMobile: boolean
+  width: number
+  height: number
+}
+      </signature>
+      <path>apps/web/src/hooks/useViewport.ts</path>
+    </interface>
+    <interface>
+      <name>useCollapsedSidebar</name>
+      <kind>hook</kind>
+      <signature>
+export function useCollapsedSidebar(): {
+  isCollapsed: boolean
+  toggle: () => void
+  setCollapsed: (collapsed: boolean) => void
+}
+      </signature>
+      <path>apps/web/src/hooks/useCollapsedSidebar.ts</path>
+    </interface>
+    <interface>
+      <name>Button (Shadcn/ui)</name>
+      <kind>component</kind>
+      <signature>
+Button({
+  variant?: "default" | "ghost" | "outline" | "secondary" | "destructive" | "link",
+  size?: "default" | "sm" | "lg" | "icon",
+  className?: string,
+  ...props
+})
+      </signature>
+      <path>apps/web/src/components/ui/button.tsx</path>
+    </interface>
+    <interface>
+      <name>Input (Shadcn/ui)</name>
+      <kind>component</kind>
+      <signature>
+Input({
+  type?: string,
+  className?: string,
+  ...props
+})
+      </signature>
+      <path>apps/web/src/components/ui/input.tsx</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+Testing stack: Vitest + Testing Library for component tests. Test behavior not implementation. All components require unit tests covering rendering, interactions, accessibility (keyboard navigation, screen reader labels), and responsive behavior. Coverage targets: 80% statements/functions/lines, 75% branches. Tests use AAA pattern (Arrange-Act-Assert). Mock external dependencies (tRPC, React Query). SSR-safe testing required.
+    </standards>
+    <locations>
+apps/web/src/components/layout/__tests__/TopHeaderBar.test.tsx
+apps/web/integration/layout/__tests__/header-integration.test.tsx
+    </locations>
+    <ideas>
+- AC 1,2: Test search bar renders with correct placeholder text
+- AC 3: Test notification badge displays when count > 0, hidden when count = 0
+- AC 4: Test CTA button renders with correct label prop
+- AC 5: Test header has fixed positioning and h-16 class
+- AC 6,7: Integration test with root layout (Sidebar + TopHeaderBar + ContentWrapper)
+- AC 8: Test ContentWrapper margin-top/padding-top adjustment
+- AC 9: Test mobile behavior (search hidden, icon button shown, CTA hidden)
+- AC 10: Test header height consistency across viewport sizes
+- AC 11: Test keyboard navigation (Tab through search input, notification button, CTA)
+- AC 11: Test search input focus, blur, onChange handler called
+- AC 12: Test notification badge animation on count change (Framer Motion)
+- AC 13: Test Tailwind classes match design system (bg-background, border-border, etc.)
+- Test z-index layering (z-30) doesn't conflict with Sidebar (z-40) or HorizontalNav (z-20)
+- Test left positioning adjusts based on sidebar state (useCollapsedSidebar)
+- Test onClick handlers for notification button and CTA button
+- Test screen reader labels (aria-label, aria-describedby)
+- Visual regression test: Compare screenshot with target design
+    </ideas>
+  </tests>
+</story-context>
