@@ -126,6 +126,13 @@ const config: Config = {
         "growth-green": "#68b0ab",
         "clean-white": "#f8f8f8",
         "subtle-grey": "#c0c0c0",
+        // Epic 10.3: Authentication screen colors
+        navy: {
+          DEFAULT: "#0A2540",
+          hover: "#0a2540e6",
+        },
+        "background-light": "#f6f7f8",
+        "background-dark": "#101922",
       },
       borderRadius: {
         lg: "var(--radius)",

@@ -1,14 +1,15 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { useEffect } from "react"
-import Link from "next/link"
+import { useEffect, useState } from "react"
 import { LoginForm } from "@/components/auth/LoginForm"
+import { TwoFactorForm } from "@/components/auth/TwoFactorForm"
 import { useAuth } from "@/components/providers/AuthProvider"
 
 export default function LoginPage() {
   const router = useRouter()
   const { user, isLoading } = useAuth()
+  const [showTwoFactor, setShowTwoFactor] = useState(false)
 
   useEffect(() => {
     if (!isLoading && user) {
@@ -16,15 +17,27 @@ export default function LoginPage() {
     }
   }, [user, isLoading, router])
 
-  const handleSuccess = () => {
+  const handleLoginSuccess = (requires2FA: boolean) => {
+    if (requires2FA) {
+      setShowTwoFactor(true)
+    } else {
+      router.push("/")
+    }
+  }
+
+  const handle2FASuccess = () => {
     router.push("/")
   }
 
-  // Show loading or nothing while checking auth status
+  const handleBackToLogin = () => {
+    setShowTwoFactor(false)
+  }
+
+  // Show loading while checking auth status
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-gray-600">Loading...</div>
+        <div className="text-gray-600 dark:text-gray-400">Loading...</div>
       </div>
     )
   }
@@ -35,20 +48,57 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-            Sign in to your account
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Or{" "}
-            <Link href="/register" className="font-medium text-blue-600 hover:text-blue-500">
-              create a new account
-            </Link>
-          </p>
+    <div className="min-h-screen flex">
+      {/* Left Panel: Hero Image (Hidden on mobile) */}
+      <div className="relative hidden lg:flex lg:w-1/2 h-screen">
+        <div
+          className="absolute inset-0 bg-center bg-no-repeat bg-cover"
+          style={{
+            backgroundImage:
+              'url("https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2070&auto=format&fit=crop")',
+          }}
+        >
+          <div className="absolute inset-0 bg-slate-900/60"></div>
         </div>
-        <LoginForm onSuccess={handleSuccess} />
+        <div className="relative z-10 flex flex-col justify-between p-12 text-white">
+          {/* Branding */}
+          <div className="flex items-center gap-3">
+            <span className="material-symbols-outlined text-white text-3xl">domain_add</span>
+            <p className="text-xl font-bold">Real Estate Tracker</p>
+          </div>
+          {/* Hero Text */}
+          <div className="max-w-md">
+            <h2 className="text-4xl font-black mb-4">
+              Manage your development projects with confidence
+            </h2>
+            <p className="text-slate-200 text-lg">
+              Track costs, timelines, contacts, and every detail of your real estate development
+              projects in one place.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Right Panel: Form */}
+      <div className="flex w-full lg:w-1/2 items-center justify-center bg-background-light dark:bg-background-dark p-6 sm:p-8 lg:p-12">
+        <div className="flex flex-col max-w-md w-full gap-8">
+          {/* Mobile Logo */}
+          <div className="flex justify-start lg:hidden">
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-navy dark:text-primary text-3xl">
+                domain_add
+              </span>
+              <p className="text-xl font-bold text-navy dark:text-white">Real Estate Tracker</p>
+            </div>
+          </div>
+
+          {/* Show either Login Form or 2FA Form */}
+          {showTwoFactor ? (
+            <TwoFactorForm onSuccess={handle2FASuccess} onBack={handleBackToLogin} />
+          ) : (
+            <LoginForm onSuccess={handleLoginSuccess} />
+          )}
+        </div>
       </div>
     </div>
   )
