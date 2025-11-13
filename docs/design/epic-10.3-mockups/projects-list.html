@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projects List - Design Mockup</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            DEFAULT: 'hsl(221.2, 83.2%, 53.3%)',
+                            hover: 'hsl(221.2, 83.2%, 48%)',
+                            light: 'hsl(221.2, 83.2%, 95%)',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 antialiased">
+    <!-- Header -->
+    <div class="bg-white border-b border-gray-200">
+        <div class="px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">Projects</h1>
+                    <p class="text-sm text-gray-600 mt-1">Manage your real estate development projects</p>
+                </div>
+                <button class="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-hover flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    New Project
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="px-6 py-6 max-w-7xl">
+        <!-- Search, Filter, and View Controls -->
+        <div class="bg-white rounded-xl border border-gray-200 p-4 mb-6 shadow-sm">
+            <div class="flex items-center justify-between gap-4">
+                <!-- Search Bar -->
+                <div class="flex-1 relative max-w-md">
+                    <input type="text" placeholder="Search projects..." class="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                    <svg class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                </div>
+
+                <!-- Filters -->
+                <div class="flex items-center gap-3">
+                    <select class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                        <option>All Status</option>
+                        <option>Active</option>
+                        <option>On Hold</option>
+                        <option>Completed</option>
+                        <option>At Risk</option>
+                    </select>
+
+                    <select class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                        <option>Sort: Name</option>
+                        <option>Sort: Budget</option>
+                        <option>Sort: Start Date</option>
+                        <option>Sort: Progress</option>
+                    </select>
+
+                    <!-- View Toggle -->
+                    <div class="flex items-center border border-gray-300 rounded-lg">
+                        <button id="gridView" class="px-3 py-2 text-sm bg-primary text-white rounded-l-lg" onclick="toggleView('grid')">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+                            </svg>
+                        </button>
+                        <button id="listView" class="px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-r-lg" onclick="toggleView('list')">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600">Total Projects</p>
+                        <p class="text-2xl font-bold text-gray-900 mt-1">24</p>
+                    </div>
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600">Active</p>
+                        <p class="text-2xl font-bold text-green-600 mt-1">18</p>
+                    </div>
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600">At Risk</p>
+                        <p class="text-2xl font-bold text-red-600 mt-1">3</p>
+                    </div>
+                    <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600">Total Value</p>
+                        <p class="text-2xl font-bold text-gray-900 mt-1">$42.5M</p>
+                    </div>
+                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Projects Grid -->
+        <div id="gridContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Project Card 1 - Active -->
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden group cursor-pointer">
+                <div class="h-40 bg-gradient-to-br from-blue-500 to-blue-600 relative">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 200'%3E%3Crect fill='%233b82f6' width='400' height='200'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='24' fill='white' opacity='0.3'%3ERiverside Plaza%3C/text%3E%3C/svg%3E" alt="" class="w-full h-full object-cover">
+                    <div class="absolute top-3 right-3">
+                        <span class="px-3 py-1 text-xs font-semibold bg-green-500 text-white rounded-full shadow-lg">Active</span>
+                    </div>
+                    <button class="absolute top-3 left-3 w-8 h-8 bg-white/90 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <svg class="w-5 h-5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class="p-5">
+                    <h3 class="text-lg font-semibold text-gray-900 group-hover:text-primary transition-colors">Riverside Plaza</h3>
+                    <p class="text-sm text-gray-600 mt-1">Mixed-use commercial development</p>
+
+                    <div class="mt-4 flex items-center gap-4">
+                        <div>
+                            <p class="text-xs text-gray-500">Budget</p>
+                            <p class="text-sm font-semibold text-gray-900">$2.45M</p>
+                        </div>
+                        <div class="h-8 w-px bg-gray-200"></div>
+                        <div>
+                            <p class="text-xs text-gray-500">Progress</p>
+                            <p class="text-sm font-semibold text-gray-900">62%</p>
+                        </div>
+                        <div class="h-8 w-px bg-gray-200"></div>
+                        <div>
+                            <p class="text-xs text-gray-500">Due Date</p>
+                            <p class="text-sm font-semibold text-gray-900">Oct 2025</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-xs text-gray-600">Completion</span>
+                            <span class="text-xs font-medium text-gray-900">62%</span>
+                        </div>
+                        <div class="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                            <div class="h-full bg-green-500 rounded-full" style="width: 62%"></div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 flex items-center justify-between pt-4 border-t border-gray-200">
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-xs font-semibold text-blue-700">JD</div>
+                            <span class="text-sm text-gray-700">John Doe</span>
+                        </div>
+                        <button class="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project Card 2 - At Risk -->
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden group cursor-pointer">
+                <div class="h-40 bg-gradient-to-br from-red-500 to-red-600 relative">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 200'%3E%3Crect fill='%23ef4444' width='400' height='200'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='24' fill='white' opacity='0.3'%3EOakwood Towers%3C/text%3E%3C/svg%3E" alt="" class="w-full h-full object-cover">
+                    <div class="absolute top-3 right-3">
+                        <span class="px-3 py-1 text-xs font-semibold bg-red-500 text-white rounded-full shadow-lg">At Risk</span>
+                    </div>
+                    <button class="absolute top-3 left-3 w-8 h-8 bg-white/90 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class="p-5">
+                    <h3 class="text-lg font-semibold text-gray-900 group-hover:text-primary transition-colors">Oakwood Towers</h3>
+                    <p class="text-sm text-gray-600 mt-1">Residential high-rise development</p>
+
+                    <div class="mt-4 flex items-center gap-4">
+                        <div>
+                            <p class="text-xs text-gray-500">Budget</p>
+                            <p class="text-sm font-semibold text-gray-900">$8.2M</p>
+                        </div>
+                        <div class="h-8 w-px bg-gray-200"></div>
+                        <div>
+                            <p class="text-xs text-gray-500">Progress</p>
+                            <p class="text-sm font-semibold text-gray-900">34%</p>
+                        </div>
+                        <div class="h-8 w-px bg-gray-200"></div>
+                        <div>
+                            <p class="text-xs text-gray-500">Due Date</p>
+                            <p class="text-sm font-semibold text-red-600">Overdue</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-xs text-gray-600">Completion</span>
+                            <span class="text-xs font-medium text-gray-900">34%</span>
+                        </div>
+                        <div class="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                            <div class="h-full bg-red-500 rounded-full" style="width: 34%"></div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 flex items-center justify-between pt-4 border-t border-gray-200">
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center text-xs font-semibold text-purple-700">MS</div>
+                            <span class="text-sm text-gray-700">Mary Smith</span>
+                        </div>
+                        <button class="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project Card 3 - Active -->
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden group cursor-pointer">
+                <div class="h-40 bg-gradient-to-br from-green-500 to-green-600 relative">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 200'%3E%3Crect fill='%2322c55e' width='400' height='200'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='24' fill='white' opacity='0.3'%3ESunset Gardens%3C/text%3E%3C/svg%3E" alt="" class="w-full h-full object-cover">
+                    <div class="absolute top-3 right-3">
+                        <span class="px-3 py-1 text-xs font-semibold bg-green-500 text-white rounded-full shadow-lg">Active</span>
+                    </div>
+                    <button class="absolute top-3 left-3 w-8 h-8 bg-white/90 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <svg class="w-5 h-5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class="p-5">
+                    <h3 class="text-lg font-semibold text-gray-900 group-hover:text-primary transition-colors">Sunset Gardens</h3>
+                    <p class="text-sm text-gray-600 mt-1">Luxury residential community</p>
+
+                    <div class="mt-4 flex items-center gap-4">
+                        <div>
+                            <p class="text-xs text-gray-500">Budget</p>
+                            <p class="text-sm font-semibold text-gray-900">$5.8M</p>
+                        </div>
+                        <div class="h-8 w-px bg-gray-200"></div>
+                        <div>
+                            <p class="text-xs text-gray-500">Progress</p>
+                            <p class="text-sm font-semibold text-gray-900">89%</p>
+                        </div>
+                        <div class="h-8 w-px bg-gray-200"></div>
+                        <div>
+                            <p class="text-xs text-gray-500">Due Date</p>
+                            <p class="text-sm font-semibold text-gray-900">Dec 2025</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-xs text-gray-600">Completion</span>
+                            <span class="text-xs font-medium text-gray-900">89%</span>
+                        </div>
+                        <div class="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                            <div class="h-full bg-green-500 rounded-full" style="width: 89%"></div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 flex items-center justify-between pt-4 border-t border-gray-200">
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-xs font-semibold text-green-700">RJ</div>
+                            <span class="text-sm text-gray-700">Robert Johnson</span>
+                        </div>
+                        <button class="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project Card 4 - On Hold -->
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden group cursor-pointer opacity-75">
+                <div class="h-40 bg-gradient-to-br from-yellow-500 to-yellow-600 relative">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 200'%3E%3Crect fill='%23eab308' width='400' height='200'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='24' fill='white' opacity='0.3'%3EMaple Heights%3C/text%3E%3C/svg%3E" alt="" class="w-full h-full object-cover">
+                    <div class="absolute top-3 right-3">
+                        <span class="px-3 py-1 text-xs font-semibold bg-yellow-500 text-white rounded-full shadow-lg">On Hold</span>
+                    </div>
+                    <button class="absolute top-3 left-3 w-8 h-8 bg-white/90 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class="p-5">
+                    <h3 class="text-lg font-semibold text-gray-900 group-hover:text-primary transition-colors">Maple Heights</h3>
+                    <p class="text-sm text-gray-600 mt-1">Townhouse development</p>
+
+                    <div class="mt-4 flex items-center gap-4">
+                        <div>
+                            <p class="text-xs text-gray-500">Budget</p>
+                            <p class="text-sm font-semibold text-gray-900">$3.2M</p>
+                        </div>
+                        <div class="h-8 w-px bg-gray-200"></div>
+                        <div>
+                            <p class="text-xs text-gray-500">Progress</p>
+                            <p class="text-sm font-semibold text-gray-900">15%</p>
+                        </div>
+                        <div class="h-8 w-px bg-gray-200"></div>
+                        <div>
+                            <p class="text-xs text-gray-500">Due Date</p>
+                            <p class="text-sm font-semibold text-gray-900">TBD</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-xs text-gray-600">Completion</span>
+                            <span class="text-xs font-medium text-gray-900">15%</span>
+                        </div>
+                        <div class="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                            <div class="h-full bg-yellow-500 rounded-full" style="width: 15%"></div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 flex items-center justify-between pt-4 border-t border-gray-200">
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center text-xs font-semibold text-orange-700">LB</div>
+                            <span class="text-sm text-gray-700">Lisa Brown</span>
+                        </div>
+                        <button class="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project Card 5 - Completed -->
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden group cursor-pointer">
+                <div class="h-40 bg-gradient-to-br from-indigo-500 to-indigo-600 relative">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 200'%3E%3Crect fill='%236366f1' width='400' height='200'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='24' fill='white' opacity='0.3'%3EDowntown Loft%3C/text%3E%3C/svg%3E" alt="" class="w-full h-full object-cover">
+                    <div class="absolute top-3 right-3">
+                        <span class="px-3 py-1 text-xs font-semibold bg-gray-800 text-white rounded-full shadow-lg">Completed</span>
+                    </div>
+                    <button class="absolute top-3 left-3 w-8 h-8 bg-white/90 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <svg class="w-5 h-5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                        </svg>
+                    </button>
+                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                        <svg class="w-16 h-16 text-white opacity-80" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="p-5">
+                    <h3 class="text-lg font-semibold text-gray-900 group-hover:text-primary transition-colors">Downtown Loft</h3>
+                    <p class="text-sm text-gray-600 mt-1">Urban loft conversion</p>
+
+                    <div class="mt-4 flex items-center gap-4">
+                        <div>
+                            <p class="text-xs text-gray-500">Budget</p>
+                            <p class="text-sm font-semibold text-gray-900">$1.5M</p>
+                        </div>
+                        <div class="h-8 w-px bg-gray-200"></div>
+                        <div>
+                            <p class="text-xs text-gray-500">Progress</p>
+                            <p class="text-sm font-semibold text-gray-900">100%</p>
+                        </div>
+                        <div class="h-8 w-px bg-gray-200"></div>
+                        <div>
+                            <p class="text-xs text-gray-500">Completed</p>
+                            <p class="text-sm font-semibold text-gray-900">Mar 2025</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-xs text-gray-600">Completion</span>
+                            <span class="text-xs font-medium text-gray-900">100%</span>
+                        </div>
+                        <div class="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                            <div class="h-full bg-gray-800 rounded-full" style="width: 100%"></div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 flex items-center justify-between pt-4 border-t border-gray-200">
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center text-xs font-semibold text-indigo-700">TW</div>
+                            <span class="text-sm text-gray-700">Tom Wilson</span>
+                        </div>
+                        <button class="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project Card 6 - Active -->
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden group cursor-pointer">
+                <div class="h-40 bg-gradient-to-br from-teal-500 to-teal-600 relative">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 200'%3E%3Crect fill='%2314b8a6' width='400' height='200'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='24' fill='white' opacity='0.3'%3EHarbor View%3C/text%3E%3C/svg%3E" alt="" class="w-full h-full object-cover">
+                    <div class="absolute top-3 right-3">
+                        <span class="px-3 py-1 text-xs font-semibold bg-green-500 text-white rounded-full shadow-lg">Active</span>
+                    </div>
+                    <button class="absolute top-3 left-3 w-8 h-8 bg-white/90 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class="p-5">
+                    <h3 class="text-lg font-semibold text-gray-900 group-hover:text-primary transition-colors">Harbor View</h3>
+                    <p class="text-sm text-gray-600 mt-1">Waterfront condominiums</p>
+
+                    <div class="mt-4 flex items-center gap-4">
+                        <div>
+                            <p class="text-xs text-gray-500">Budget</p>
+                            <p class="text-sm font-semibold text-gray-900">$12.5M</p>
+                        </div>
+                        <div class="h-8 w-px bg-gray-200"></div>
+                        <div>
+                            <p class="text-xs text-gray-500">Progress</p>
+                            <p class="text-sm font-semibold text-gray-900">42%</p>
+                        </div>
+                        <div class="h-8 w-px bg-gray-200"></div>
+                        <div>
+                            <p class="text-xs text-gray-500">Due Date</p>
+                            <p class="text-sm font-semibold text-gray-900">Mar 2026</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-xs text-gray-600">Completion</span>
+                            <span class="text-xs font-medium text-gray-900">42%</span>
+                        </div>
+                        <div class="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                            <div class="h-full bg-green-500 rounded-full" style="width: 42%"></div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 flex items-center justify-between pt-4 border-t border-gray-200">
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 bg-teal-100 rounded-full flex items-center justify-center text-xs font-semibold text-teal-700">SA</div>
+                            <span class="text-sm text-gray-700">Sarah Anderson</span>
+                        </div>
+                        <button class="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Design Note -->
+        <div class="mt-6 text-center">
+            <p class="text-gray-600 text-sm font-medium bg-white rounded-lg px-4 py-2 border border-gray-200">
+                Design Mockup - Story 10.19
+            </p>
+        </div>
+    </div>
+
+    <script>
+        function toggleView(view) {
+            const gridBtn = document.getElementById('gridView');
+            const listBtn = document.getElementById('listView');
+            const gridContainer = document.getElementById('gridContainer');
+
+            if (view === 'grid') {
+                gridBtn.classList.add('bg-primary', 'text-white');
+                gridBtn.classList.remove('text-gray-700', 'hover:bg-gray-50');
+                listBtn.classList.remove('bg-primary', 'text-white');
+                listBtn.classList.add('text-gray-700', 'hover:bg-gray-50');
+                gridContainer.classList.remove('grid-cols-1');
+                gridContainer.classList.add('grid-cols-1', 'md:grid-cols-2', 'lg:grid-cols-3');
+            } else {
+                listBtn.classList.add('bg-primary', 'text-white');
+                listBtn.classList.remove('text-gray-700', 'hover:bg-gray-50');
+                gridBtn.classList.remove('bg-primary', 'text-white');
+                gridBtn.classList.add('text-gray-700', 'hover:bg-gray-50');
+                gridContainer.classList.remove('md:grid-cols-2', 'lg:grid-cols-3');
+                gridContainer.classList.add('grid-cols-1');
+            }
+        }
+    </script>
+</body>
+</html>

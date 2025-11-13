@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Timeline - Design Mockup</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            DEFAULT: 'hsl(221.2, 83.2%, 53.3%)',
+                            hover: 'hsl(221.2, 83.2%, 48%)',
+                            light: 'hsl(221.2, 83.2%, 95%)',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .timeline-bar {
+            transition: all 0.3s ease;
+        }
+        .timeline-bar:hover {
+            filter: brightness(1.1);
+            transform: scaleY(1.05);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 antialiased">
+    <!-- Header -->
+    <div class="bg-white border-b border-gray-200">
+        <div class="px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">Project Timeline</h1>
+                    <p class="text-sm text-gray-600 mt-1">Riverside Plaza Development</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
+                        <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+                        </svg>
+                        Filter
+                    </button>
+                    <select class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
+                        <option>Monthly View</option>
+                        <option>Weekly View</option>
+                        <option>Quarterly View</option>
+                    </select>
+                    <button class="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-hover">
+                        <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        Add Event
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="px-6 py-6 max-w-full">
+        <!-- Timeline Controls -->
+        <div class="bg-white rounded-xl border border-gray-200 p-4 mb-6 flex items-center justify-between shadow-sm">
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2">
+                    <span class="text-sm font-medium text-gray-700">Project Duration:</span>
+                    <span class="text-sm text-gray-900 font-semibold">Dec 2024 - Oct 2025</span>
+                </div>
+                <div class="h-6 w-px bg-gray-300"></div>
+                <div class="flex items-center gap-2">
+                    <span class="text-sm font-medium text-gray-700">Progress:</span>
+                    <div class="flex items-center gap-2">
+                        <div class="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
+                            <div class="h-full bg-green-500" style="width: 62%"></div>
+                        </div>
+                        <span class="text-sm text-gray-900 font-semibold">62%</span>
+                    </div>
+                </div>
+                <div class="h-6 w-px bg-gray-300"></div>
+                <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                    <span class="text-sm text-gray-700">Today: May 15, 2025</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                </button>
+                <span class="text-sm text-gray-700">May 2025</span>
+                <button class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Visual Timeline -->
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            <!-- Timeline Header (Months) -->
+            <div class="border-b border-gray-200 bg-gray-50">
+                <div class="flex">
+                    <div class="w-64 px-6 py-4 border-r border-gray-200">
+                        <span class="text-xs font-semibold text-gray-700 uppercase">Phase / Milestone</span>
+                    </div>
+                    <div class="flex-1 flex">
+                        <div class="flex-1 px-4 py-4 border-r border-gray-200 text-center">
+                            <span class="text-xs font-semibold text-gray-700">Dec 2024</span>
+                        </div>
+                        <div class="flex-1 px-4 py-4 border-r border-gray-200 text-center">
+                            <span class="text-xs font-semibold text-gray-700">Jan 2025</span>
+                        </div>
+                        <div class="flex-1 px-4 py-4 border-r border-gray-200 text-center">
+                            <span class="text-xs font-semibold text-gray-700">Feb 2025</span>
+                        </div>
+                        <div class="flex-1 px-4 py-4 border-r border-gray-200 text-center">
+                            <span class="text-xs font-semibold text-gray-700">Mar 2025</span>
+                        </div>
+                        <div class="flex-1 px-4 py-4 border-r border-gray-200 text-center">
+                            <span class="text-xs font-semibold text-gray-700">Apr 2025</span>
+                        </div>
+                        <div class="flex-1 px-4 py-4 border-r border-gray-200 text-center bg-blue-50">
+                            <span class="text-xs font-semibold text-blue-700">May 2025</span>
+                        </div>
+                        <div class="flex-1 px-4 py-4 border-r border-gray-200 text-center">
+                            <span class="text-xs font-semibold text-gray-700">Jun 2025</span>
+                        </div>
+                        <div class="flex-1 px-4 py-4 border-r border-gray-200 text-center">
+                            <span class="text-xs font-semibold text-gray-700">Jul 2025</span>
+                        </div>
+                        <div class="flex-1 px-4 py-4 border-r border-gray-200 text-center">
+                            <span class="text-xs font-semibold text-gray-700">Aug 2025</span>
+                        </div>
+                        <div class="flex-1 px-4 py-4 border-r border-gray-200 text-center">
+                            <span class="text-xs font-semibold text-gray-700">Sep 2025</span>
+                        </div>
+                        <div class="flex-1 px-4 py-4 text-center">
+                            <span class="text-xs font-semibold text-gray-700">Oct 2025</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Phase 1: Planning & Permits -->
+            <div class="border-b border-gray-200 hover:bg-gray-50">
+                <div class="flex items-center">
+                    <div class="w-64 px-6 py-4 border-r border-gray-200">
+                        <div class="flex items-center gap-3">
+                            <span class="px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded">Phase 1</span>
+                            <div>
+                                <div class="text-sm font-semibold text-gray-900">Planning & Permits</div>
+                                <div class="text-xs text-gray-500 mt-0.5">Complete</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex-1 px-4 py-4 relative">
+                        <div class="h-8 relative">
+                            <div class="timeline-bar absolute top-1 left-0 h-6 bg-purple-500 rounded shadow-sm" style="width: 18%; margin-left: 0%">
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <span class="text-xs font-medium text-white">100%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Milestone: Permits Approved -->
+            <div class="border-b border-gray-200 bg-purple-50/30">
+                <div class="flex items-center">
+                    <div class="w-64 px-6 py-3 border-r border-gray-200">
+                        <div class="flex items-center gap-3 ml-8">
+                            <svg class="w-5 h-5 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                            </svg>
+                            <div>
+                                <div class="text-sm font-medium text-gray-900">Permits Approved</div>
+                                <div class="text-xs text-gray-500">Jan 10, 2025</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex-1 px-4 py-3 relative">
+                        <div class="h-6 relative">
+                            <div class="absolute w-3 h-3 bg-purple-600 rounded-full shadow-lg" style="left: 9%; top: 6px"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Phase 2: Foundation & Groundwork -->
+            <div class="border-b border-gray-200 hover:bg-gray-50">
+                <div class="flex items-center">
+                    <div class="w-64 px-6 py-4 border-r border-gray-200">
+                        <div class="flex items-center gap-3">
+                            <span class="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded">Phase 2</span>
+                            <div>
+                                <div class="text-sm font-semibold text-gray-900">Foundation & Groundwork</div>
+                                <div class="text-xs text-gray-500 mt-0.5">Complete</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex-1 px-4 py-4 relative">
+                        <div class="h-8 relative">
+                            <div class="timeline-bar absolute top-1 left-0 h-6 bg-blue-500 rounded shadow-sm" style="width: 18%; margin-left: 9%">
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <span class="text-xs font-medium text-white">100%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Milestone: Foundation Complete -->
+            <div class="border-b border-gray-200 bg-blue-50/30">
+                <div class="flex items-center">
+                    <div class="w-64 px-6 py-3 border-r border-gray-200">
+                        <div class="flex items-center gap-3 ml-8">
+                            <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                            </svg>
+                            <div>
+                                <div class="text-sm font-medium text-gray-900">Foundation Complete</div>
+                                <div class="text-xs text-gray-500">Feb 28, 2025</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex-1 px-4 py-3 relative">
+                        <div class="h-6 relative">
+                            <div class="absolute w-3 h-3 bg-blue-600 rounded-full shadow-lg" style="left: 27%; top: 6px"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Phase 3: Structural Work -->
+            <div class="border-b border-gray-200 hover:bg-gray-50">
+                <div class="flex items-center">
+                    <div class="w-64 px-6 py-4 border-r border-gray-200">
+                        <div class="flex items-center gap-3">
+                            <span class="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded">Phase 3</span>
+                            <div>
+                                <div class="text-sm font-semibold text-gray-900">Structural Work</div>
+                                <div class="text-xs text-green-600 mt-0.5 font-medium">In Progress - 85%</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex-1 px-4 py-4 relative">
+                        <div class="h-8 relative">
+                            <div class="timeline-bar absolute top-1 left-0 h-6 bg-green-500 rounded shadow-sm" style="width: 27%; margin-left: 27%">
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <span class="text-xs font-medium text-white">85%</span>
+                                </div>
+                                <div class="absolute right-0 top-0 bottom-0 w-px bg-green-700"></div>
+                            </div>
+                            <!-- Today marker -->
+                            <div class="absolute w-0.5 h-10 bg-red-500 -top-1" style="left: 45%">
+                                <div class="absolute -top-2 left-1/2 -translate-x-1/2 text-xs font-semibold text-red-600 whitespace-nowrap">TODAY</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Milestone: Steel Frame Complete (Upcoming) -->
+            <div class="border-b border-gray-200 bg-green-50/30">
+                <div class="flex items-center">
+                    <div class="w-64 px-6 py-3 border-r border-gray-200">
+                        <div class="flex items-center gap-3 ml-8">
+                            <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
+                            </svg>
+                            <div>
+                                <div class="text-sm font-medium text-gray-900">Steel Frame Complete</div>
+                                <div class="text-xs text-gray-500">Due: May 30, 2025</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex-1 px-4 py-3 relative">
+                        <div class="h-6 relative">
+                            <div class="absolute w-3 h-3 bg-gray-400 rounded-full shadow-lg ring-2 ring-white" style="left: 54%; top: 6px"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Phase 4: MEP & Interior -->
+            <div class="border-b border-gray-200 hover:bg-gray-50">
+                <div class="flex items-center">
+                    <div class="w-64 px-6 py-4 border-r border-gray-200">
+                        <div class="flex items-center gap-3">
+                            <span class="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded">Phase 4</span>
+                            <div>
+                                <div class="text-sm font-semibold text-gray-900">MEP & Interior</div>
+                                <div class="text-xs text-gray-500 mt-0.5">Upcoming</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex-1 px-4 py-4 relative">
+                        <div class="h-8 relative">
+                            <div class="timeline-bar absolute top-1 left-0 h-6 bg-yellow-300 rounded shadow-sm opacity-50" style="width: 27%; margin-left: 54%">
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <span class="text-xs font-medium text-gray-700">0%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Phase 5: Finishing & Handover -->
+            <div class="border-b border-gray-200 hover:bg-gray-50">
+                <div class="flex items-center">
+                    <div class="w-64 px-6 py-4 border-r border-gray-200">
+                        <div class="flex items-center gap-3">
+                            <span class="px-2 py-1 text-xs font-medium bg-indigo-100 text-indigo-800 rounded">Phase 5</span>
+                            <div>
+                                <div class="text-sm font-semibold text-gray-900">Finishing & Handover</div>
+                                <div class="text-xs text-gray-500 mt-0.5">Planned</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex-1 px-4 py-4 relative">
+                        <div class="h-8 relative">
+                            <div class="timeline-bar absolute top-1 left-0 h-6 bg-indigo-300 rounded shadow-sm opacity-50" style="width: 18%; margin-left: 81%">
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <span class="text-xs font-medium text-gray-700">0%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Milestone: Project Completion -->
+            <div class="bg-indigo-50/30">
+                <div class="flex items-center">
+                    <div class="w-64 px-6 py-3 border-r border-gray-200">
+                        <div class="flex items-center gap-3 ml-8">
+                            <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
+                                <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm9.707 5.707a1 1 0 00-1.414-1.414L9 12.586l-1.293-1.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                            </svg>
+                            <div>
+                                <div class="text-sm font-medium text-gray-900">Project Completion</div>
+                                <div class="text-xs text-gray-500">Target: Oct 31, 2025</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex-1 px-4 py-3 relative">
+                        <div class="h-6 relative">
+                            <div class="absolute w-3 h-3 bg-gray-400 rounded-full shadow-lg ring-2 ring-white" style="left: 99%; top: 6px"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Legend -->
+        <div class="mt-6 bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+            <div class="flex items-center justify-between">
+                <span class="text-sm font-semibold text-gray-700">Legend:</span>
+                <div class="flex items-center gap-6">
+                    <div class="flex items-center gap-2">
+                        <div class="w-4 h-4 bg-green-500 rounded"></div>
+                        <span class="text-sm text-gray-700">In Progress</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-4 h-4 bg-blue-500 rounded"></div>
+                        <span class="text-sm text-gray-700">Complete</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-4 h-4 bg-yellow-300 rounded opacity-50"></div>
+                        <span class="text-sm text-gray-700">Upcoming</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                        </svg>
+                        <span class="text-sm text-gray-700">Milestone Complete</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
+                        </svg>
+                        <span class="text-sm text-gray-700">Milestone Upcoming</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-0.5 h-6 bg-red-500"></div>
+                        <span class="text-sm text-gray-700">Today</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Design Note -->
+        <div class="mt-6 text-center">
+            <p class="text-gray-600 text-sm font-medium bg-white rounded-lg px-4 py-2 border border-gray-200">
+                Design Mockup - Story 10.18
+            </p>
+        </div>
+    </div>
+</body>
+</html>
