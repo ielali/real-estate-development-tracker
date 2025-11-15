@@ -25,6 +25,7 @@
 
 import React, { useEffect } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import type { Route } from "next"
 import { usePathname, useRouter } from "next/navigation"
 import { motion } from "framer-motion"
@@ -194,20 +195,35 @@ export function Sidebar({ notificationCount = 0 }: SidebarProps) {
         className="fixed left-0 top-0 z-40 h-screen flex flex-col bg-card border-r border-border hidden md:flex"
         data-collapsed={isCollapsed}
       >
-        {/* Header with Hamburger Toggle (Story 10.11 - AC: 1) */}
+        {/* Header with Logo and Hamburger Toggle (Story 10.11, 10.16) */}
         <div className="flex items-center justify-between h-16 px-4 border-b border-border">
           <div className="flex items-center gap-2 overflow-hidden">
-            <Building2 className="w-6 h-6 shrink-0 text-primary" aria-hidden="true" />
-            {!isCollapsed && (
-              <motion.span
+            {!isCollapsed ? (
+              <motion.div
                 initial={false}
                 animate="expanded"
                 variants={textVariants}
                 transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
-                className="font-semibold text-sm whitespace-nowrap overflow-hidden"
+                className="overflow-hidden"
               >
-                Real Estate Tracker
-              </motion.span>
+                <Image
+                  src="/logo.png"
+                  alt="Real Estate Development Tracker"
+                  width={140}
+                  height={42}
+                  className="object-contain"
+                  priority
+                />
+              </motion.div>
+            ) : (
+              <Image
+                src="/logo.png"
+                alt="Real Estate Development Tracker"
+                width={32}
+                height={32}
+                className="object-contain shrink-0"
+                priority
+              />
             )}
           </div>
 

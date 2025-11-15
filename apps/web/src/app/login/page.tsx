@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
+import Image from "next/image"
 import { LoginForm } from "@/components/auth/LoginForm"
 import { TwoFactorForm } from "@/components/auth/TwoFactorForm"
 import { useAuth } from "@/components/providers/AuthProvider"
@@ -63,8 +64,14 @@ export default function LoginPage() {
         <div className="relative z-10 flex flex-col justify-between p-12 text-white">
           {/* Branding */}
           <div className="flex items-center gap-3">
-            <span className="material-symbols-outlined text-white text-3xl">domain_add</span>
-            <p className="text-xl font-bold">Real Estate Development Tracker</p>
+            <Image
+              src="/logo.png"
+              alt="Real Estate Development Tracker"
+              width={120}
+              height={36}
+              className="object-contain brightness-0 invert"
+              priority
+            />
           </div>
           {/* Hero Text */}
           <div className="max-w-md">
@@ -84,14 +91,14 @@ export default function LoginPage() {
         <div className="flex flex-col max-w-md w-full gap-8">
           {/* Mobile Logo */}
           <div className="flex justify-start lg:hidden">
-            <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-navy dark:text-primary text-3xl">
-                domain_add
-              </span>
-              <p className="text-xl font-bold text-navy dark:text-white">
-                Real Estate Development Tracker
-              </p>
-            </div>
+            <Image
+              src="/logo.png"
+              alt="Real Estate Development Tracker"
+              width={150}
+              height={45}
+              className="object-contain dark:brightness-0 dark:invert"
+              priority
+            />
           </div>
 
           {/* Show either Login Form or 2FA Form */}
