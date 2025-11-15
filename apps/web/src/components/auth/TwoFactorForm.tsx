@@ -104,6 +104,11 @@ export function TwoFactorForm({ onSuccess, onBack }: TwoFactorFormProps) {
 
   return (
     <div>
+      {/* Visually hidden status region for screen readers */}
+      <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+        {isLoading && "Verifying code, please wait..."}
+      </div>
+
       {/* Back Button */}
       {onBack && (
         <button
@@ -136,7 +141,12 @@ export function TwoFactorForm({ onSuccess, onBack }: TwoFactorFormProps) {
       {/* 2FA Form */}
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
         {errorMessage && (
-          <div className="rounded-lg bg-red-50 dark:bg-red-900/20 p-4 border border-red-200 dark:border-red-800">
+          <div
+            role="alert"
+            aria-live="polite"
+            aria-atomic="true"
+            className="rounded-lg bg-red-50 dark:bg-red-900/20 p-4 border border-red-200 dark:border-red-800"
+          >
             <div className="text-sm text-red-800 dark:text-red-200 text-center">{errorMessage}</div>
           </div>
         )}

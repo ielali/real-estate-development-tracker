@@ -81,6 +81,11 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
 
   return (
     <div>
+      {/* Visually hidden status region for screen readers */}
+      <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+        {isLoading && "Signing in, please wait..."}
+      </div>
+
       {/* Page Heading */}
       <div className="flex flex-col gap-2 mb-8">
         <p className="text-[#333333] dark:text-slate-200 text-3xl font-black leading-tight tracking-tight">
@@ -94,7 +99,12 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6">
           {errorMessage && (
-            <div className="rounded-lg bg-red-50 dark:bg-red-900/20 p-4 border border-red-200 dark:border-red-800">
+            <div
+              role="alert"
+              aria-live="polite"
+              aria-atomic="true"
+              className="rounded-lg bg-red-50 dark:bg-red-900/20 p-4 border border-red-200 dark:border-red-800"
+            >
               <div className="text-sm text-red-800 dark:text-red-200">{errorMessage}</div>
             </div>
           )}
