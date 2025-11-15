@@ -195,12 +195,9 @@ export function Sidebar({ notificationCount = 0 }: SidebarProps) {
         data-collapsed={isCollapsed}
       >
         {/* Header with Logo and Hamburger Toggle (Story 10.11, 10.16) */}
-        <div
-          className="flex items-center justify-between h-16 border-b border-border"
-          style={{ padding: isCollapsed ? "0 8px" : "0 16px" }}
-        >
-          <div className="flex items-center gap-2 overflow-hidden">
-            {!isCollapsed ? (
+        {!isCollapsed ? (
+          <div className="flex items-center justify-between h-16 px-4 border-b border-border">
+            <div className="flex items-center gap-2 overflow-hidden">
               <motion.div
                 initial={false}
                 animate="expanded"
@@ -214,47 +211,65 @@ export function Sidebar({ notificationCount = 0 }: SidebarProps) {
                   className="h-10 w-auto object-contain"
                 />
               </motion.div>
-            ) : (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="flex items-center justify-center">
-                    <img
-                      src="/assets/logo.png"
-                      alt="Real Estate Development Tracker"
-                      className="h-12 w-12 object-cover object-top rounded shrink-0"
-                    />
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent side="right">
-                  <p>Real Estate Development Tracker</p>
-                </TooltipContent>
-              </Tooltip>
-            )}
-          </div>
+            </div>
 
-          {/* Hamburger toggle button */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                onClick={toggle}
-                variant="ghost"
-                size="icon"
-                className="shrink-0"
-                aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-                aria-expanded={!isCollapsed}
-              >
-                <Menu className="w-5 h-5" aria-hidden="true" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="right" className="font-medium">
-              {isCollapsed ? "Expand" : "Collapse"} (
-              {typeof navigator !== "undefined" && navigator.platform.toLowerCase().includes("mac")
-                ? "⌘B"
-                : "Ctrl+B"}
-              )
-            </TooltipContent>
-          </Tooltip>
-        </div>
+            {/* Hamburger toggle button */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  onClick={toggle}
+                  variant="ghost"
+                  size="icon"
+                  className="shrink-0"
+                  aria-label="Collapse sidebar"
+                  aria-expanded={true}
+                >
+                  <Menu className="w-5 h-5" aria-hidden="true" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right" className="font-medium">
+                Collapse (⌘B)
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        ) : (
+          <div className="flex flex-col border-b border-border">
+            {/* Logo - Full Width */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex items-center justify-center py-4 hover:bg-accent/50 transition-colors cursor-pointer">
+                  <img
+                    src="/assets/logo.png"
+                    alt="Real Estate Development Tracker"
+                    className="h-12 w-12 object-cover object-top rounded"
+                  />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                <p>Real Estate Development Tracker</p>
+              </TooltipContent>
+            </Tooltip>
+
+            {/* Hamburger toggle button - Full Width */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  onClick={toggle}
+                  variant="ghost"
+                  size="icon"
+                  className="w-full h-12 rounded-none"
+                  aria-label="Expand sidebar"
+                  aria-expanded={false}
+                >
+                  <Menu className="w-5 h-5" aria-hidden="true" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right" className="font-medium">
+                Expand (⌘B)
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        )}
 
         {/* User Profile Section (Story 10.11 - AC: 2,3,7,8) */}
         <DropdownMenu>
