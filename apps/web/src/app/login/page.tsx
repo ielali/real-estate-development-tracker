@@ -64,7 +64,7 @@ export default function LoginPage() {
           {/* Branding */}
           <div className="flex items-center gap-3">
             <span className="material-symbols-outlined text-white text-3xl">domain_add</span>
-            <p className="text-xl font-bold">Real Estate Tracker</p>
+            <p className="text-xl font-bold">Real Estate Development Tracker</p>
           </div>
           {/* Hero Text */}
           <div className="max-w-md">
@@ -88,7 +88,9 @@ export default function LoginPage() {
               <span className="material-symbols-outlined text-navy dark:text-primary text-3xl">
                 domain_add
               </span>
-              <p className="text-xl font-bold text-navy dark:text-white">Real Estate Tracker</p>
+              <p className="text-xl font-bold text-navy dark:text-white">
+                Real Estate Development Tracker
+              </p>
             </div>
           </div>
 

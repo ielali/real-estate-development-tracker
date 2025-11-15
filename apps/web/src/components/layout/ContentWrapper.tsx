@@ -36,7 +36,7 @@ export function ContentWrapper({ children }: ContentWrapperProps) {
     <motion.div
       animate={{ marginLeft }}
       transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
-      className="min-h-screen pt-16"
+      className={user ? "min-h-screen pt-16" : "min-h-screen"}
     >
       {children}
     </motion.div>
