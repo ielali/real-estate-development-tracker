@@ -63,11 +63,13 @@ export default function LoginPage() {
         <div className="relative z-10 flex flex-col justify-between p-12 text-white">
           {/* Branding */}
           <div className="flex items-center gap-3">
-            <img
-              src="/assets/logo.png"
-              alt="Real Estate Development Tracker"
-              className="h-16 w-auto object-contain brightness-0 invert"
-            />
+            <div className="bg-white rounded-lg px-4 py-2">
+              <img
+                src="/assets/logo.png"
+                alt="Real Estate Development Tracker"
+                className="h-12 w-auto object-contain"
+              />
+            </div>
           </div>
           {/* Hero Text */}
           <div className="max-w-md">
