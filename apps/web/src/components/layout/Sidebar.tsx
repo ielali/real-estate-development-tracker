@@ -195,7 +195,10 @@ export function Sidebar({ notificationCount = 0 }: SidebarProps) {
         data-collapsed={isCollapsed}
       >
         {/* Header with Logo and Hamburger Toggle (Story 10.11, 10.16) */}
-        <div className="flex items-center justify-between h-16 px-4 border-b border-border">
+        <div
+          className="flex items-center justify-between h-16 border-b border-border"
+          style={{ padding: isCollapsed ? "0 8px" : "0 16px" }}
+        >
           <div className="flex items-center gap-2 overflow-hidden">
             {!isCollapsed ? (
               <motion.div
@@ -212,11 +215,20 @@ export function Sidebar({ notificationCount = 0 }: SidebarProps) {
                 />
               </motion.div>
             ) : (
-              <img
-                src="/assets/logo.png"
-                alt="Real Estate Development Tracker"
-                className="h-8 w-8 object-contain shrink-0"
-              />
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center justify-center">
+                    <img
+                      src="/assets/logo.png"
+                      alt="Real Estate Development Tracker"
+                      className="h-12 w-12 object-cover object-top rounded shrink-0"
+                    />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="right">
+                  <p>Real Estate Development Tracker</p>
+                </TooltipContent>
+              </Tooltip>
             )}
           </div>
 
