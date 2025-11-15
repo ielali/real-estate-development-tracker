@@ -67,7 +67,6 @@ export default function LoginPage() {
               src="/logo.png"
               alt="Real Estate Development Tracker"
               className="h-16 w-auto object-contain"
-              style={{ filter: "brightness(0) invert(1)" }}
             />
           </div>
           {/* Hero Text */}
