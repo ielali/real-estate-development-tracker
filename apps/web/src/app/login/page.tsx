@@ -64,9 +64,9 @@ export default function LoginPage() {
           {/* Branding */}
           <div className="flex items-center gap-3">
             <img
-              src="/logo.png"
+              src="/assets/logo.png"
               alt="Real Estate Development Tracker"
-              className="h-16 w-auto object-contain"
+              className="h-16 w-auto object-contain brightness-0 invert"
             />
           </div>
           {/* Hero Text */}
@@ -88,7 +88,7 @@ export default function LoginPage() {
           {/* Mobile Logo */}
           <div className="flex justify-start lg:hidden">
             <img
-              src="/logo.png"
+              src="/assets/logo.png"
               alt="Real Estate Development Tracker"
               className="h-16 w-auto object-contain"
             />

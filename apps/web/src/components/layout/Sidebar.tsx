@@ -206,14 +206,14 @@ export function Sidebar({ notificationCount = 0 }: SidebarProps) {
                 className="overflow-hidden"
               >
                 <img
-                  src="/logo.png"
+                  src="/assets/logo.png"
                   alt="Real Estate Development Tracker"
                   className="h-10 w-auto object-contain"
                 />
               </motion.div>
             ) : (
               <img
-                src="/logo.png"
+                src="/assets/logo.png"
                 alt="Real Estate Development Tracker"
                 className="h-8 w-8 object-contain shrink-0"
               />
