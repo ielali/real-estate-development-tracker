@@ -25,7 +25,6 @@
 
 import React, { useEffect } from "react"
 import Link from "next/link"
-import Image from "next/image"
 import type { Route } from "next"
 import { usePathname, useRouter } from "next/navigation"
 import { motion } from "framer-motion"
@@ -206,23 +205,17 @@ export function Sidebar({ notificationCount = 0 }: SidebarProps) {
                 transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
                 className="overflow-hidden"
               >
-                <Image
+                <img
                   src="/logo.png"
                   alt="Real Estate Development Tracker"
-                  width={140}
-                  height={42}
-                  className="object-contain"
-                  priority
+                  className="h-10 w-auto object-contain"
                 />
               </motion.div>
             ) : (
-              <Image
+              <img
                 src="/logo.png"
                 alt="Real Estate Development Tracker"
-                width={32}
-                height={32}
-                className="object-contain shrink-0"
-                priority
+                className="h-8 w-8 object-contain shrink-0"
               />
             )}
           </div>
