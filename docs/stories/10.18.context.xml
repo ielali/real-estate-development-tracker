@@ -1,0 +1,275 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>10</epicId>
+    <storyId>18</storyId>
+    <title>Project Timeline Screen Redesign</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-16</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/10.18.story.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>project stakeholder</asA>
+    <iWant>a visual Gantt-style timeline showing project phases, milestones, and progress</iWant>
+    <soThat>I can quickly understand the project schedule, identify delays, and see what's coming next</soThat>
+    <tasks>
+## Phase 1: Data Modeling
+- Task 1: Define timeline data structures (Phase, Milestone, Timeline interfaces with status enum)
+- Create mock data for development
+
+## Phase 2-3: Timeline Structure
+- Task 2: Build timeline controls card (duration, progress, today indicator, navigation)
+- Task 3: Build month headers with current month highlighting
+
+## Phase 4-5: Phase Visualization
+- Task 4: Calculate phase positioning (percentage-based positioning logic)
+- Task 5: Build phase bar component with color mapping (purple, blue, green, yellow, indigo)
+- Task 6: Build phase sidebar (badges, status labels)
+
+## Phase 6: Milestone Rendering
+- Task 7: Build milestone markers (circles positioned at dates)
+- Task 8: Build milestone sidebar (icons: checkmark/clock/clipboard, dates)
+
+## Phase 7-8: Timeline Features
+- Task 9: Implement today indicator (red vertical line)
+- Task 10: Implement filter button (show/hide by status)
+- Task 11: Implement view selector (monthly/weekly/quarterly)
+- Task 12: Implement Add Event button
+
+## Phase 9-10: Interactions & Mobile
+- Task 13: Implement phase bar interactions (hover tooltips, click details)
+- Task 14: Implement milestone interactions (tooltips, navigation)
+- Task 15: Implement vertical timeline for mobile (< lg breakpoint)
+
+## Phase 11-13: Quality & Integration
+- Task 16: Implement accessibility features (WCAG AA, keyboard nav, screen reader)
+- Task 17: Optimize rendering (virtualization, memoization, GPU transforms)
+- Task 18: Connect to project events API (fetch phases/milestones, transform data)
+
+## Phase 14: Testing
+- Task 19: Manual testing (various durations, edge cases, devices)
+- Task 20: Automated testing (unit, component, integration, accessibility, visual regression)
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+**Functional Requirements (14 criteria):**
+
+1. Timeline controls card showing project duration (start - end dates)
+2. Overall project progress bar with percentage
+3. Today indicator (red pulsing dot) with current date
+4. Month headers across horizontal timeline (scrollable)
+5. Left sidebar with phase/milestone names and status
+6. Horizontal bars showing phase duration and progress
+7. Progress percentage displayed inside phase bars
+8. Phase bars color-coded by status (complete=solid, in-progress=solid, upcoming=faded)
+9. Status labels (Complete, In Progress with %, Upcoming, Planned)
+10. Milestone markers (circles) positioned at specific dates
+11. Milestone icons: checkmark (complete), clock (upcoming), clipboard (planned)
+12. Color-coded phase badges (Phase 1=purple, Phase 2=blue, Phase 3=green, Phase 4=yellow, Phase 5=indigo)
+13. Phase bars match badge colors for visual consistency
+14. Red vertical "TODAY" line spanning entire timeline height
+
+**Integration Requirements (5 criteria):**
+
+15. Phase grouping (phases contain milestones, hierarchical structure)
+16. Filter button to show/hide phases by status
+17. View selector (Monthly, Weekly, Quarterly zoom levels)
+18. Mobile: vertical timeline (stacked cards) instead of horizontal Gantt
+19. WCAG AA accessibility: keyboard navigation, screen reader support
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/epics/EPIC-10.3-Screen-Design-Improvements.md</path>
+        <title>Epic 10.3 - Screen Design Improvements</title>
+        <section>Story 10.18: Project Timeline Screen Redesign (lines 153-190)</section>
+        <snippet>Create visual Gantt-style timeline with phase grouping, milestone markers, today indicator, filtering, and zoom controls. Mobile-optimized vertical view. Estimated 4-5 days, high risk due to complexity.</snippet>
+      </doc>
+      <doc>
+        <path>docs/design/epic-10.3-mockups/project-timeline.html</path>
+        <title>Project Timeline Mockup</title>
+        <section>Complete Timeline Visualization</section>
+        <snippet>Interactive mockup showing timeline controls, month headers, phase bars with progress, milestone markers, today indicator, and responsive layout.</snippet>
+      </doc>
+      <doc>
+        <path>docs/design/epic-10.3-accessibility-requirements.md</path>
+        <title>Epic 10.3 Accessibility Requirements</title>
+        <section>WCAG AA Compliance Standards</section>
+        <snippet>Keyboard navigation requirements, screen reader support, color contrast standards, focus indicators, and semantic HTML structure for all Epic 10.3 screens.</snippet>
+      </doc>
+      <doc>
+        <path>docs/design/epic-10.3-component-specifications.md</path>
+        <title>Epic 10.3 Component Specifications</title>
+        <section>Design System Components</section>
+        <snippet>Component patterns, Tailwind CSS classes, Inter font usage, Material Symbols icons, and navy/primary color scheme for Epic 10.3.</snippet>
+      </doc>
+      <doc>
+        <path>docs/design/epic-10.3-ux-specification.md</path>
+        <title>Epic 10.3 UX Specification</title>
+        <section>User Experience Patterns</section>
+        <snippet>Interaction patterns, responsive design breakpoints, animation standards, and user flow guidelines for Epic 10.3 screens.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture/testing-strategy.md</path>
+        <title>Project Testing Strategy</title>
+        <section>Test Organization and Standards</section>
+        <snippet>Vitest for unit/integration tests, Playwright for E2E. Test files colocated with source using __tests__ directories. Coverage thresholds and naming conventions.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture/coding-standards.md</path>
+        <title>Coding Standards</title>
+        <section>TypeScript, React, and Code Quality Standards</section>
+        <snippet>TypeScript strict mode, naming conventions, component patterns, accessibility requirements, and code documentation standards.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture/unified-project-structure.md</path>
+        <title>Unified Project Structure</title>
+        <section>File Organization and Module Structure</section>
+        <snippet>Monorepo structure, Next.js App Router patterns, component organization, API structure, and file naming conventions.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>apps/web/src/server/api/routers/events.ts</path>
+        <kind>API Router</kind>
+        <symbol>eventsRouter</symbol>
+        <lines>67-300</lines>
+        <reason>Existing events API with create, list, update, delete procedures. Provides event data model and filtering by category, date range, and contacts. Use for fetching project phases and milestones.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/web/src/lib/category-config.ts</path>
+        <kind>Configuration</kind>
+        <symbol>CATEGORY_CONFIG</symbol>
+        <lines>1-362</lines>
+        <reason>Centralized configuration pattern from Story 10.17. Apply same pattern for timeline phase colors, milestone icons, and status mappings to avoid code duplication.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/web/src/components/events/Timeline.tsx</path>
+        <kind>Component</kind>
+        <symbol>Timeline</symbol>
+        <lines>1-150</lines>
+        <reason>Existing timeline component showing events chronologically. Reference for event data structure and timeline patterns, but this story creates new Gantt-style visualization.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/web/src/components/portfolio/TimelineDurationChart.tsx</path>
+        <kind>Component</kind>
+        <symbol>TimelineDurationChart</symbol>
+        <lines>all</lines>
+        <reason>Existing timeline visualization using date-fns and Recharts. Reference for date calculation patterns and chart integration.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/web/src/app/projects/[id]/events/page.tsx</path>
+        <kind>Page</kind>
+        <symbol>EventsPage</symbol>
+        <lines>all</lines>
+        <reason>Current events page implementation. New timeline page at /projects/[id]/timeline will replace or complement this view.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <node>
+        <package name="date-fns" version="^4.1.0">Core date manipulation and formatting library</package>
+        <package name="date-fns-tz" version="^3.2.0">Timezone support for date-fns</package>
+        <package name="next-themes" version="^0.4.6">Dark mode theme detection (established pattern from Story 10.17)</package>
+        <package name="react" version="^18.3.0">React framework</package>
+        <package name="next" version="^15.5.4">Next.js App Router</package>
+        <package name="tailwindcss" version="^3.x">Utility-first CSS framework</package>
+        <package name="lucide-react" version="^0.544.0">Icon library (Material Symbols alternative)</package>
+        <package name="framer-motion" version="^12.23.24">Animation library for transitions and hover effects</package>
+        <package name="recharts" version="^3.3.0">Optional: If timeline needs chart-like visualizations</package>
+        <package name="@tanstack/react-query" version="^5.90.2">Data fetching and caching (tRPC integration)</package>
+        <package name="@trpc/client" version="^11.6.0">Type-safe API client</package>
+      </node>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>Use centralized configuration pattern: Create timeline-phase-config.ts for phase colors (purple, blue, green, yellow, indigo), milestone icons (checkmark, clock, clipboard), and status mappings</constraint>
+    <constraint>Wrap timeline visualizations with error boundaries to prevent rendering errors from crashing the page (pattern from Story 10.17)</constraint>
+    <constraint>Use next-themes package for dark mode detection - established pattern across Epic 10.3</constraint>
+    <constraint>Create separate utility files: timeline-calculations.ts for date math and positioning logic, timeline-utils.ts for helper functions</constraint>
+    <constraint>Break down into small, testable components: TimelineControls, TimelineHeader, PhaseBar, MilestoneMarker, TodayMarker, etc.</constraint>
+    <constraint>Use CSS transforms for positioning (GPU acceleration) instead of recalculating layouts</constraint>
+    <constraint>Memoize expensive date/position calculations using useMemo to prevent unnecessary re-renders</constraint>
+    <constraint>Virtualize timeline if more than 20 phases to maintain performance</constraint>
+    <constraint>Mobile responsiveness: Fundamentally different layout below lg breakpoint (vertical cards vs horizontal Gantt)</constraint>
+    <constraint>WCAG AA accessibility: keyboard navigation, screen reader support, aria-labels, focus indicators, color not sole indicator</constraint>
+    <constraint>All dates in ISO format, use date-fns for parsing and manipulation</constraint>
+    <constraint>Component file structure: apps/web/src/components/timeline/*.tsx with __tests__ subdirectory</constraint>
+    <constraint>TypeScript strict mode: explicit types for all props, no any types</constraint>
+    <constraint>Follow Epic 10.3 design system: Inter font, Tailwind CSS, navy/primary colors, Material Symbols icons (or lucide-react)</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>eventsRouter.list</name>
+      <kind>tRPC Procedure</kind>
+      <signature>list(input: { projectId: string, categoryId?: string, startDate?: Date, endDate?: Date, limit?: number, cursor?: string })</signature>
+      <path>apps/web/src/server/api/routers/events.ts</path>
+    </interface>
+    <interface>
+      <name>eventsRouter.create</name>
+      <kind>tRPC Procedure</kind>
+      <signature>create(input: { projectId: string, title: string, description?: string, date: Date, categoryId: 'milestone' | 'meeting' | 'inspection', relatedContactIds: string[] })</signature>
+      <path>apps/web/src/server/api/routers/events.ts</path>
+    </interface>
+    <interface>
+      <name>Phase Interface (to be created)</name>
+      <kind>TypeScript Interface</kind>
+      <signature>interface Phase { id: string; name: string; color: string; startDate: string; endDate: string; progress: number; status: 'complete' | 'in-progress' | 'upcoming' | 'planned' }</signature>
+      <path>New file: apps/web/src/lib/timeline-calculations.ts</path>
+    </interface>
+    <interface>
+      <name>Milestone Interface (to be created)</name>
+      <kind>TypeScript Interface</kind>
+      <signature>interface Milestone { id: string; name: string; date: string; phase: string; status: 'complete' | 'upcoming' | 'planned'; icon: 'checkmark' | 'clock' | 'clipboard' }</signature>
+      <path>New file: apps/web/src/lib/timeline-calculations.ts</path>
+    </interface>
+    <interface>
+      <name>calculatePhasePosition (to be created)</name>
+      <kind>Function</kind>
+      <signature>function calculatePhasePosition(phase: Phase, project: Project): { left: string; width: string }</signature>
+      <path>New file: apps/web/src/lib/timeline-calculations.ts</path>
+    </interface>
+    <interface>
+      <name>calculateTodayPosition (to be created)</name>
+      <kind>Function</kind>
+      <signature>function calculateTodayPosition(project: Project): string | null</signature>
+      <path>New file: apps/web/src/lib/timeline-calculations.ts</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>Vitest for unit and integration tests. Test files colocated with source in __tests__ directories. TypeScript test files with .test.ts or .test.tsx extension. Use @testing-library/react for component testing. Mock tRPC calls using msw or vi.mock. Accessibility tests using @axe-core/react or vitest-axe. Aim for 80%+ code coverage on critical paths (calculations, positioning logic). Visual regression tests optional but recommended for complex visualizations.</standards>
+    <locations>apps/web/src/components/timeline/__tests__/, apps/web/src/lib/__tests__/</locations>
+    <ideas>
+AC 1-3: Test timeline controls card renders with correct project duration, progress percentage, and today indicator
+AC 4-6: Test month headers generation for various project durations (1 month, 6 months, 2 years), verify current month highlighting
+AC 7-9: Test phase bar color mapping matches badge colors, verify status-based opacity (solid vs faded)
+AC 10-11: Test milestone marker positioning at correct dates, verify icon selection based on status
+AC 13: Test phase bar colors match phase badges (purple, blue, green, yellow, indigo)
+AC 14: Test today marker only shows when today is within project duration, verify positioning accuracy
+AC 15-17: Test filter functionality (show/hide by status), view selector (monthly/weekly/quarterly), button navigation
+AC 18: Test mobile vertical timeline renders correctly below lg breakpoint
+AC 19: Test keyboard navigation (Tab, Enter, Escape), screen reader aria-labels, focus indicators, color contrast ratios
+
+Unit Tests:
+- calculatePhasePosition: Test various project durations, edge cases (phase &lt; 1 day, overlapping phases)
+- calculateTodayPosition: Test today before project, during project, after project (null)
+- calculateProjectProgress: Test with 0 phases, 1 phase, multiple phases at various completion levels
+- Date edge cases: Timezone handling, DST transitions, leap years
+
+Integration Tests:
+- Fetch events from API, transform to timeline format, render correctly
+- Apply filters, verify correct phases shown/hidden
+- Change view (monthly/weekly/quarterly), verify timeline recalculates
+
+Accessibility Tests:
+- Run axe-core on timeline page, verify no violations
+- Test keyboard navigation through all interactive elements
+- Verify screen reader announcements for phase bars and milestones
+    </ideas>
+  </tests>
+</story-context>

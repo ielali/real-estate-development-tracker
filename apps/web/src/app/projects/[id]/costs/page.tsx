@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Breadcrumb, breadcrumbHelpers } from "@/components/ui/breadcrumb"
 import { CostSummaryCard } from "@/components/projects/CostSummaryCard"
 import { CostBreakdownChart } from "@/components/projects/CostBreakdownChart"
 import { CategorySpendingChart } from "@/components/projects/CategorySpendingChart"
@@ -354,6 +355,11 @@ export default function ProjectCostsPage() {
 
   return (
     <div className="bg-[#f6f7f8] dark:bg-[#101922] min-h-screen">
+      {/* Breadcrumb */}
+      <div className="bg-white dark:bg-slate-900 px-6 pt-6">
+        <Breadcrumb items={breadcrumbHelpers.projectCosts(project.name, projectId)} />
+      </div>
+
       {/* Header */}
       <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700">
         <div className="px-6 py-4">

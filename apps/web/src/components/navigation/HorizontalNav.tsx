@@ -69,7 +69,8 @@ export function HorizontalNav({ projectId, isPartner = false }: HorizontalNavPro
   const navItems: NavItem[] = [
     { label: "Overview", icon: Home, href: `/projects/${projectId}` as Route<string> },
     { label: "Costs", icon: DollarSign, href: `/projects/${projectId}/costs` as Route<string> },
-    { label: "Timeline", icon: Calendar, href: `/projects/${projectId}/events` as Route<string> },
+    { label: "Timeline", icon: Calendar, href: `/projects/${projectId}/timeline` as Route<string> },
+    { label: "Events", icon: Calendar, href: `/projects/${projectId}/events` as Route<string> },
     {
       label: "Documents",
       icon: FileText,

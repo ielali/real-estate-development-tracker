@@ -39,6 +39,9 @@ export default defineConfig({
     retry: process.env.CI ? 2 : 0, // Retry flaky tests in CI only
 
     // Allow tests to use environment-specific configuration
+    // Note: environmentMatchGlobs is deprecated but test.projects approach requires
+    // separate setup files for each environment due to module resolution issues.
+    // Will migrate when Vitest provides better solution for mixed environments.
     environmentMatchGlobs: [
       // API/server tests use node environment (must come before jsdom)
       ["**/server/**/*.test.{ts,tsx}", "node"],
