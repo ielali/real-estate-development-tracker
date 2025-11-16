@@ -50,6 +50,7 @@ export {
   DollarSign,
   Calendar,
   FileText,
+  Layers,
 
   // BottomTabBar (Mobile)
   User,
