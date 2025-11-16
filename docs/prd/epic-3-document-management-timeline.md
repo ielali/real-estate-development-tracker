@@ -47,6 +47,44 @@ so that I can track project progression.
 5: Filter timeline by event type or linked contact
 6: Quick event entry from mobile with minimal fields
 
+### Construction Phases Integration
+
+**Implementation Details:**
+
+The timeline system integrates with database-backed construction phases for realistic project tracking:
+
+**Phase Management:**
+
+- **Phases Table:** Database table storing construction phases (Foundation, Framing, MEP, etc.)
+- **Phase Templates:** Pre-defined phase sets for residential (10 phases), commercial (12 phases), and renovation (9 phases) projects
+- **Phase Tracking:** Each phase tracks planned vs actual dates, progress (0-100%), and status (planned, in-progress, complete, delayed)
+- **Event-Phase Linkage:** Events can be linked to specific construction phases via phaseId foreign key
+
+**Phase Operations:**
+
+- **Initialize from Template:** Quick-start projects with standard construction phases
+- **Manual Phase Management:** Create, update, delete, and reorder custom phases
+- **Progress Tracking:** Update phase progress with automatic status calculation
+- **Timeline Visualization:** Gantt-style horizontal timeline showing phases and milestones
+
+**Database Schema:**
+
+- `phases` table: id, projectId, name, phaseNumber, phaseType, plannedStartDate, plannedEndDate, actualStartDate, actualEndDate, progress, status, description
+- `events.phaseId`: Optional foreign key linking events to construction phases
+
+**tRPC API Endpoints:**
+
+- `phases.getByProject` - Fetch all phases for a project
+- `phases.initializeFromTemplate` - Create phases from template
+- `phases.create` - Create custom phase
+- `phases.update` - Update phase details
+- `phases.updateProgress` - Track phase progress
+- `phases.delete` - Remove phase
+- `phases.reorder` - Change phase sequence
+- `timeline.getByProject` - Fetch timeline data with phases and milestones
+
+**Implementation Reference:** See Story 10.18 for Gantt-style timeline visualization implementation.
+
 ## Story 3.4: Document-Entity Relationships
 
 As a developer,

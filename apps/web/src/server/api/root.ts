@@ -19,6 +19,8 @@ import { commentsRouter } from "./routers/comments"
 import { reportsRouter } from "./routers/reports"
 import { portfolioRouter } from "./routers/portfolio"
 import { vendorRouter } from "./routers/vendor"
+import { timelineRouter } from "./routers/timeline"
+import { phasesRouter } from "./routers/phases"
 
 export const appRouter = createTRPCRouter({
   auth: authRouter,
@@ -29,6 +31,7 @@ export const appRouter = createTRPCRouter({
   category: categoryRouter,
   documents: documentsRouter,
   events: eventsRouter,
+  phases: phasesRouter,
   partners: partnersRouter,
   auditLog: auditLogRouter,
   partnerDashboard: partnerDashboardRouter,
@@ -41,6 +44,7 @@ export const appRouter = createTRPCRouter({
   reports: reportsRouter,
   portfolio: portfolioRouter,
   vendor: vendorRouter,
+  timeline: timelineRouter,
 })
 
 export type AppRouter = typeof appRouter

@@ -8,6 +8,7 @@ export * from "./costs"
 export * from "./contacts"
 export * from "./documents"
 export * from "./events"
+export * from "./phases"
 export * from "./projectAccess"
 export * from "./projectContact"
 export * from "./eventContacts"
@@ -36,6 +37,7 @@ import { costs } from "./costs"
 import { contacts } from "./contacts"
 import { documents } from "./documents"
 import { events } from "./events"
+import { phases } from "./phases"
 import { projectAccess } from "./projectAccess"
 import { projectContact } from "./projectContact"
 import { eventContacts } from "./eventContacts"
@@ -85,6 +87,7 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
   costs: many(costs),
   documents: many(documents),
   events: many(events),
+  phases: many(phases),
   projectAccess: many(projectAccess),
   projectContacts: many(projectContact),
   costTemplates: many(costTemplates),
@@ -159,6 +162,10 @@ export const eventsRelations = relations(events, ({ one, many }) => ({
   createdBy: one(users, {
     fields: [events.createdById],
     references: [users.id],
+  }),
+  phase: one(phases, {
+    fields: [events.phaseId],
+    references: [phases.id],
   }),
   eventContacts: many(eventContacts),
   eventDocuments: many(eventDocuments),
@@ -313,4 +320,12 @@ export const vendorRatingsRelations = relations(vendorRatings, ({ one }) => ({
     fields: [vendorRatings.projectId],
     references: [projects.id],
   }),
+}))
+
+export const phasesRelations = relations(phases, ({ one, many }) => ({
+  project: one(projects, {
+    fields: [phases.projectId],
+    references: [projects.id],
+  }),
+  events: many(events),
 }))

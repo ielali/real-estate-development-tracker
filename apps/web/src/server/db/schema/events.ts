@@ -3,6 +3,7 @@ import { baseEntityFields } from "./base"
 import { projects } from "./projects"
 import { categories } from "./categories"
 import { users } from "./users"
+import { phases } from "./phases"
 
 export const events = pgTable("events", {
   ...baseEntityFields,
@@ -18,4 +19,6 @@ export const events = pgTable("events", {
   createdById: text("created_by_id")
     .notNull()
     .references(() => users.id),
+  // Link event to a construction phase (optional)
+  phaseId: text("phase_id").references(() => phases.id, { onDelete: "set null" }),
 })
