@@ -118,6 +118,12 @@ export const breadcrumbHelpers = {
     { label: "Timeline", href: `/projects/${projectId}/timeline` },
   ],
 
+  projectPhases: (projectName: string, projectId: string): BreadcrumbItem[] => [
+    { label: "Projects", href: "/projects" },
+    { label: projectName, href: `/projects/${projectId}` },
+    { label: "Phases", href: `/projects/${projectId}/phases` },
+  ],
+
   newProject: (): BreadcrumbItem[] => [
     { label: "Projects", href: "/projects" },
     { label: "New Project" },

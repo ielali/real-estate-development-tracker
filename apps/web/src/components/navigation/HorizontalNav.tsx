@@ -27,6 +27,7 @@ import {
   Users,
   Settings as SettingsIcon,
   FilledIcon,
+  Layers,
   type LucideIcon,
 } from "@/components/icons"
 
@@ -70,6 +71,7 @@ export function HorizontalNav({ projectId, isPartner = false }: HorizontalNavPro
     { label: "Overview", icon: Home, href: `/projects/${projectId}` as Route<string> },
     { label: "Costs", icon: DollarSign, href: `/projects/${projectId}/costs` as Route<string> },
     { label: "Timeline", icon: Calendar, href: `/projects/${projectId}/timeline` as Route<string> },
+    { label: "Phases", icon: Layers, href: `/projects/${projectId}/phases` as Route<string> },
     { label: "Events", icon: Calendar, href: `/projects/${projectId}/events` as Route<string> },
     {
       label: "Documents",
