@@ -12,8 +12,16 @@ import {
   projectContact,
   auditLog,
   categories,
+  phases,
+  twoFactor,
 } from "./index"
 import { formatAddress, CATEGORIES } from "./types"
+import * as bcrypt from "bcryptjs"
+import {
+  RESIDENTIAL_PHASES,
+  COMMERCIAL_PHASES,
+  RENOVATION_PHASES,
+} from "../../lib/construction-phases"
 
 async function seed() {
   console.log("🌱 Starting seed process...")
@@ -27,8 +35,10 @@ async function seed() {
     await db.delete(documents)
     await db.delete(costs)
     await db.delete(contacts)
+    await db.delete(phases)
     await db.delete(projects)
     await db.delete(addresses)
+    await db.delete(twoFactor)
     await db.delete(accounts)
     await db.delete(users)
     await db.delete(categories)
@@ -38,8 +48,6 @@ async function seed() {
 
     console.log("Creating users...")
 
-    // Create basic user records for seeding purposes
-    // Note: Passwords will be set through Better Auth API later
     const adminUser = await db
       .insert(users)
       .values({
@@ -78,6 +86,65 @@ async function seed() {
       })
       .returning()
       .then((rows: (typeof users.$inferSelect)[]) => rows[0])
+
+    console.log("Creating user credentials...")
+    // Hash passwords for Better Auth credential provider
+    const adminPasswordHash = await bcrypt.hash("Admin123!", 10)
+    const partnerPasswordHash = await bcrypt.hash("Partner123!", 10)
+
+    // Create credential accounts for all users
+    await db.insert(accounts).values([
+      {
+        id: crypto.randomUUID(),
+        userId: adminUser.id,
+        accountId: adminUser.email,
+        providerId: "credential",
+        password: adminPasswordHash,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: crypto.randomUUID(),
+        userId: partnerUser1.id,
+        accountId: partnerUser1.email,
+        providerId: "credential",
+        password: partnerPasswordHash,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: crypto.randomUUID(),
+        userId: partnerUser2.id,
+        accountId: partnerUser2.email,
+        providerId: "credential",
+        password: partnerPasswordHash,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ])
+
+    console.log("Setting up 2FA for admin user...")
+    // Add 2FA setup for admin user
+    // Note: In production, users would generate their own TOTP secrets
+    // This is just seed data - secret would be encrypted by better-auth
+    const adminTotpSecret = "JBSWY3DPEHPK3PXP" // Base32 encoded secret for testing
+    const backupCodes = [
+      "backup-code-1234",
+      "backup-code-5678",
+      "backup-code-9012",
+      "backup-code-3456",
+      "backup-code-7890",
+    ]
+    const hashedBackupCodes = await Promise.all(backupCodes.map((code) => bcrypt.hash(code, 10)))
+
+    await db.insert(twoFactor).values({
+      id: crypto.randomUUID(),
+      userId: adminUser.id,
+      secret: adminTotpSecret,
+      backupCodes: JSON.stringify(hashedBackupCodes),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    })
 
     console.log("Creating addresses...")
     const toorakAddress = await db
@@ -706,6 +773,137 @@ async function seed() {
 
     await db.insert(events).values(eventsData)
 
+    console.log("Creating construction phases...")
+    // Helper function to calculate phase dates
+    const calculatePhaseDates = (
+      projectStart: Date,
+      projectEnd: Date | null,
+      phaseIndex: number,
+      totalPhases: number
+    ) => {
+      const start = new Date(projectStart)
+      const end = projectEnd
+        ? new Date(projectEnd)
+        : new Date(start.getTime() + 180 * 24 * 60 * 60 * 1000) // Default 6 months if no end
+      const duration = end.getTime() - start.getTime()
+      const phaseDuration = duration / totalPhases
+
+      const plannedStart = new Date(start.getTime() + phaseIndex * phaseDuration)
+      const plannedEnd = new Date(start.getTime() + (phaseIndex + 1) * phaseDuration)
+
+      return { plannedStart, plannedEnd }
+    }
+
+    // Phases for active renovation project (in progress)
+    const renovationPhasesData = RENOVATION_PHASES.map((template, index) => {
+      const { plannedStart, plannedEnd } = calculatePhaseDates(
+        activeRenovation.startDate!,
+        activeRenovation.endDate,
+        index,
+        RENOVATION_PHASES.length
+      )
+
+      // First 3 phases complete, phase 4 in progress, rest planned
+      let status: "planned" | "in-progress" | "complete" | "delayed" = "planned"
+      let progress = 0
+      let actualStartDate = null
+      let actualEndDate = null
+
+      if (index < 3) {
+        status = "complete"
+        progress = 100
+        actualStartDate = plannedStart
+        actualEndDate = plannedEnd
+      } else if (index === 3) {
+        status = "in-progress"
+        progress = 65
+        actualStartDate = plannedStart
+      }
+
+      return {
+        projectId: activeRenovation.id,
+        name: template.name,
+        phaseNumber: template.phaseNumber,
+        phaseType: template.phaseType,
+        description: template.description || null,
+        plannedStartDate: plannedStart,
+        plannedEndDate: plannedEnd,
+        actualStartDate,
+        actualEndDate,
+        progress,
+        status,
+      }
+    })
+
+    // Phases for on-hold new build (early stages)
+    const newBuildPhasesData = RESIDENTIAL_PHASES.map((template, index) => {
+      const { plannedStart, plannedEnd } = calculatePhaseDates(
+        onHoldNewBuild.startDate!,
+        null, // No end date
+        index,
+        RESIDENTIAL_PHASES.length
+      )
+
+      // First phase complete, second phase started then put on hold
+      let status: "planned" | "in-progress" | "complete" | "delayed" = "planned"
+      let progress = 0
+      let actualStartDate = null
+      let actualEndDate = null
+
+      if (index === 0) {
+        status = "complete"
+        progress = 100
+        actualStartDate = plannedStart
+        actualEndDate = plannedEnd
+      } else if (index === 1) {
+        status = "in-progress"
+        progress = 30
+        actualStartDate = plannedStart
+      }
+
+      return {
+        projectId: onHoldNewBuild.id,
+        name: template.name,
+        phaseNumber: template.phaseNumber,
+        phaseType: template.phaseType,
+        description: template.description || null,
+        plannedStartDate: plannedStart,
+        plannedEndDate: plannedEnd,
+        actualStartDate,
+        actualEndDate,
+        progress,
+        status,
+      }
+    })
+
+    // Phases for completed development (all complete)
+    const developmentPhasesData = COMMERCIAL_PHASES.map((template, index) => {
+      const { plannedStart, plannedEnd } = calculatePhaseDates(
+        completedDevelopment.startDate!,
+        completedDevelopment.endDate,
+        index,
+        COMMERCIAL_PHASES.length
+      )
+
+      return {
+        projectId: completedDevelopment.id,
+        name: template.name,
+        phaseNumber: template.phaseNumber,
+        phaseType: template.phaseType,
+        description: template.description || null,
+        plannedStartDate: plannedStart,
+        plannedEndDate: plannedEnd,
+        actualStartDate: plannedStart,
+        actualEndDate: plannedEnd,
+        progress: 100,
+        status: "complete" as const,
+      }
+    })
+
+    await db
+      .insert(phases)
+      .values([...renovationPhasesData, ...newBuildPhasesData, ...developmentPhasesData])
+
     console.log("Creating project access...")
     await db.insert(projectAccess).values([
       {
@@ -820,7 +1018,10 @@ async function seed() {
     Summary:
     - Categories: ${CATEGORIES.length} hierarchical categories
     - Users: 3 (1 admin, 2 partners)
+    - Credentials: 3 accounts with passwords
+    - 2FA: 1 user with TOTP enabled (admin)
     - Projects: 3 (1 active, 1 on-hold, 1 completed)
+    - Phases: 24 construction phases (6 renovation, 10 residential, 8 commercial)
     - Contacts: 15
     - Costs: 20
     - Documents: 8
@@ -828,6 +1029,11 @@ async function seed() {
     - Project Access: 3 permissions
     - Project Contacts: 13 links
     - Audit Log: 8 entries
+
+    Login Credentials:
+    - Admin: imad.elali@pm.me / Admin123! (2FA enabled)
+    - Partner 1: subscriptions.ie@pm.me / Partner123!
+    - Partner 2: bitwave.pty@pm.me / Partner123!
     `)
   } catch (error) {
     console.error("❌ Seed failed:", error)
