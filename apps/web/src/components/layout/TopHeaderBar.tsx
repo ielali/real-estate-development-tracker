@@ -36,6 +36,7 @@
 
 import { motion } from "framer-motion"
 import { Search, Bell, Plus } from "lucide-react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useViewport } from "@/hooks/useViewport"
@@ -77,10 +78,20 @@ export function TopHeaderBar({
   const { isMobile } = useViewport()
   const { isCollapsed } = useCollapsedSidebar()
   const { user } = useAuth()
+  const router = useRouter()
 
   // Hide header bar for unauthenticated users (Story 10.16)
   if (!user) {
     return null
+  }
+
+  // Default CTA action navigates to new project page
+  const handleCtaClick = () => {
+    if (ctaAction) {
+      ctaAction()
+    } else {
+      router.push("/projects/new")
+    }
   }
 
   // Calculate the left offset value
@@ -154,7 +165,7 @@ export function TopHeaderBar({
 
           {/* Primary CTA - Desktop Only */}
           {!isMobile && (
-            <Button onClick={ctaAction} className="gap-2" aria-label={ctaLabel}>
+            <Button onClick={handleCtaClick} className="gap-2" aria-label={ctaLabel}>
               <Plus className="w-4 h-4" />
               {ctaLabel}
             </Button>
