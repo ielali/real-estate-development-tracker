@@ -29,12 +29,13 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>
 
 interface LoginFormProps {
-  onSuccess?: () => void
+  onSuccess?: (requires2FA: boolean) => void
 }
 
 export function LoginForm({ onSuccess }: LoginFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [showPassword, setShowPassword] = useState(false)
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -61,21 +62,15 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
       }
 
       // Check if 2FA verification is required
-      // The twoFactorRedirect property is returned by better-auth twoFactor plugin
       if ((response.data as { twoFactorRedirect?: boolean })?.twoFactorRedirect) {
-        // Redirect to 2FA verification page
-        window.location.href = "/login/verify-2fa"
+        // Notify parent that 2FA is required
+        onSuccess?.(true)
         return
       }
 
       if (response.data) {
-        // Call the success handler if provided
-        if (onSuccess) {
-          onSuccess()
-        } else {
-          // Default redirect to home page
-          window.location.href = "/"
-        }
+        // Call the success handler with no 2FA required
+        onSuccess?.(false)
       }
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "An error occurred")
@@ -85,78 +80,146 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
   }
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        {errorMessage && (
-          <div className="rounded-md bg-red-50 p-4">
-            <div className="text-sm text-red-800">{errorMessage}</div>
-          </div>
-        )}
+    <div>
+      {/* Visually hidden status region for screen readers */}
+      <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+        {isLoading && "Signing in, please wait..."}
+      </div>
 
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email Address</FormLabel>
-              <FormControl>
-                <Input
-                  type="email"
-                  placeholder="admin@example.com"
-                  autoComplete="email"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
+      {/* Page Heading */}
+      <div className="flex flex-col gap-2 mb-8">
+        <p className="text-[#333333] dark:text-slate-200 text-3xl font-black leading-tight tracking-tight">
+          Welcome Back
+        </p>
+        <p className="text-slate-500 dark:text-slate-400 text-base font-normal leading-normal">
+          Sign in to continue to your projects
+        </p>
+      </div>
+
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6">
+          {errorMessage && (
+            <div
+              role="alert"
+              aria-live="polite"
+              aria-atomic="true"
+              className="rounded-lg bg-red-50 dark:bg-red-900/20 p-4 border border-red-200 dark:border-red-800"
+            >
+              <div className="text-sm text-red-800 dark:text-red-200">{errorMessage}</div>
+            </div>
           )}
-        />
 
-        <FormField
-          control={form.control}
-          name="password"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Password</FormLabel>
-              <FormControl>
-                <Input
-                  type="password"
-                  placeholder="Enter your password"
-                  autoComplete="current-password"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <div className="flex items-center justify-between">
+          {/* Email Field */}
           <FormField
             control={form.control}
-            name="rememberMe"
+            name="email"
             render={({ field }) => (
-              <FormItem className="flex flex-row items-center space-x-2 space-y-0">
+              <FormItem>
+                <FormLabel className="text-[#333333] dark:text-slate-300 text-sm font-medium">
+                  Email Address
+                </FormLabel>
                 <FormControl>
-                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                  <Input
+                    type="email"
+                    placeholder="you@company.com"
+                    autoComplete="email"
+                    className="flex w-full h-12 rounded-lg text-[#333333] dark:text-slate-100 focus:ring-2 focus:ring-primary/50 border-slate-300 dark:border-slate-700 bg-white dark:bg-background-dark placeholder:text-slate-400 dark:placeholder:text-slate-500 px-4 text-base"
+                    {...field}
+                  />
                 </FormControl>
-                <FormLabel className="text-sm font-normal">Remember me</FormLabel>
+                <FormMessage className="text-sm text-red-600 dark:text-red-400" />
               </FormItem>
             )}
           />
 
-          <div className="text-sm">
-            <Link href="/forgot-password" className="font-medium text-blue-600 hover:text-blue-500">
-              Forgot your password?
+          {/* Password Field */}
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-[#333333] dark:text-slate-300 text-sm font-medium">
+                  Password
+                </FormLabel>
+                <FormControl>
+                  <div className="relative w-full">
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Enter your password"
+                      autoComplete="current-password"
+                      className="flex w-full h-12 rounded-lg text-[#333333] dark:text-slate-100 focus:ring-2 focus:ring-primary/50 border-slate-300 dark:border-slate-700 bg-white dark:bg-background-dark placeholder:text-slate-400 dark:placeholder:text-slate-500 px-4 pr-12 text-base"
+                      {...field}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 transition-colors"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                    >
+                      <span className="material-symbols-outlined text-xl">
+                        {showPassword ? "visibility_off" : "visibility"}
+                      </span>
+                    </button>
+                  </div>
+                </FormControl>
+                <FormMessage className="text-sm text-red-600 dark:text-red-400" />
+              </FormItem>
+            )}
+          />
+
+          {/* Remember Me & Forgot Password */}
+          <div className="flex items-center justify-between">
+            <FormField
+              control={form.control}
+              name="rememberMe"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center space-x-2 space-y-0">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                      className="h-4 w-4 rounded border-slate-300 dark:border-slate-600 text-navy dark:text-primary bg-slate-100 dark:bg-slate-800"
+                    />
+                  </FormControl>
+                  <FormLabel className="text-sm text-slate-600 dark:text-slate-400 font-normal">
+                    Remember me
+                  </FormLabel>
+                </FormItem>
+              )}
+            />
+
+            <div className="text-sm">
+              <Link
+                href="/forgot-password"
+                className="font-medium text-primary dark:text-primary/90 hover:underline"
+              >
+                Forgot password?
+              </Link>
+            </div>
+          </div>
+
+          {/* Sign In Button */}
+          <Button
+            type="submit"
+            className="flex items-center justify-center whitespace-nowrap rounded-lg h-12 px-6 text-sm font-semibold text-white bg-navy hover:bg-navy-hover dark:bg-primary dark:hover:bg-primary-hover transition-colors w-full"
+            disabled={isLoading}
+          >
+            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Sign In
+          </Button>
+
+          {/* Sign Up Link */}
+          <div className="text-center text-sm text-slate-600 dark:text-slate-400">
+            Don't have an account?{" "}
+            <Link
+              href="/register"
+              className="font-medium text-primary dark:text-primary/90 hover:underline"
+            >
+              Sign up
             </Link>
           </div>
-        </div>
-
-        <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Sign In
-        </Button>
-      </form>
-    </Form>
+        </form>
+      </Form>
+    </div>
   )
 }

@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Costs - Design Mockup</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "primary-hover": "#0d6bc9",
+                        "navy": "#0A2540",
+                        "navy-hover": "#0a2540e6",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark antialiased">
+    <!-- Header -->
+    <div class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700">
+        <div class="px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-black text-[#333333] dark:text-white tracking-tight">Project Costs</h1>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1 font-medium">Riverside Plaza Development</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button class="flex items-center gap-2 px-4 h-10 text-sm font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                        <span class="material-symbols-outlined text-xl">download</span>
+                        Export
+                    </button>
+                    <button class="flex items-center gap-2 px-4 h-10 text-sm font-semibold text-white bg-navy hover:bg-navy-hover dark:bg-primary dark:hover:bg-primary-hover rounded-lg transition-colors">
+                        <span class="material-symbols-outlined text-xl">add</span>
+                        Add Cost
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="px-6 py-6 max-w-7xl">
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+            <!-- Total Budget Card -->
+            <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="flex items-center justify-center w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl">
+                        <span class="material-symbols-outlined text-blue-600 dark:text-blue-400 text-2xl">account_balance_wallet</span>
+                    </div>
+                </div>
+                <p class="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Total Budget</p>
+                <p class="text-3xl font-black text-[#333333] dark:text-white mt-2">$2,450,000</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">Original estimate</p>
+            </div>
+
+            <!-- Total Spent Card -->
+            <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="flex items-center justify-center w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-xl">
+                        <span class="material-symbols-outlined text-orange-600 dark:text-orange-400 text-2xl">payments</span>
+                    </div>
+                </div>
+                <p class="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Total Spent</p>
+                <p class="text-3xl font-black text-[#333333] dark:text-white mt-2">$1,847,320</p>
+                <p class="text-xs text-green-600 dark:text-green-400 mt-2 flex items-center gap-1.5 font-medium">
+                    <span class="inline-block w-2 h-2 bg-green-600 dark:bg-green-400 rounded-full"></span>
+                    75.4% of budget
+                </p>
+            </div>
+
+            <!-- Remaining Card -->
+            <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="flex items-center justify-center w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-xl">
+                        <span class="material-symbols-outlined text-green-600 dark:text-green-400 text-2xl">check_circle</span>
+                    </div>
+                </div>
+                <p class="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Remaining</p>
+                <p class="text-3xl font-black text-[#333333] dark:text-white mt-2">$602,680</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">24.6% available</p>
+            </div>
+
+            <!-- Variance Card -->
+            <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="flex items-center justify-center w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-xl">
+                        <span class="material-symbols-outlined text-red-600 dark:text-red-400 text-2xl">trending_up</span>
+                    </div>
+                </div>
+                <p class="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Variance</p>
+                <p class="text-3xl font-black text-red-600 dark:text-red-400 mt-2">+$127,320</p>
+                <p class="text-xs text-red-600 dark:text-red-400 mt-2 font-medium">5.2% over original</p>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <!-- Cost Breakdown Chart -->
+            <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
+                <h3 class="text-lg font-black text-[#333333] dark:text-white mb-4">Cost Breakdown by Category</h3>
+                <canvas id="costBreakdownChart" class="max-h-64"></canvas>
+            </div>
+
+            <!-- Budget vs Actual Chart -->
+            <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
+                <h3 class="text-lg font-black text-[#333333] dark:text-white mb-4">Budget vs Actual</h3>
+                <canvas id="budgetActualChart" class="max-h-64"></canvas>
+            </div>
+        </div>
+
+        <!-- Spending Trend Chart -->
+        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-6 mb-6">
+            <h3 class="text-lg font-black text-[#333333] dark:text-white mb-4">Spending Trend Over Time</h3>
+            <canvas id="spendingTrendChart" class="max-h-64"></canvas>
+        </div>
+
+        <!-- Cost Table -->
+        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700">
+            <!-- Table Header -->
+            <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-700">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-black text-[#333333] dark:text-white">Detailed Cost Breakdown</h3>
+                    <div class="flex items-center gap-3">
+                        <!-- Filter Dropdown -->
+                        <select class="px-3 h-9 text-sm font-medium border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-transparent">
+                            <option>All Categories</option>
+                            <option>Construction</option>
+                            <option>Materials</option>
+                            <option>Labor</option>
+                            <option>Permits</option>
+                            <option>Professional Services</option>
+                        </select>
+                        <!-- Search -->
+                        <div class="relative">
+                            <input type="text" placeholder="Search costs..." class="pl-10 pr-4 h-9 text-sm border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-transparent placeholder:text-slate-400 dark:placeholder:text-slate-500">
+                            <span class="material-symbols-outlined text-slate-400 dark:text-slate-500 text-xl absolute left-3 top-1/2 -translate-y-1/2">search</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Description</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Category</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Vendor</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Date</th>
+                            <th class="px-6 py-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Budget</th>
+                            <th class="px-6 py-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Actual</th>
+                            <th class="px-6 py-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Variance</th>
+                            <th class="px-6 py-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
+                        <!-- Row 1 -->
+                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-semibold text-[#333333] dark:text-white">Foundation & Excavation</div>
+                                <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Phase 1 groundwork</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 py-1 text-xs font-semibold bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full">Construction</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-600 dark:text-slate-400">ABC Construction</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">Jan 15, 2025</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-[#333333] dark:text-white">$425,000</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-[#333333] dark:text-white">$448,750</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
+                                <span class="text-red-600 dark:text-red-400 font-bold">+$23,750</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
+                                <button class="text-primary dark:text-primary/90 hover:underline font-medium">Edit</button>
+                            </td>
+                        </tr>
+
+                        <!-- Row 2 -->
+                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-semibold text-[#333333] dark:text-white">Structural Steel</div>
+                                <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Building frame materials</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 py-1 text-xs font-semibold bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full">Materials</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-600 dark:text-slate-400">Steel Supply Co</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">Feb 1, 2025</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-[#333333] dark:text-white">$550,000</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-[#333333] dark:text-white">$523,400</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
+                                <span class="text-green-600 dark:text-green-400 font-bold">-$26,600</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
+                                <button class="text-primary dark:text-primary/90 hover:underline font-medium">Edit</button>
+                            </td>
+                        </tr>
+
+                        <!-- Row 3 -->
+                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-semibold text-[#333333] dark:text-white">Electrician Services</div>
+                                <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Wiring and electrical systems</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 py-1 text-xs font-semibold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full">Labor</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-600 dark:text-slate-400">Bright Electric</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">Mar 10, 2025</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-[#333333] dark:text-white">$180,000</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-[#333333] dark:text-white">$195,670</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
+                                <span class="text-red-600 dark:text-red-400 font-bold">+$15,670</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
+                                <button class="text-primary dark:text-primary/90 hover:underline font-medium">Edit</button>
+                            </td>
+                        </tr>
+
+                        <!-- Row 4 -->
+                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-semibold text-[#333333] dark:text-white">Building Permits</div>
+                                <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">City permits and fees</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 py-1 text-xs font-semibold bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 rounded-full">Permits</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-600 dark:text-slate-400">City Hall</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">Jan 5, 2025</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-[#333333] dark:text-white">$45,000</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-[#333333] dark:text-white">$48,500</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
+                                <span class="text-red-600 dark:text-red-400 font-bold">+$3,500</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
+                                <button class="text-primary dark:text-primary/90 hover:underline font-medium">Edit</button>
+                            </td>
+                        </tr>
+
+                        <!-- Row 5 -->
+                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-semibold text-[#333333] dark:text-white">Architectural Design</div>
+                                <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Design and planning services</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 py-1 text-xs font-semibold bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-full">Professional Services</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-600 dark:text-slate-400">Design Studio Inc</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">Dec 1, 2024</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-[#333333] dark:text-white">$125,000</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-[#333333] dark:text-white">$125,000</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
+                                <span class="text-slate-500 dark:text-slate-400 font-bold">$0</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
+                                <button class="text-primary dark:text-primary/90 hover:underline font-medium">Edit</button>
+                            </td>
+                        </tr>
+
+                        <!-- Row 6 -->
+                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-semibold text-[#333333] dark:text-white">HVAC Installation</div>
+                                <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Heating and cooling systems</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 py-1 text-xs font-semibold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full">Labor</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-600 dark:text-slate-400">CoolAir HVAC</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">Apr 15, 2025</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-[#333333] dark:text-white">$225,000</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-[#333333] dark:text-white">$218,000</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
+                                <span class="text-green-600 dark:text-green-400 font-bold">-$7,000</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
+                                <button class="text-primary dark:text-primary/90 hover:underline font-medium">Edit</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Table Footer -->
+            <div class="px-6 py-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+                <div class="flex items-center justify-between">
+                    <p class="text-sm text-slate-600 dark:text-slate-400">Showing 6 of 24 costs</p>
+                    <div class="flex items-center gap-2">
+                        <button class="px-3 py-1.5 text-sm font-medium border border-slate-300 dark:border-slate-700 text-slate-400 dark:text-slate-500 rounded-lg cursor-not-allowed" disabled>Previous</button>
+                        <button class="px-3 py-1.5 text-sm font-semibold bg-navy dark:bg-primary text-white rounded-lg">1</button>
+                        <button class="px-3 py-1.5 text-sm font-medium border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">2</button>
+                        <button class="px-3 py-1.5 text-sm font-medium border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">3</button>
+                        <button class="px-3 py-1.5 text-sm font-medium border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">Next</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Design Note -->
+        <div class="mt-6 text-center">
+            <p class="text-slate-400 dark:text-slate-500 text-xs font-medium">
+                Design Mockup - Story 10.17 | Epic 10.3
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Detect dark mode
+        const isDark = document.documentElement.classList.contains('dark');
+        const textColor = isDark ? '#cbd5e1' : '#333333';
+        const gridColor = isDark ? '#334155' : '#e2e8f0';
+
+        // Cost Breakdown Pie Chart
+        const costBreakdownCtx = document.getElementById('costBreakdownChart').getContext('2d');
+        new Chart(costBreakdownCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Construction', 'Materials', 'Labor', 'Permits', 'Professional Services'],
+                datasets: [{
+                    data: [448750, 523400, 413670, 48500, 125000],
+                    backgroundColor: [
+                        'rgba(59, 130, 246, 0.8)',
+                        'rgba(168, 85, 247, 0.8)',
+                        'rgba(34, 197, 94, 0.8)',
+                        'rgba(234, 179, 8, 0.8)',
+                        'rgba(99, 102, 241, 0.8)'
+                    ],
+                    borderWidth: 2,
+                    borderColor: isDark ? '#1e293b' : '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 15,
+                            font: { size: 12, family: 'Inter' },
+                            color: textColor
+                        }
+                    }
+                }
+            }
+        });
+
+        // Budget vs Actual Bar Chart
+        const budgetActualCtx = document.getElementById('budgetActualChart').getContext('2d');
+        new Chart(budgetActualCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Construction', 'Materials', 'Labor', 'Permits', 'Professional'],
+                datasets: [
+                    {
+                        label: 'Budget',
+                        data: [425000, 550000, 405000, 45000, 125000],
+                        backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Actual',
+                        data: [448750, 523400, 413670, 48500, 125000],
+                        backgroundColor: 'rgba(239, 68, 68, 0.7)',
+                        borderColor: 'rgba(239, 68, 68, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + (value / 1000) + 'K';
+                            },
+                            color: textColor,
+                            font: { family: 'Inter' }
+                        },
+                        grid: {
+                            color: gridColor
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: textColor,
+                            font: { family: 'Inter' }
+                        },
+                        grid: {
+                            color: gridColor
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 15,
+                            font: { size: 12, family: 'Inter' },
+                            color: textColor
+                        }
+                    }
+                }
+            }
+        });
+
+        // Spending Trend Line Chart
+        const spendingTrendCtx = document.getElementById('spendingTrendChart').getContext('2d');
+        new Chart(spendingTrendCtx, {
+            type: 'line',
+            data: {
+                labels: ['Dec 2024', 'Jan 2025', 'Feb 2025', 'Mar 2025', 'Apr 2025', 'May 2025'],
+                datasets: [{
+                    label: 'Cumulative Spending',
+                    data: [125000, 598750, 1122150, 1317820, 1535820, 1847320],
+                    borderColor: 'rgba(19, 127, 236, 1)',
+                    backgroundColor: 'rgba(19, 127, 236, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + (value / 1000000).toFixed(1) + 'M';
+                            },
+                            color: textColor,
+                            font: { family: 'Inter' }
+                        },
+                        grid: {
+                            color: gridColor
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: textColor,
+                            font: { family: 'Inter' }
+                        },
+                        grid: {
+                            color: gridColor
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

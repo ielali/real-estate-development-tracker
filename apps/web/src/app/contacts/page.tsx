@@ -5,7 +5,6 @@ import { useState, useEffect, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { ContactList } from "@/components/contacts/ContactList"
 import { ContactForm } from "@/components/contacts/ContactForm"
-import { Navbar } from "@/components/layout/Navbar"
 import {
   Dialog,
   DialogContent,
@@ -90,8 +89,7 @@ export default function ContactsPage(): JSX.Element {
         <DeepLinkHandler onOpenCreate={handleCreateClick} />
       </Suspense>
 
-      <Navbar />
-      <div className="container mx-auto py-6 px-4 sm:px-6 lg:px-8">
+      <div className="px-6 py-6 max-w-7xl">
         {/* Breadcrumb */}
         <div className="mb-6">
           <Breadcrumb items={[{ label: "Contacts" }]} />

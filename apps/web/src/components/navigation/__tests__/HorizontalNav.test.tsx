@@ -1,6 +1,7 @@
 /**
  * HorizontalNav Component Tests
  * Story 10.4: Horizontal Top Navigation for Subsections
+ * Story 10.12: Layout Integration - Two-Tier Header System (sticky below TopHeaderBar)
  */
 
 import React from "react"
@@ -51,13 +52,13 @@ describe("HorizontalNav", () => {
     expect(nav).toHaveAttribute("aria-label", "Project navigation")
   })
 
-  test("navigation is sticky positioned", () => {
+  test("navigation is sticky positioned below TopHeaderBar", () => {
     render(<HorizontalNav projectId={projectId} />)
 
     const nav = screen.getByRole("navigation")
     expect(nav).toHaveClass("sticky")
-    expect(nav).toHaveClass("top-0")
-    expect(nav).toHaveClass("z-10")
+    expect(nav).toHaveClass("top-16") // 64px below TopHeaderBar (Story 10.12)
+    expect(nav).toHaveClass("z-20") // Below TopHeaderBar z-30, above content (Story 10.12)
   })
 
   test("active item has correct styling and aria-current", () => {
@@ -66,7 +67,8 @@ describe("HorizontalNav", () => {
 
     const overviewLink = screen.getByRole("link", { name: /overview/i })
     expect(overviewLink).toHaveClass("border-primary")
-    expect(overviewLink).toHaveClass("text-foreground")
+    expect(overviewLink).toHaveClass("text-primary") // Story 10.13: Updated from text-foreground
+    expect(overviewLink).toHaveClass("bg-primary-light") // Story 10.13: New active background
     expect(overviewLink).toHaveAttribute("aria-current", "page")
   })
 
@@ -143,6 +145,38 @@ describe("HorizontalNav", () => {
     const costsLink = screen.getByRole("link", { name: /costs/i })
     expect(costsLink).toHaveClass("border-primary")
     expect(costsLink).toHaveAttribute("aria-current", "page")
+  })
+
+  test("Overview is NOT active when on child routes (regression test)", () => {
+    // Bug: Overview was staying active when navigating to /costs, /events, etc.
+    // Fix: Overview should only match exact path, not child routes
+    mockUsePathname.mockReturnValue(`/projects/${projectId}/costs`)
+    render(<HorizontalNav projectId={projectId} />)
+
+    const overviewLink = screen.getByRole("link", { name: /overview/i })
+    const costsLink = screen.getByRole("link", { name: /costs/i })
+
+    // Overview should NOT be active
+    expect(overviewLink).toHaveClass("border-transparent")
+    expect(overviewLink).toHaveClass("text-muted-foreground")
+    expect(overviewLink).not.toHaveAttribute("aria-current")
+
+    // Costs should be active
+    expect(costsLink).toHaveClass("border-primary")
+    expect(costsLink).toHaveAttribute("aria-current", "page")
+  })
+
+  test("Overview is active ONLY on exact project path", () => {
+    mockUsePathname.mockReturnValue(`/projects/${projectId}`)
+    render(<HorizontalNav projectId={projectId} />)
+
+    const overviewLink = screen.getByRole("link", { name: /overview/i })
+    expect(overviewLink).toHaveClass("border-primary")
+    expect(overviewLink).toHaveAttribute("aria-current", "page")
+
+    // Other items should NOT be active
+    const costsLink = screen.getByRole("link", { name: /costs/i })
+    expect(costsLink).not.toHaveAttribute("aria-current")
   })
 
   test("navigation has horizontal scroll for mobile", () => {

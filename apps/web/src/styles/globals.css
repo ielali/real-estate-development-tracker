@@ -1,6 +1,28 @@
+/* Story 10.16: Material Symbols Outlined icons for Epic 10.3 */
+@import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Material Symbols icon font configuration */
+.material-symbols-outlined {
+  font-family: "Material Symbols Outlined";
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "liga";
+}
 
 @layer base {
   :root {
@@ -13,8 +35,13 @@
     /* Updated primary color from #3B82F6 to #2563EB (Epic 10) */
     --primary: 217 91% 54%;
     --primary-foreground: 0 0% 100%;
+    /* Story 10.13: Primary color variants */
+    --primary-hover: 217 91% 46%; /* #1D4ED8 - Darker blue for hover states */
+    --primary-light: 214 100% 92%; /* #DBEAFE - Light blue for active/selected backgrounds */
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Story 10.13: Tertiary background for subtle depth */
+    --bg-tertiary: 214 32% 96%; /* #F1F5F9 - Third-tier background */
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
     --accent: 210 40% 96.1%;
@@ -28,11 +55,11 @@
 
     /* New color system additions - Epic 10
      * All colors are WCAG AA compliant (4.5:1 minimum contrast)
-     * Success: #0E9267 (darkened for accessibility)
+     * Success: #10B981 (Story 10.13 - updated for design alignment)
      * Warning: #F59E0B (uses black text for contrast)
      * Error: #EF4444 (matches destructive)
      */
-    --success: 158 84% 34%;
+    --success: 158 64% 52%;
     --success-foreground: 0 0% 100%;
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 0%;
@@ -51,8 +78,13 @@
     --popover-foreground: 210 40% 98%;
     --primary: 217 91% 60%;
     --primary-foreground: 222.2 47.4% 11.2%;
+    /* Story 10.13: Primary color variants (dark mode) */
+    --primary-hover: 217 91% 70%; /* Lighter for hover on dark backgrounds */
+    --primary-light: 217 91% 20%; /* Darker for backgrounds in dark mode */
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
+    /* Story 10.13: Tertiary background (dark mode) */
+    --bg-tertiary: 217.2 32.6% 15%; /* Slightly lighter than secondary for depth */
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
     --accent: 217.2 32.6% 17.5%;
@@ -64,7 +96,7 @@
     --ring: 217 91% 60%;
 
     /* New color system additions - dark mode */
-    --success: 158 84% 45%;
+    --success: 158 64% 45%;
     --success-foreground: 0 0% 100%;
     --warning: 38 92% 55%;
     --warning-foreground: 0 0% 0%;

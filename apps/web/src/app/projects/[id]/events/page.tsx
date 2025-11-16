@@ -46,7 +46,7 @@ export default function EventsPage() {
 
   if (isLoading) {
     return (
-      <div className="container max-w-4xl py-10">
+      <div className="px-6 py-10 max-w-4xl">
         <div className="text-center py-12">
           <p className="text-muted-foreground">Loading project...</p>
         </div>
@@ -56,7 +56,7 @@ export default function EventsPage() {
 
   if (!project) {
     return (
-      <div className="container max-w-4xl py-10">
+      <div className="px-6 py-10 max-w-4xl">
         <div className="text-center py-12">
           <p className="text-red-600 mb-4">Project not found</p>
           <Button onClick={() => router.push("/projects" as never)}>Back to Projects</Button>
@@ -66,7 +66,7 @@ export default function EventsPage() {
   }
 
   return (
-    <div className="container max-w-4xl py-10">
+    <div className="px-6 py-10 max-w-4xl">
       {/* Breadcrumb */}
       <div className="mb-6">
         <Breadcrumb items={breadcrumbHelpers.projectEvents(project.name, projectId)} />

@@ -33,6 +33,61 @@ interface MobileNavigationProps {
 **Responsibility:** Mobile-optimized bottom navigation with contextual quick actions
 **Technology Stack:** Responsive design with Tailwind, Framer Motion for tab transitions
 
+**Sidebar** _(Stories 10.3, 10.11)_
+
+```typescript
+interface SidebarProps {
+  notificationCount?: number
+}
+
+interface NavItem {
+  href: Route<string>
+  label: string
+  icon: LucideIcon
+  requiresAuth?: boolean
+  badge?: boolean
+}
+```
+
+**Responsibility:** Primary navigation sidebar with collapsible functionality, user profile management, and tools access
+**Technology Stack:** Fixed positioning (z-40), Framer Motion animations (200ms), shadcn/ui components (Avatar, DropdownMenu, Tooltip)
+**Features:**
+
+- Collapsible sidebar (256px expanded, 64px collapsed) with hamburger menu toggle in header
+- User profile section with avatar (auto-generated initials), name, role display
+- User dropdown menu (Profile, Settings, Logout)
+- Main navigation items with active route highlighting
+- Tools navigation section (Notifications, Settings, Help) with visual divider
+- Notification badge indicator (count in expanded state, red dot when collapsed)
+- Keyboard shortcut support (Cmd/Ctrl + B to toggle)
+- Tooltips in collapsed state for all navigation items
+- localStorage persistence of collapse state
+- WCAG AA accessibility compliance
+  **Z-Index Layering:** z-40 (highest in navigation hierarchy, above TopHeaderBar z-30)
+
+**TopHeaderBar** _(Story 10.10)_
+
+```typescript
+interface TopHeaderBarProps {
+  notificationCount?: number
+  ctaLabel?: string
+  ctaAction?: () => void
+  onSearchChange?: (query: string) => void
+  className?: string
+}
+```
+
+**Responsibility:** Global header bar providing search, notifications, and quick actions accessible from all pages
+**Technology Stack:** Fixed positioning (z-30), Framer Motion animations, responsive design with mobile adaptations
+**Features:**
+
+- Global search bar (desktop only, UI placeholder for future functionality)
+- Notification button with animated badge indicator
+- Context-aware primary CTA button
+- Coordinates with Sidebar collapse state (left margin adjustment)
+- Mobile adaptations: Hides search/CTA, shows icon buttons
+  **Z-Index Layering:** z-30 (below Sidebar z-40, above HorizontalNav z-20)
+
 ### Business Components
 
 **ProjectDashboard**

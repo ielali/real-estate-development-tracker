@@ -67,7 +67,7 @@ export default function NotificationSettingsPage() {
 
   if (isLoading) {
     return (
-      <div className="container max-w-4xl py-8">
+      <div className="px-6 py-8 max-w-4xl">
         <div className="flex items-center justify-center h-64">
           <p className="text-muted-foreground">Loading preferences...</p>
         </div>
@@ -77,7 +77,7 @@ export default function NotificationSettingsPage() {
 
   if (!preferences) {
     return (
-      <div className="container max-w-4xl py-8">
+      <div className="px-6 py-8 max-w-4xl">
         <div className="flex items-center justify-center h-64">
           <p className="text-destructive">Failed to load preferences</p>
         </div>
@@ -86,7 +86,7 @@ export default function NotificationSettingsPage() {
   }
 
   return (
-    <div className="container max-w-4xl py-8 space-y-8">
+    <div className="px-6 py-8 max-w-4xl space-y-8">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Notification Settings</h1>

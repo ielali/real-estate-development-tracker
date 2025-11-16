@@ -4,7 +4,6 @@ import { Suspense } from "react"
 import { useParams } from "next/navigation"
 import { CostEditForm } from "@/components/costs/CostEditForm"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Navbar } from "@/components/layout/Navbar"
 import { Breadcrumb } from "@/components/ui/breadcrumb"
 import { api } from "@/lib/trpc/client"
 import { CommentThread } from "@/components/comments/CommentThread"
@@ -34,8 +33,7 @@ export default function EditCostPage() {
 
   return (
     <>
-      <Navbar />
-      <div className="container max-w-2xl py-8">
+      <div className="px-6 py-8 max-w-2xl">
         {/* Breadcrumb */}
         {project && (
           <div className="mb-6">

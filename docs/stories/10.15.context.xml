@@ -1,0 +1,1192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Story Context: 10.15 - Content Layout Fix - Remove Container Centering
+  Generated: 2025-11-12
+
+  This context provides all information needed to implement Story 10.15.
+  The story fixes the content centering issue where content remains centered
+  instead of expanding when the sidebar collapses, wasting horizontal space.
+-->
+
+<story-context>
+  <story-id>10.15</story-id>
+  <title>Content Layout Fix - Remove Container Centering</title>
+  <status>drafted</status>
+  <estimated-effort>2-3 hours</estimated-effort>
+
+  <summary>
+    Remove `.container mx-auto` pattern from ~50 application pages and replace with explicit
+    padding and max-width constraints. Content should expand to fill available space when
+    sidebar collapses instead of remaining centered. Create optional PageContainer helper
+    component for consistent usage. Preserve centering for auth/error pages (intentional design).
+    Root cause: Tailwind config has `center: true` which adds `mx-auto` (margin: 0 auto) to
+    all `.container` usage, preventing content from expanding into reclaimed space when sidebar
+    collapses from 256px to 64px.
+  </summary>
+
+  <!-- ================================================================ -->
+  <!-- DOCUMENTATION ARTIFACTS                                          -->
+  <!-- ================================================================ -->
+
+  <documentation-artifacts>
+
+    <artifact id="doc-1">
+      <name>Story 10.15 - Content Layout Fix</name>
+      <path>docs/stories/10.15.story.md</path>
+      <lines>1-712</lines>
+      <summary>
+        Complete story file with 13 acceptance criteria, 17 tasks, implementation patterns,
+        and migration guidance. Focuses on removing `.container mx-auto` from ~50 pages and
+        replacing with explicit padding (px-6) and max-width constraints. Creates PageContainer
+        helper component for consistent usage. Estimated: 2-3 hours.
+      </summary>
+      <key-requirements>
+        - AC 1: Content expands to fill available width when sidebar collapses (192px reclaimed)
+        - AC 2: Content maintains consistent horizontal padding (px-6 = 24px)
+        - AC 3: Content respects maximum width constraints (2xl forms, 4xl details, 7xl lists)
+        - AC 4: Auth pages remain centered (intentional design)
+        - AC 5: Error pages remain centered (intentional design)
+        - AC 6: `.container` class removed from all main application pages (~50 pages)
+        - AC 9: No horizontal scroll on any screen size (320px - 2560px)
+      </key-requirements>
+    </artifact>
+
+    <artifact id="doc-2">
+      <name>Epic 10.2 - Design Alignment</name>
+      <path>docs/epics/EPIC-10.2-Design-Alignment.md</path>
+      <lines>179-197</lines>
+      <summary>
+        Epic context for Story 10.15. Describes content layout fix as high priority with medium
+        risk (touches many files, visual changes). Estimated effort: 2-3 hours. Recommendation:
+        Create PageContainer helper component for consistency. Preserve centering for auth/error
+        pages. Better utilization of screen real estate.
+      </summary>
+      <key-points>
+        - Remove `.container mx-auto` from ~50 pages
+        - Replace with explicit padding and max-width
+        - Create PageContainer helper component
+        - Preserve centering for auth/error pages (intentional design)
+        - Content should expand when sidebar collapses (192px width gain)
+        - Better screen real estate utilization
+      </key-points>
+    </artifact>
+
+    <artifact id="doc-3">
+      <name>Content Centering Issue - Root Cause Analysis</name>
+      <path>docs/design/CONTENT_CENTERING_ISSUE.md</path>
+      <lines>1-328</lines>
+      <summary>
+        Comprehensive root cause analysis of content centering issue. Identifies that Tailwind
+        config has `center: true` which adds `mx-auto` to all `.container` usage. When sidebar
+        collapses (256px → 64px), ContentWrapper adjusts margin-left correctly, but content
+        remains centered due to `mx-auto` instead of expanding to fill reclaimed space (192px
+        width gain). Recommendation: Remove `.container mx-auto` from all pages, replace with
+        explicit padding/max-width.
+      </summary>
+      <root-cause>
+        Tailwind config `container: { center: true }` adds `margin: 0 auto` to all `.container`
+        usage. When sidebar collapses, ContentWrapper adjusts margin-left via Framer Motion
+        (256px → 64px), but content doesn't expand because `mx-auto` centers it with equal
+        margins on both sides. Solution: Remove `.container mx-auto` pattern, use explicit
+        padding (px-6) and max-width constraints instead.
+      </root-cause>
+      <impact>
+        - 192px of horizontal space wasted (sidebar collapse from 256px to 64px)
+        - Content remains centered instead of expanding
+        - Tables/charts don't utilize available space
+        - Poor screen real estate utilization on wide screens
+      </impact>
+    </artifact>
+
+    <artifact id="doc-4">
+      <name>Story 10.9 - ContentWrapper Implementation</name>
+      <path>docs/stories/10.9.story.md</path>
+      <lines>1-837</lines>
+      <summary>
+        Story that created ContentWrapper component for sidebar margin adjustment. ContentWrapper
+        uses Framer Motion to animate margin-left: 256px → 64px (200ms duration) when sidebar
+        collapses. Animation easing: [0.4, 0, 0.2, 1] (cubic-bezier standard). Content wrapper
+        provides 192px width gain when sidebar collapses. Current issue: Content centering
+        prevents expansion into reclaimed space.
+      </summary>
+      <integration-notes>
+        - ContentWrapper uses Framer Motion for margin-left animation (256px → 64px)
+        - Animation duration: 200ms with easing [0.4, 0, 0.2, 1]
+        - Provides 192px width gain when sidebar collapses
+        - Current issue: Content centering with `mx-auto` prevents expansion
+        - PageContainer must allow content to expand, not center with mx-auto
+        - Content layout changes must coordinate with sidebar animation timing
+      </integration-notes>
+    </artifact>
+
+    <artifact id="doc-5">
+      <name>Story 10.14 - Icon System Implementation</name>
+      <path>docs/stories/10.14.story.md</path>
+      <lines>555-805</lines>
+      <summary>
+        Immediately preceding story that implemented FilledIcon wrapper for Lucide icons.
+        Established z-index context: Content is z-0 layer, below Sidebar (z-40), HorizontalNav
+        (z-20), BottomTabBar (z-30). Animation standards: 200ms duration for all transitions.
+        Icon system and color system (Story 10.13) are independent of layout changes.
+      </summary>
+      <integration-notes>
+        - Z-index context: Content is z-0 layer, below navigation components
+        - Animation standards: 200ms duration with easing [0.4, 0, 0.2, 1]
+        - Icon system (Story 10.14) and color system (Story 10.13) are independent
+        - PageContainer should not interfere with Sidebar or HorizontalNav positioning
+        - Content layout changes won't impact icon rendering or filled/outline states
+      </integration-notes>
+    </artifact>
+
+    <artifact id="doc-6">
+      <name>Story 10.13 - Color System Updates</name>
+      <path>docs/stories/10.13.story.md</path>
+      <lines>555-805</lines>
+      <summary>
+        Story that updated color system with new variants (primary-hover, primary-light,
+        bg-tertiary). Active states now use bg-primary-light text-primary. All colors use
+        HSL-based system for shadcn/ui compatibility. Animation standards: 200ms duration
+        for all color transitions. WCAG AA compliance maintained.
+      </summary>
+      <integration-notes>
+        - Content layout changes are independent of color system
+        - PageContainer won't affect color rendering or active states
+        - Content maintains design system colors (no changes needed)
+        - Animation timing consistent: 200ms duration across all components
+      </integration-notes>
+    </artifact>
+
+    <artifact id="doc-7">
+      <name>Architecture - Coding Standards</name>
+      <path>docs/architecture/coding-standards.md</path>
+      <lines>1-599</lines>
+      <summary>
+        Global coding standards including layout best practices. Consistent horizontal padding:
+        px-6 (24px) for all application pages. Responsive layout: No horizontal scroll on any
+        screen size (320px - 2560px). Max-width guidelines: Forms (sm-2xl), Details (4xl),
+        Lists/Tables (7xl), Full-width (none). Visual consistency: Padding and spacing should
+        be uniform across pages. Accessibility: Touch targets minimum 44px (mobile).
+      </summary>
+      <layout-standards>
+        - Consistent horizontal padding: px-6 (24px) for all application pages
+        - Responsive layout: No horizontal scroll (320px - 2560px)
+        - Max-width guidelines: Forms (sm-2xl), Details (4xl), Lists (7xl), Full-width (none)
+        - Visual consistency: Uniform padding and spacing across pages
+        - Accessibility: Touch targets min 44px, content readable at all sizes
+        - Z-index layering: Content z-0, below navigation components
+      </layout-standards>
+    </artifact>
+
+  </documentation-artifacts>
+
+  <!-- ================================================================ -->
+  <!-- CODE ARTIFACTS                                                   -->
+  <!-- ================================================================ -->
+
+  <code-artifacts>
+
+    <artifact id="code-1">
+      <name>Dashboard Page</name>
+      <path>apps/web/src/app/page.tsx</path>
+      <lines>1-250</lines>
+      <current-state>
+        Home page with context-aware landing experience. Line 51: Uses `container mx-auto p-6`
+        for loading state. Line 82: Uses `container mx-auto p-6` for error state. Line 102:
+        Uses `container mx-auto p-6` for empty state. Line 130: Uses `container mx-auto p-6`
+        for partner dashboard. Line 198: Uses `container mx-auto py-12` for admin view.
+      </current-state>
+      <needed-changes>
+        Replace all `container mx-auto` with `px-6 py-6 max-w-7xl` for main content areas.
+        Lines to update: 51, 82, 102, 130, 198. Keep dashboard/list layout (max-w-7xl for
+        cards grid). Verify no horizontal scroll on mobile (320px+).
+      </needed-changes>
+      <max-width-recommendation>
+        max-w-7xl (2560px) - Dashboard with project cards grid needs horizontal space
+      </max-width-recommendation>
+    </artifact>
+
+    <artifact id="code-2">
+      <name>Projects List Page</name>
+      <path>apps/web/src/app/projects/page.tsx</path>
+      <lines>1-94</lines>
+      <current-state>
+        Projects list page with loading/error/empty states. Line 24: Uses `container py-10`
+        (loading). Line 41: Uses `container py-10` (error). Line 60: Uses `container py-10`
+        (main). Uses grid layout for project cards (md:grid-cols-2 lg:grid-cols-3).
+      </current-state>
+      <needed-changes>
+        Replace all `container` with `px-6` (keep py-10). Add `max-w-7xl` for table/grid
+        layout. Lines to update: 24, 41, 60. Test sidebar collapse - table should expand
+        to fill reclaimed 192px width. Verify grid adapts correctly.
+      </needed-changes>
+      <max-width-recommendation>
+        max-w-7xl (2560px) - Project list grid/table needs horizontal space
+      </max-width-recommendation>
+    </artifact>
+
+    <artifact id="code-3">
+      <name>ContentWrapper Component</name>
+      <path>apps/web/src/components/layout/ContentWrapper.tsx</path>
+      <lines>1-45</lines>
+      <current-state>
+        Framer Motion wrapper that adjusts margin-left based on sidebar state. Line 33:
+        marginLeft = 256px (expanded) or 64px (collapsed) for desktop. Line 38: Uses
+        transition duration 0.2s with easing [0.4, 0, 0.2, 1]. Line 39: Adds pt-16 for
+        TopHeaderBar offset. Mobile: marginLeft = 0 (sidebar hidden).
+      </current-state>
+      <needed-changes>
+        No changes required to ContentWrapper itself. Component correctly provides margin-left
+        animation. PageContainer (new component) will be used inside ContentWrapper's children
+        to handle padding and max-width. Ensure PageContainer doesn't interfere with sidebar
+        animation timing (200ms coordination).
+      </needed-changes>
+      <integration-notes>
+        ContentWrapper provides 192px width gain when sidebar collapses. PageContainer must
+        allow content to expand into this space (no mx-auto centering). Animation timing:
+        200ms duration matches ContentWrapper for smooth coordination.
+      </integration-notes>
+    </artifact>
+
+    <artifact id="code-4">
+      <name>Tailwind Configuration</name>
+      <path>apps/web/tailwind.config.ts</path>
+      <lines>1-154</lines>
+      <current-state>
+        Lines 11-17: Container config with `center: true` (adds mx-auto), padding: 2rem,
+        max-width: 1400px for 2xl screens. This is the root cause of centering issue.
+        Lines 66-129: Color system with HSL-based CSS variables (Story 10.13).
+        Lines 34-65: 4px/8px spacing grid system.
+      </current-state>
+      <needed-changes>
+        Decision needed: Option A: Remove `center: true` from container config. Option B:
+        Keep config, document "don't use .container for app pages" and add ESLint rule to
+        warn on `.container mx-auto` usage. Recommendation: Option B (less risky, preserve
+        config for potential future use). Add comment: "Note: Don't use .container for app
+        pages - use explicit padding/max-width instead."
+      </needed-changes>
+      <migration-strategy>
+        Option B recommended: Keep Tailwind config unchanged, migrate pages to explicit
+        padding/max-width pattern. This preserves `.container` for potential future use
+        (marketing pages, special layouts) while fixing app pages systematically.
+      </migration-strategy>
+    </artifact>
+
+    <artifact id="code-5">
+      <name>Login Page (Auth Example)</name>
+      <path>apps/web/src/app/login/page.tsx</path>
+      <lines>1-56</lines>
+      <current-state>
+        Login page with centered layout. Line 38: Uses `min-h-screen flex items-center
+        justify-center` with `max-w-md w-full` for form. This is intentional centering
+        for auth pages (no sidebar present). No `.container` usage - already correct.
+      </current-state>
+      <needed-changes>
+        No changes needed. Auth pages should remain centered (intentional design). Pattern
+        to preserve: `min-h-screen flex items-center justify-center` with `max-w-md w-full`
+        for form content. Verify this pattern is consistent across all auth pages (register,
+        forgot-password, reset-password, verify-2fa).
+      </needed-changes>
+      <special-case>
+        Auth pages intentionally centered (no sidebar). Preserve `flex items-center
+        justify-center` pattern. Do not apply PageContainer to auth pages.
+      </special-case>
+    </artifact>
+
+    <artifact id="code-6">
+      <name>PageContainer Component (To Be Created)</name>
+      <path>apps/web/src/components/layout/PageContainer.tsx</path>
+      <lines>None - New file</lines>
+      <implementation><![CDATA[
+/**
+ * PageContainer - Standard page content wrapper
+ * Story 10.15: Content Layout Fix
+ *
+ * Provides consistent padding and optional max-width constraints.
+ * Content expands to fill available width (not centered).
+ *
+ * @example
+ * // Dashboard - full-width grid
+ * <PageContainer maxWidth="7xl">
+ *   <h1>Dashboard</h1>
+ *   {/* project cards grid */}
+ * </PageContainer>
+ *
+ * @example
+ * // Form page - narrow width
+ * <PageContainer maxWidth="2xl">
+ *   <h1>Create Project</h1>
+ *   {/* form */}
+ * </PageContainer>
+ */
+
+import { ReactNode } from "react"
+import { cn } from "@/lib/utils"
+
+type MaxWidth = "sm" | "md" | "lg" | "xl" | "2xl" | "4xl" | "7xl" | "full"
+
+interface PageContainerProps {
+  children: ReactNode
+  maxWidth?: MaxWidth
+  className?: string
+}
+
+const maxWidthClasses: Record<MaxWidth, string> = {
+  sm: "max-w-sm",       // 640px - narrow forms
+  md: "max-w-md",       // 768px - medium forms
+  lg: "max-w-lg",       // 1024px - reading content
+  xl: "max-w-xl",       // 1280px - wider content
+  "2xl": "max-w-2xl",   // 1536px - forms, details
+  "4xl": "max-w-4xl",   // 1792px - detail pages
+  "7xl": "max-w-7xl",   // 2560px - lists, tables
+  full: "max-w-none",   // no limit - full width
+}
+
+export function PageContainer({
+  children,
+  maxWidth = "7xl",
+  className,
+}: PageContainerProps) {
+  return (
+    <div className={cn("px-6 py-6", maxWidthClasses[maxWidth], className)}>
+      {children}
+    </div>
+  )
+}
+      ]]></implementation>
+      <usage-notes>
+        Optional component - pages can use direct classes or PageContainer. Direct classes
+        pattern: `px-6 py-6 max-w-7xl`. PageContainer pattern: `<PageContainer maxWidth="7xl">`.
+        Choose based on preference. Direct classes are more explicit, PageContainer is more
+        semantic. Both produce identical output.
+      </usage-notes>
+    </artifact>
+
+  </code-artifacts>
+
+  <!-- ================================================================ -->
+  <!-- INTERFACES AND PATTERNS                                          -->
+  <!-- ================================================================ -->
+
+  <interfaces>
+
+    <interface>
+      <name>PageContainer Component Props</name>
+      <description>
+        TypeScript interface for PageContainer helper component. Provides consistent
+        padding (px-6 py-6) and configurable max-width constraints. Default: max-w-7xl.
+      </description>
+      <definition><![CDATA[
+type MaxWidth = "sm" | "md" | "lg" | "xl" | "2xl" | "4xl" | "7xl" | "full"
+
+interface PageContainerProps {
+  children: ReactNode
+  maxWidth?: MaxWidth  // Default: "7xl" (2560px)
+  className?: string   // Additional Tailwind classes
+}
+
+// Usage examples:
+<PageContainer maxWidth="7xl">     {/* Dashboard, lists, tables */}
+<PageContainer maxWidth="4xl">     {/* Detail pages */}
+<PageContainer maxWidth="2xl">     {/* Forms */}
+<PageContainer maxWidth="full">    {/* Full-width charts, maps */}
+      ]]></definition>
+    </interface>
+
+    <interface>
+      <name>Max-Width Guidelines</name>
+      <description>
+        Guidelines for choosing appropriate max-width constraints based on content type.
+        Ensures content is readable and utilizes space effectively.
+      </description>
+      <definition><![CDATA[
+Content Type          | Max-Width | Pixels  | Tailwind Class | Usage
+----------------------+-----------+---------+----------------+---------------------------
+Narrow forms          | sm        | 640px   | max-w-sm       | Login, single-field forms
+Medium forms          | md        | 768px   | max-w-md       | Registration, 2-3 fields
+Reading content       | lg        | 1024px  | max-w-lg       | Articles, long text
+Wide forms            | xl        | 1280px  | max-w-xl       | Multi-section forms
+Forms/Details         | 2xl       | 1536px  | max-w-2xl      | Create/edit forms, settings
+Detail pages          | 4xl       | 1792px  | max-w-4xl      | Project/contact details
+Lists/Tables          | 7xl       | 2560px  | max-w-7xl      | Dashboard, tables, grids
+Full-width            | full      | none    | max-w-none     | Charts, maps, galleries
+
+Padding Standard: px-6 (24px horizontal) for all page types
+Vertical Padding: py-6 (24px) or py-10 (40px) based on page density
+      ]]></definition>
+    </interface>
+
+    <interface>
+      <name>Migration Patterns</name>
+      <description>
+        Before/after patterns for migrating from `.container mx-auto` to explicit layout.
+        Shows both direct classes approach and PageContainer component approach.
+      </description>
+      <definition><![CDATA[
+// BEFORE: .container mx-auto pattern (causes centering)
+<div className="container mx-auto p-6">
+  {/* content */}
+</div>
+
+// AFTER Option 1: Direct Tailwind classes (explicit)
+<div className="px-6 py-6 max-w-7xl">
+  {/* content */}
+</div>
+
+// AFTER Option 2: PageContainer component (semantic)
+<PageContainer maxWidth="7xl">
+  {/* content */}
+</PageContainer>
+
+// Special case: Auth pages (preserve centering)
+<div className="min-h-screen flex items-center justify-center">
+  <div className="max-w-md w-full px-6">
+    {/* centered form */}
+  </div>
+</div>
+
+// Special case: Error pages (preserve centering)
+<div className="min-h-screen flex items-center justify-center">
+  <div className="max-w-lg w-full px-6 text-center">
+    {/* centered error message */}
+  </div>
+</div>
+      ]]></definition>
+    </interface>
+
+    <interface>
+      <name>Layout Pattern by Page Type</name>
+      <description>
+        Recommended layout patterns for different page types in the application.
+        Maps page type to max-width and example structure.
+      </description>
+      <definition><![CDATA[
+Page Type                    | Max-Width | Pattern
+-----------------------------+-----------+-----------------------------------
+Dashboard (Home)             | 7xl       | px-6 py-6 max-w-7xl
+Projects List                | 7xl       | px-6 py-10 max-w-7xl
+Project Detail               | 4xl       | px-6 py-10 max-w-4xl
+Project Costs (Table)        | 7xl       | px-6 py-10 max-w-7xl
+New Project Form             | 2xl       | px-6 py-10 max-w-2xl
+Edit Project Form            | 2xl       | px-6 py-10 max-w-2xl
+Contacts List                | 7xl       | px-6 py-10 max-w-7xl
+Contact Detail               | 4xl       | px-6 py-10 max-w-4xl
+Vendors Dashboard            | 7xl       | px-6 py-10 max-w-7xl
+Vendor Detail                | 4xl       | px-6 py-10 max-w-4xl
+Portfolio Page               | 7xl       | px-6 py-10 max-w-7xl
+Categories Page              | 7xl       | px-6 py-10 max-w-7xl
+Settings Main                | 4xl       | px-6 py-10 max-w-4xl
+Settings Nested              | 4xl       | px-6 py-10 max-w-4xl
+Login Page                   | Centered  | min-h-screen flex center, max-w-md
+Register Page                | Centered  | min-h-screen flex center, max-w-md
+404 Error                    | Centered  | min-h-screen flex center, max-w-lg
+500 Error                    | Centered  | min-h-screen flex center, max-w-lg
+
+Note: py-6 (24px) for dense pages, py-10 (40px) for spacious pages
+      ]]></definition>
+    </interface>
+
+    <interface>
+      <name>Responsive Behavior</name>
+      <description>
+        How content layout responds to viewport changes and sidebar collapse states.
+        Ensures no horizontal scroll and proper space utilization across all sizes.
+      </description>
+      <definition><![CDATA[
+Viewport Size | Sidebar State | Content Margin-Left | Available Width | Max-Width Applied
+--------------+---------------+---------------------+-----------------+------------------
+Mobile 320px  | Hidden        | 0px                 | 320px           | px-6 = 288px content
+Mobile 375px  | Hidden        | 0px                 | 375px           | px-6 = 343px content
+Tablet 768px  | Expanded      | 256px               | 512px           | px-6 = 488px content
+Desktop 1024px| Expanded      | 256px               | 768px           | px-6 = 744px content
+Desktop 1024px| Collapsed     | 64px                | 960px           | px-6 = 936px content (192px gain)
+Desktop 1920px| Expanded      | 256px               | 1664px          | max-w-7xl = 2560px (constrained)
+Desktop 1920px| Collapsed     | 64px                | 1856px          | max-w-7xl = 2560px (192px gain)
+
+Key Points:
+- Sidebar collapse provides 192px additional width (256px → 64px)
+- Content expands to fill space (no mx-auto centering)
+- max-w-* constraints prevent content from being too wide
+- px-6 (24px) padding on all screen sizes
+- No horizontal scroll on any size (320px - 2560px)
+      ]]></definition>
+    </interface>
+
+  </interfaces>
+
+  <!-- ================================================================ -->
+  <!-- CONSTRAINTS AND REQUIREMENTS                                     -->
+  <!-- ================================================================ -->
+
+  <constraints>
+
+    <constraint type="architectural" priority="high">
+      <description>No Horizontal Scroll Requirement</description>
+      <details>
+        Content must never cause horizontal scroll on any screen size from 320px to 2560px.
+        - Mobile: 320px minimum (iPhone SE)
+        - Tablet: 768px typical
+        - Desktop: 1024px - 2560px range
+        - Test with sidebar both expanded (256px) and collapsed (64px)
+        - Verify px-6 padding doesn't cause overflow
+        - Ensure max-width constraints don't force horizontal scroll
+        - Check on all browsers (Chrome, Firefox, Safari, Edge)
+      </details>
+    </constraint>
+
+    <constraint type="integration" priority="high">
+      <description>Sidebar Collapse Expansion (Story 10.9)</description>
+      <details>
+        Content must expand to fill 192px of reclaimed space when sidebar collapses.
+        - ContentWrapper animates margin-left: 256px → 64px (200ms duration)
+        - Content should immediately benefit from 192px width gain
+        - No mx-auto centering (prevents expansion)
+        - Animation timing: 200ms duration with easing [0.4, 0, 0.2, 1]
+        - Smooth coordination with sidebar animation
+        - Test on desktop (sidebar visible), not mobile (sidebar hidden)
+        - Verify tables/grids expand to fill space
+      </details>
+    </constraint>
+
+    <constraint type="ui-ux" priority="high">
+      <description>Consistent Padding Standard</description>
+      <details>
+        All application pages must use px-6 (24px) horizontal padding consistently.
+        - px-6 on all main content areas
+        - py-6 (24px) or py-10 (40px) vertical padding based on page density
+        - No variation in horizontal padding across pages
+        - Mobile: px-6 (24px) maintained at all sizes
+        - Desktop: px-6 (24px) consistent regardless of sidebar state
+        - Spacing grid: 4px/8px increments (Tailwind default)
+        - Visual consistency critical for professional appearance
+      </details>
+    </constraint>
+
+    <constraint type="accessibility" priority="high">
+      <description>WCAG AA Touch Targets (Mobile)</description>
+      <details>
+        Touch targets must be minimum 44px × 44px on mobile for accessibility.
+        - Buttons: min-h-11 (44px) on mobile
+        - Links: Adequate padding for 44px touch area
+        - Form inputs: Standard height meets requirement
+        - Cards: Entire card clickable with adequate size
+        - Test on mobile devices (iPhone, Android)
+        - Verify with VoiceOver (iOS) and TalkBack (Android)
+        - Content padding (px-6) must not interfere with touch targets
+      </details>
+    </constraint>
+
+    <constraint type="technical" priority="medium">
+      <description>Preserve Auth/Error Page Centering</description>
+      <details>
+        Auth and error pages must remain centered (intentional design).
+        - Login page: min-h-screen flex items-center justify-center
+        - Register page: min-h-screen flex items-center justify-center
+        - Forgot password: Centered layout
+        - Reset password: Centered layout
+        - 2FA verify: Centered layout
+        - 404 error: Centered layout
+        - 500 error: Centered layout
+        - Pattern: `flex items-center justify-center` with `max-w-md w-full`
+        - No sidebar on auth/error pages (no layout conflict)
+        - Do not apply PageContainer to these pages
+      </details>
+    </constraint>
+
+    <constraint type="technical" priority="medium">
+      <description>Z-Index Layering (Story 10.14)</description>
+      <details>
+        Content must remain at z-0 layer, below navigation components.
+        - Content: z-0 (default layer)
+        - Sidebar: z-40 (desktop navigation)
+        - TopHeaderBar: z-30 (global header)
+        - HorizontalNav: z-20 (contextual tabs)
+        - BottomTabBar: z-30 (mobile navigation)
+        - Modals: z-50 (overlay layer)
+        - PageContainer should not set z-index (inherit z-0)
+        - No z-index conflicts with navigation components
+      </details>
+    </constraint>
+
+    <constraint type="performance" priority="medium">
+      <description>Bundle Size Impact</description>
+      <details>
+        Bundle size increase must be minimal (CSS-only changes).
+        - PageContainer component: Negligible (~0.1KB)
+        - No new dependencies required
+        - CSS utility classes: Already in bundle (Tailwind)
+        - No JavaScript runtime impact
+        - Build time: No significant increase expected
+        - Verify with: npm run build (check bundle sizes)
+        - Total impact: &lt; 1KB (well within acceptable range)
+      </details>
+    </constraint>
+
+    <constraint type="code-quality" priority="medium">
+      <description>Migration Checklist Per Page</description>
+      <details>
+        Systematic approach required for ~50 page updates.
+        1. Identify current container usage (grep for "container")
+        2. Determine appropriate max-width (forms 2xl, lists 7xl, etc.)
+        3. Replace with PageContainer or direct classes
+        4. Test sidebar collapse (content expands)
+        5. Test responsive behavior (mobile, tablet, desktop)
+        6. Verify no horizontal scroll (320px - 2560px)
+        7. Check visual spacing consistency
+        8. Screenshot before/after for comparison
+        Batch updates by page type for efficiency
+      </details>
+    </constraint>
+
+    <constraint type="testing" priority="medium">
+      <description>Visual Regression Testing</description>
+      <details>
+        Before/after screenshots required for all updated pages.
+        - Screenshot before: With `.container mx-auto`
+        - Screenshot after: With explicit padding/max-width
+        - Test sidebar expanded and collapsed states
+        - Compare on multiple screen sizes (320px, 768px, 1920px)
+        - Verify content expands correctly when sidebar collapses
+        - Check for layout breaks or overflow issues
+        - Document any intentional visual changes
+        - Use browser DevTools responsive mode for consistent captures
+      </details>
+    </constraint>
+
+    <constraint type="compatibility" priority="low">
+      <description>Tailwind Container Config Decision</description>
+      <details>
+        Decision needed: Remove `center: true` OR document usage guidelines.
+        - Option A: Remove `center: true` from tailwind.config.ts
+          - Pros: Prevents future centering issues
+          - Cons: Breaking change if `.container` used elsewhere
+        - Option B: Keep config, add usage documentation
+          - Pros: Non-breaking, preserves flexibility
+          - Cons: Requires ESLint rule to prevent misuse
+        Recommendation: Option B (safer, non-breaking)
+        - Add comment: "Note: Don't use .container for app pages"
+        - Add ESLint rule: Warn on `.container mx-auto` pattern
+        - Document in coding standards
+      </details>
+    </constraint>
+
+  </constraints>
+
+  <!-- ================================================================ -->
+  <!-- TEST IDEAS AND VALIDATION                                        -->
+  <!-- ================================================================ -->
+
+  <test-ideas>
+
+    <!-- AC 1: Content expands with sidebar collapse -->
+    <test-idea id="test-1" acceptance-criteria="AC-1">
+      <description>Verify content expands to fill reclaimed 192px when sidebar collapses</description>
+      <steps>
+        1. Open dashboard page (/) with sidebar expanded (256px)
+        2. Measure content area width with DevTools
+        3. Click hamburger icon to collapse sidebar (64px)
+        4. Measure content area width again - should increase by ~192px
+        5. Verify content expands to fill space (no centered gap)
+        6. Repeat on projects list page (/projects)
+        7. Repeat on project detail page (/projects/[id])
+        8. Check tables expand horizontally to use new space
+        9. Verify animations smooth (200ms duration)
+      </steps>
+      <expected>Content width increases by 192px when sidebar collapses. Content fills available space (no mx-auto centering). Tables/grids expand to utilize reclaimed space.</expected>
+    </test-idea>
+
+    <!-- AC 2: Consistent horizontal padding -->
+    <test-idea id="test-2" acceptance-criteria="AC-2">
+      <description>Verify all pages use consistent px-6 (24px) horizontal padding</description>
+      <steps>
+        1. Open dashboard page (/)
+        2. Inspect content element in DevTools
+        3. Verify padding-left: 24px and padding-right: 24px
+        4. Open projects list page (/projects)
+        5. Verify same padding (24px on both sides)
+        6. Check 10 random pages across the app
+        7. Measure padding with ruler or computed styles
+        8. Document any inconsistencies
+      </steps>
+      <expected>All pages have padding-left: 24px and padding-right: 24px (px-6 class). No variation across pages.</expected>
+    </test-idea>
+
+    <!-- AC 3: Max-width constraints respected -->
+    <test-idea id="test-3" acceptance-criteria="AC-3">
+      <description>Verify max-width constraints appropriate for content type</description>
+      <steps>
+        1. Forms (new project): Verify max-w-2xl (1536px)
+        2. Detail pages (project detail): Verify max-w-4xl (1792px)
+        3. Lists/tables (projects list): Verify max-w-7xl (2560px)
+        4. On wide screen (1920px+), verify content respects max-width
+        5. Content should not stretch beyond max-width limit
+        6. Verify content doesn't feel too narrow or too wide
+        7. Test with real content (not empty states)
+      </steps>
+      <expected>Forms use max-w-2xl, details use max-w-4xl, lists use max-w-7xl. Content respects constraints on wide screens.</expected>
+    </test-idea>
+
+    <!-- AC 4: Auth pages remain centered -->
+    <test-idea id="test-4" acceptance-criteria="AC-4">
+      <description>Verify auth pages preserve centered layout (intentional design)</description>
+      <steps>
+        1. Open login page (/login)
+        2. Verify form is vertically and horizontally centered
+        3. Check for `flex items-center justify-center` on container
+        4. Verify `max-w-md w-full` on form element
+        5. Open register page (/register) - verify same pattern
+        6. Open forgot password page - verify centered
+        7. Open reset password page - verify centered
+        8. Verify no sidebar present on auth pages
+      </steps>
+      <expected>All auth pages remain centered with min-h-screen flex items-center justify-center pattern. No PageContainer applied.</expected>
+    </test-idea>
+
+    <!-- AC 5: Error pages remain centered -->
+    <test-idea id="test-5" acceptance-criteria="AC-5">
+      <description>Verify error pages preserve centered layout</description>
+      <steps>
+        1. Navigate to non-existent URL to trigger 404 page
+        2. Verify error message is centered (vertically and horizontally)
+        3. Check for `flex items-center justify-center` pattern
+        4. Simulate 500 error if possible
+        5. Verify 500 page also centered
+        6. Check other error pages (403, etc.)
+      </steps>
+      <expected>All error pages centered with flex items-center justify-center pattern. No PageContainer applied.</expected>
+    </test-idea>
+
+    <!-- AC 6: Container class removed -->
+    <test-idea id="test-6" acceptance-criteria="AC-6">
+      <description>Verify .container class removed from all main application pages</description>
+      <steps>
+        1. Run grep search: rg "className.*container" apps/web/src/app
+        2. Review results - should only find auth/error pages (intentional)
+        3. Spot-check 10 random main application pages
+        4. Verify no `container mx-auto` pattern in JSX
+        5. Check for `px-6` or `PageContainer` usage instead
+        6. Document any remaining container usage (should be minimal)
+      </steps>
+      <expected>No .container usage in main application pages (dashboard, projects, vendors, etc.). Only auth/error pages may have different patterns.</expected>
+    </test-idea>
+
+    <!-- AC 9: No horizontal scroll -->
+    <test-idea id="test-9" acceptance-criteria="AC-9">
+      <description>Verify no horizontal scroll on any screen size (320px - 2560px)</description>
+      <steps>
+        1. Open DevTools responsive mode
+        2. Set width to 320px (iPhone SE) - check dashboard, projects list
+        3. Scroll vertically - verify no horizontal scrollbar
+        4. Set width to 375px (iPhone 12) - repeat test
+        5. Set width to 768px (tablet) - repeat test
+        6. Set width to 1024px (desktop) - repeat test
+        7. Set width to 1920px (wide desktop) - repeat test
+        8. Set width to 2560px (ultra-wide) - repeat test
+        9. Test with sidebar expanded and collapsed (desktop only)
+        10. Document any horizontal scroll occurrences
+      </steps>
+      <expected>No horizontal scroll on any screen size from 320px to 2560px. Content fits within viewport at all sizes.</expected>
+    </test-idea>
+
+    <!-- AC 10: Responsive behavior correct -->
+    <test-idea id="test-10" acceptance-criteria="AC-10">
+      <description>Verify responsive behavior correct on mobile, tablet, desktop</description>
+      <steps>
+        1. Mobile (320px - 767px):
+           - Sidebar hidden (margin-left: 0)
+           - Content uses px-6 padding
+           - Bottom tab bar visible
+           - No sidebar collapse test (not applicable)
+        2. Tablet (768px - 1023px):
+           - Sidebar visible (margin-left: 256px or 64px)
+           - Content adjusts with sidebar state
+           - Test sidebar collapse
+        3. Desktop (1024px+):
+           - Sidebar visible (margin-left: 256px or 64px)
+           - Content expands with sidebar collapse
+           - Max-width constraints applied
+           - Test on 1920px and 2560px widths
+      </steps>
+      <expected>Responsive behavior correct at all breakpoints. Mobile: sidebar hidden. Tablet/Desktop: sidebar visible, content expands on collapse.</expected>
+    </test-idea>
+
+    <!-- AC 11: Content doesn't feel cramped or too wide -->
+    <test-idea id="test-11" acceptance-criteria="AC-11">
+      <description>Verify content doesn't feel cramped or too wide (UX validation)</description>
+      <steps>
+        1. Review forms (max-w-2xl) with real data
+        2. Verify form fields are readable and not too wide
+        3. Review detail pages (max-w-4xl) with real content
+        4. Verify paragraphs, sections are comfortable to read
+        5. Review lists/tables (max-w-7xl) with multiple columns
+        6. Verify tables utilize space without feeling stretched
+        7. Get feedback from team/stakeholders on visual balance
+        8. Compare with target design screenshots
+      </steps>
+      <expected>Content feels appropriately sized. Forms readable (not too wide). Details balanced. Tables utilize space effectively.</expected>
+    </test-idea>
+
+    <!-- AC 12: Visual consistency maintained -->
+    <test-idea id="test-12" acceptance-criteria="AC-12">
+      <description>Verify visual consistency maintained across all pages</description>
+      <steps>
+        1. Take screenshots of 10 different page types
+        2. Compare padding consistency (should all be px-6)
+        3. Compare spacing between sections (should be uniform)
+        4. Verify color system unchanged (Story 10.13 colors)
+        5. Verify icon system unchanged (Story 10.14 icons)
+        6. Check navigation components (Sidebar, HorizontalNav)
+        7. Verify no layout breaks or misalignments
+        8. Document any visual inconsistencies
+      </steps>
+      <expected>Visual consistency maintained. Padding uniform (px-6). Spacing consistent. Colors and icons unchanged. No layout breaks.</expected>
+    </test-idea>
+
+    <!-- AC 13: No layout breaks or content reflow -->
+    <test-idea id="test-13" acceptance-criteria="AC-13">
+      <description>Verify no layout breaks or content reflow issues</description>
+      <steps>
+        1. Open dashboard with sidebar expanded
+        2. Collapse sidebar - watch for content jumps or reflows
+        3. Expand sidebar - verify smooth animation
+        4. Check for Cumulative Layout Shift (CLS) in Lighthouse
+        5. Test on slow networks (throttle to 3G)
+        6. Verify no Flash of Unstyled Content (FOUC)
+        7. Test with empty states, partial data, full data
+        8. Check for text wrapping issues or overflow
+      </steps>
+      <expected>No layout breaks. Smooth animations. No content reflows. CLS score &lt; 0.1 (good). No FOUC.</expected>
+    </test-idea>
+
+    <!-- Integration Tests -->
+    <test-idea id="test-14" acceptance-criteria="multiple">
+      <description>Integration test: Content layout works with sidebar (Story 10.9)</description>
+      <steps>
+        1. Verify ContentWrapper provides margin-left animation (256px → 64px)
+        2. Verify PageContainer allows content to expand (no mx-auto)
+        3. Test animation timing coordination (200ms duration)
+        4. Measure width before/after sidebar collapse (~192px gain)
+        5. Verify no interference with sidebar animation
+        6. Test on multiple pages (dashboard, projects, vendors)
+      </steps>
+      <expected>Content layout integrates with ContentWrapper. Content expands when sidebar collapses. Smooth 200ms animation.</expected>
+    </test-idea>
+
+    <test-idea id="test-15" acceptance-criteria="multiple">
+      <description>Integration test: Content layout independent of color/icon systems</description>
+      <steps>
+        1. Verify active states use bg-primary-light text-primary (Story 10.13)
+        2. Verify filled/outline icons render correctly (Story 10.14)
+        3. Verify PageContainer doesn't affect navigation colors
+        4. Verify PageContainer doesn't affect icon rendering
+        5. Test dark mode - verify layout unchanged
+        6. Verify z-index layering maintained (content z-0)
+      </steps>
+      <expected>Content layout independent of color/icon systems. All systems work together. No z-index conflicts.</expected>
+    </test-idea>
+
+    <test-idea id="test-16" acceptance-criteria="multiple">
+      <description>Visual regression test: Before/after comparison</description>
+      <steps>
+        1. Take "before" screenshots of key pages (with .container mx-auto)
+        2. Implement Story 10.15 changes
+        3. Take "after" screenshots (with px-6 max-w-*)
+        4. Compare side-by-side for visual differences
+        5. Verify content expands in "after" when sidebar collapses
+        6. Check for any unintended visual changes
+        7. Document all visual differences
+      </steps>
+      <expected>"After" screenshots show content expanding when sidebar collapses. No unintended visual changes. Layout cleaner and more spacious.</expected>
+    </test-idea>
+
+    <test-idea id="test-17" acceptance-criteria="multiple">
+      <description>Performance test: No build or runtime regressions</description>
+      <steps>
+        1. Run production build: npm run build
+        2. Compare bundle sizes before/after
+        3. Verify bundle size increase &lt; 1KB (CSS only)
+        4. Run Lighthouse audit on key pages
+        5. Compare Performance scores before/after
+        6. Verify no CLS regressions (Layout Shift)
+        7. Check Time to Interactive (TTI) unchanged
+      </steps>
+      <expected>Build succeeds. Bundle size increase minimal (&lt; 1KB). Performance scores maintained or improved. No CLS regressions.</expected>
+    </test-idea>
+
+  </test-ideas>
+
+  <!-- ================================================================ -->
+  <!-- IMPLEMENTATION GUIDANCE                                          -->
+  <!-- ================================================================ -->
+
+  <implementation-notes>
+
+    <note priority="critical">
+      <title>Root Cause Must Be Understood</title>
+      <content>
+        Before implementation, ensure clear understanding of the root cause:
+
+        Problem: Tailwind config has `container: { center: true }` which adds `margin: 0 auto`
+        to all `.container` usage. When sidebar collapses (256px → 64px), ContentWrapper correctly
+        adjusts margin-left via Framer Motion animation. However, content doesn't expand to fill
+        the reclaimed 192px space because `mx-auto` centers it with equal margins on both sides.
+
+        Solution: Remove `.container mx-auto` pattern from all main application pages. Replace
+        with explicit padding (px-6) and max-width constraints (2xl, 4xl, 7xl). Content will then
+        expand to fill available space when sidebar collapses instead of remaining centered.
+
+        Auth/error pages: Preserve intentional centering with `flex items-center justify-center`.
+
+        This is NOT a ContentWrapper issue - ContentWrapper works correctly. This is a layout
+        pattern issue where `.container` with `center: true` prevents content expansion.
+      </content>
+    </note>
+
+    <note priority="high">
+      <title>Systematic Migration Approach</title>
+      <content>
+        Migrate pages systematically by priority and type:
+
+        Phase 1: High-priority test pages (2-3 pages, 15 min)
+        - Dashboard (/)
+        - Projects list (/projects)
+        - Test sidebar collapse expansion immediately
+
+        Phase 2: Project pages (10-12 pages, 30 min)
+        - Project detail, costs, timeline, documents, contacts
+        - All use similar layout patterns
+
+        Phase 3: Vendor and portfolio pages (6-8 pages, 20 min)
+        - Vendors dashboard, vendor detail
+        - Portfolio, categories pages
+
+        Phase 4: Form pages (8-10 pages, 20 min)
+        - New/edit project, costs, contacts
+        - Use max-w-2xl for narrow forms
+
+        Phase 5: Settings pages (5-6 pages, 15 min)
+        - Settings main, nested settings
+        - Use max-w-4xl for settings forms
+
+        Phase 6: Remaining pages (10-15 pages, 30 min)
+        - Events, documents, partners, admin
+
+        Total: ~2-3 hours for ~50 pages
+
+        Test after each phase to catch issues early.
+      </content>
+    </note>
+
+    <note priority="high">
+      <title>PageContainer Component is Optional</title>
+      <content>
+        PageContainer component is a convenience helper, not required:
+
+        Option 1: Direct Tailwind classes (more explicit)
+        - `className="px-6 py-6 max-w-7xl"`
+        - Pros: Explicit, no indirection, easy to customize
+        - Cons: More verbose, less semantic
+
+        Option 2: PageContainer component (more semantic)
+        - `<PageContainer maxWidth="7xl">`
+        - Pros: Semantic, consistent, easy to update globally
+        - Cons: Additional component, slight indirection
+
+        Choose based on team preference. Both produce identical output.
+
+        Direct classes recommended for:
+        - Complex pages with multiple sections
+        - Pages needing custom padding variations
+        - Quick migrations (less refactoring)
+
+        PageContainer recommended for:
+        - Simple pages with single content area
+        - New pages (clean, semantic)
+        - Consistency across team
+      </content>
+    </note>
+
+    <note priority="medium">
+      <title>Max-Width Selection Guidelines</title>
+      <content>
+        Choose appropriate max-width based on content type:
+
+        max-w-2xl (1536px) - Forms and narrow content
+        - Login, registration, forgot password
+        - New/edit project forms
+        - New/edit cost forms
+        - Settings forms
+        - Reasoning: Forms are more readable when not too wide (40-60 characters per line)
+
+        max-w-4xl (1792px) - Detail pages
+        - Project detail (overview, timeline, documents)
+        - Contact detail
+        - Vendor detail
+        - Settings detail pages
+        - Reasoning: Moderate width for content + sidebar/metadata
+
+        max-w-7xl (2560px) - Lists, tables, dashboards
+        - Dashboard (home page with cards grid)
+        - Projects list
+        - Contacts list
+        - Vendors dashboard
+        - Costs table
+        - Reasoning: Tables/grids need horizontal space for multiple columns
+
+        max-w-none (full width) - Special cases
+        - Charts, graphs (full-width visualization)
+        - Maps (full-width interactive)
+        - Image galleries
+        - Use sparingly - most content benefits from max-width constraint
+
+        When in doubt: Use max-w-7xl (most pages are lists/tables).
+      </content>
+    </note>
+
+    <note priority="medium">
+      <title>Preserve Special Cases</title>
+      <content>
+        Auth and error pages must remain centered (intentional design):
+
+        Auth pages: /login, /register, /forgot-password, /reset-password, /verify-2fa
+        Pattern: `min-h-screen flex items-center justify-center` with `max-w-md w-full`
+        Reasoning: No sidebar present, form should be centered for visual balance
+
+        Error pages: /404, /500, custom error pages
+        Pattern: `min-h-screen flex items-center justify-center` with `max-w-lg w-full`
+        Reasoning: Error messages look better centered, no navigation context
+
+        Do NOT apply PageContainer to these pages.
+        Do NOT remove centering classes from these pages.
+
+        Verify pattern consistency across all auth/error pages during migration.
+      </content>
+    </note>
+
+    <note priority="low">
+      <title>Tailwind Container Config Decision</title>
+      <content>
+        Decision needed for Tailwind container config:
+
+        Option A: Remove `center: true` from tailwind.config.ts
+        - Pros: Prevents future centering issues, cleaner config
+        - Cons: Breaking change if `.container` used elsewhere (marketing pages, etc.)
+        - Risk: Medium - may affect other uses of .container class
+
+        Option B: Keep config, document usage guidelines (RECOMMENDED)
+        - Pros: Non-breaking, preserves flexibility for future use
+        - Cons: Requires discipline to avoid `.container` on app pages
+        - Risk: Low - education and ESLint rule prevent misuse
+
+        Recommendation: Option B
+        - Add comment to tailwind.config.ts: "Note: Don't use .container for app pages - use explicit padding/max-width"
+        - Add ESLint rule: Warn on `.container mx-auto` pattern in app/ directory
+        - Document in coding-standards.md: "Layout Pattern: Use px-6 max-w-* instead of .container"
+        - Preserves .container for potential future use (landing pages, marketing content)
+
+        Implementation: Add comment to tailwind.config.ts after migration complete.
+      </content>
+    </note>
+
+  </implementation-notes>
+
+  <!-- ================================================================ -->
+  <!-- RISKS AND MITIGATION                                             -->
+  <!-- ================================================================ -->
+
+  <risks>
+
+    <risk level="medium" phase="phase-3-or-4">
+      <title>Touching Many Files (Regression Risk)</title>
+      <description>
+        Story requires updating ~50 page files, increasing risk of introducing layout breaks
+        or visual regressions across the application. Any mistake could affect multiple pages.
+      </description>
+      <mitigation>
+        - Test after each batch of pages (5-10 pages per batch)
+        - Take screenshots before/after for visual comparison
+        - Use find/replace for consistent patterns (container → px-6 max-w-7xl)
+        - Focus on high-priority pages first (dashboard, projects)
+        - If major issues discovered, roll back batch and reassess
+        - Use git stash or commits per batch for easy rollback
+        - Pair programming or code review for first few pages
+      </mitigation>
+    </risk>
+
+    <risk level="medium" phase="phase-4">
+      <title>Horizontal Scroll on Mobile</title>
+      <description>
+        Risk of introducing horizontal scroll on mobile devices (320px - 767px) if padding or
+        max-width not set correctly. px-6 (24px) on 320px screen leaves only 272px for content.
+      </description>
+      <mitigation>
+        - Test on mobile devices immediately after migration
+        - Use Chrome DevTools responsive mode (320px width)
+        - Verify no horizontal scrollbar at 320px, 375px, 414px
+        - Check for fixed-width elements inside content (tables, images)
+        - Ensure all images/tables are responsive (max-w-full)
+        - Test with real content, not just empty states
+        - Document any mobile-specific layout issues
+      </mitigation>
+    </risk>
+
+    <risk level="low" phase="phase-3">
+      <title>Max-Width Choice Incorrect</title>
+      <description>
+        Risk of choosing inappropriate max-width for page type (e.g., using max-w-2xl for table
+        when max-w-7xl is more appropriate). Could make content feel cramped or too wide.
+      </description>
+      <mitigation>
+        - Follow max-width guidelines: Forms (2xl), Details (4xl), Lists (7xl)
+        - When in doubt, use max-w-7xl (most pages are lists/tables)
+        - Test with real content at various screen widths
+        - Get UX feedback on visual balance (AC 11)
+        - Easy to adjust max-width later if needed (single class change)
+        - Reference target design for visual comparison
+      </mitigation>
+    </risk>
+
+    <risk level="low" phase="phase-6">
+      <title>Accidentally Breaking Auth/Error Pages</title>
+      <description>
+        Risk of accidentally applying PageContainer or removing centering from auth/error pages,
+        breaking their intentional centered layout.
+      </description>
+      <mitigation>
+        - Clearly document auth/error pages as special cases
+        - Create checklist: "Do NOT modify these pages"
+        - Test auth pages after migration (login, register)
+        - Test error pages (404, 500)
+        - Verify `flex items-center justify-center` pattern preserved
+        - Review auth page files specifically during code review
+      </mitigation>
+    </risk>
+
+  </risks>
+
+  <!-- ================================================================ -->
+  <!-- DEFINITION OF DONE                                               -->
+  <!-- ================================================================ -->
+
+  <definition-of-done>
+    <item>PageContainer component created (optional helper)</item>
+    <item>All main application pages updated (no `.container mx-auto`)</item>
+    <item>Dashboard content expands with sidebar collapse (192px gain verified)</item>
+    <item>Project pages content expands with sidebar collapse</item>
+    <item>Auth pages remain centered (intentional - login, register, etc.)</item>
+    <item>Error pages remain centered (intentional - 404, 500, etc.)</item>
+    <item>No horizontal scroll on any page (320px - 2560px tested)</item>
+    <item>Responsive behavior correct (mobile, tablet, desktop tested)</item>
+    <item>Content padding consistent (px-6 on all main pages)</item>
+    <item>Max-widths appropriate for content type (forms 2xl, lists 7xl, etc.)</item>
+    <item>Visual consistency maintained across all pages</item>
+    <item>No layout breaks or reflow issues</item>
+    <item>Tailwind config updated or documented (usage guidelines added)</item>
+    <item>Documentation updated with new layout pattern</item>
+    <item>Visual regression tests pass (before/after screenshots compared)</item>
+    <item>Build succeeds with no errors (npm run build)</item>
+    <item>TypeScript compilation passes (npm run type-check)</item>
+    <item>Code reviewed and approved by senior developer</item>
+    <item>Story status updated to "Done"</item>
+  </definition-of-done>
+
+</story-context>

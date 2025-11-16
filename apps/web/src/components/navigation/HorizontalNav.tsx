@@ -1,11 +1,14 @@
 /**
  * HorizontalNav Component
  * Story 10.4: Horizontal Top Navigation for Subsections
+ * Story 10.12: Layout Integration - Two-Tier Header System
+ * Story 10.13: Active states updated to use primary-light color
  *
  * Provides horizontal navigation for project subsections with:
  * - Icon + text labels
  * - Active state with 2px bottom border
- * - Sticky positioning
+ * - Sticky positioning below TopHeaderBar (top-16 = 64px)
+ * - Z-index: 20 (below TopHeaderBar z-30, above content)
  * - Smooth 200ms transitions
  * - Mobile responsive with horizontal scroll
  */
@@ -16,11 +19,20 @@ import { usePathname } from "next/navigation"
 import Link from "next/link"
 import type { Route } from "next"
 import { cn } from "@/lib/utils"
-import { Home, DollarSign, Calendar, FileText, Users, Settings as SettingsIcon } from "lucide-react"
+import {
+  Home,
+  DollarSign,
+  Calendar,
+  FileText,
+  Users,
+  Settings as SettingsIcon,
+  FilledIcon,
+  type LucideIcon,
+} from "@/components/icons"
 
 export interface NavItem {
   label: string
-  icon: React.ElementType
+  icon: LucideIcon
   href: Route<string>
   /**
    * When true, this nav item is only shown to non-partner users
@@ -42,7 +54,7 @@ interface HorizontalNavProps {
  * Features:
  * - URL-based routing with Next.js Link
  * - Active state indication with 2px bottom border
- * - Sticky positioning at top (z-10)
+ * - Sticky positioning below TopHeaderBar (top-16 = 64px, z-20)
  * - Icons paired with text labels
  * - Responsive with horizontal scroll on mobile
  * - 200ms smooth transitions
@@ -82,7 +94,7 @@ export function HorizontalNav({ projectId, isPartner = false }: HorizontalNavPro
 
   return (
     <nav
-      className="sticky top-0 z-10 bg-background border-b"
+      className="sticky top-16 z-20 bg-background border-b"
       role="navigation"
       aria-label="Project navigation"
     >
@@ -90,7 +102,11 @@ export function HorizontalNav({ projectId, isPartner = false }: HorizontalNavPro
         {visibleItems.map((item) => {
           const Icon = item.icon
           // Check if current path matches this nav item
-          const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`)
+          // Special case: Overview should only match exact path, not child routes
+          const isOverview = item.href === `/projects/${projectId}`
+          const isActive = isOverview
+            ? pathname === item.href
+            : pathname === item.href || pathname?.startsWith(`${item.href}/`)
 
           return (
             <Link
@@ -102,12 +118,12 @@ export function HorizontalNav({ projectId, isPartner = false }: HorizontalNavPro
                 "hover:text-foreground hover:bg-accent/50",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                 isActive
-                  ? "border-primary text-foreground"
+                  ? "border-primary text-primary bg-primary-light"
                   : "border-transparent text-muted-foreground"
               )}
               aria-current={isActive ? "page" : undefined}
             >
-              <Icon className="h-4 w-4" aria-hidden="true" />
+              <FilledIcon icon={Icon} filled={isActive} className="h-5 w-5" aria-hidden="true" />
               <span>{item.label}</span>
             </Link>
           )

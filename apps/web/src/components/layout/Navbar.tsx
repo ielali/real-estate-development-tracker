@@ -53,7 +53,7 @@ export function Navbar() {
           <div className="flex items-center gap-8">
             <Link href="/" className="hover:opacity-80 transition-opacity">
               <img
-                src="/logo.png"
+                src="/assets/logo.png"
                 alt="Real Estate Portfolio"
                 width={100}
                 height={300}

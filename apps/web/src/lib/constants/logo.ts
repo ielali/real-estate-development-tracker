@@ -25,7 +25,7 @@ export function getEmbeddedLogo(): string | null {
   }
 
   try {
-    const logoPath = path.join(process.cwd(), "public", "logo-pdf.jpg")
+    const logoPath = path.join(process.cwd(), "public", "assets", "logo-pdf.jpg")
     const logoBuffer = fs.readFileSync(logoPath)
     const logoBase64 = logoBuffer.toString("base64")
     cachedLogoDataUri = `data:image/jpeg;base64,${logoBase64}`

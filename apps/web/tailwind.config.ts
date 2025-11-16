@@ -73,6 +73,9 @@ const config: Config = {
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
+          // Story 10.13: Primary color variants
+          hover: "hsl(var(--primary-hover))",
+          light: "hsl(var(--primary-light))",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
@@ -115,12 +118,21 @@ const config: Config = {
           50: "hsl(var(--gray-50))",
           900: "hsl(var(--gray-900))",
         },
+        // Story 10.13: Tertiary background color
+        bgTertiary: "hsl(var(--bg-tertiary))",
         // Custom brand color palette
         "primary-dark-blue": "#202240",
         "accent-blue": "#36a2b8",
         "growth-green": "#68b0ab",
         "clean-white": "#f8f8f8",
         "subtle-grey": "#c0c0c0",
+        // Epic 10.3: Authentication screen colors
+        navy: {
+          DEFAULT: "#0A2540",
+          hover: "#0a2540e6",
+        },
+        "background-light": "#f6f7f8",
+        "background-dark": "#101922",
       },
       borderRadius: {
         lg: "var(--radius)",

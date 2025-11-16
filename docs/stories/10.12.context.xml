@@ -1,0 +1,380 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>10</epicId>
+    <storyId>12</storyId>
+    <title>Layout Integration - Two-Tier Header System</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-12</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/10.12.story.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>user</asA>
+    <iWant>seamless integration between global and contextual navigation</iWant>
+    <soThat>the interface feels cohesive and space is used efficiently</soThat>
+    <tasks>
+      <phase n="1" title="Update ContentWrapper">
+        <task id="1" acs="2,5,10">Enhance ContentWrapper for two-tier layout
+          - Read existing ContentWrapper.tsx
+          - Verify pt-16 (64px) for TopHeaderBar height
+          - Keep margin-left animation (256px ↔ 64px)
+          - Update animation variants to include padding
+          - Test sidebar collapse with new padding
+          - Verify no layout shift
+        </task>
+      </phase>
+      <phase n="2" title="Update Root Layout">
+        <task id="2" acs="1,6">Integrate TopHeaderBar into root layout
+          - Read app/layout.tsx
+          - Verify TopHeaderBar already imported and positioned
+          - Verify z-index layering (Sidebar z-40, TopHeaderBar z-30, HorizontalNav z-20, modals z-50)
+          - Test on dashboard page
+          - Test on auth pages (login, register)
+        </task>
+      </phase>
+      <phase n="3" title="Adjust TopHeaderBar Positioning">
+        <task id="3" acs="1,7">Update TopHeaderBar for sidebar integration
+          - Read TopHeaderBar.tsx
+          - Add left offset animation for sidebar coordination
+          - Connect to useCollapsedSidebar hook
+          - Animate left position: left-256 → left-64 on collapse
+          - Test header width changes smoothly
+        </task>
+      </phase>
+      <phase n="4" title="Update Project Layout">
+        <task id="4" acs="3,8">Position HorizontalNav below TopHeaderBar
+          - Read app/projects/[id]/layout.tsx
+          - Update container height: h-[calc(100vh-4rem)] → h-[calc(100vh-8rem)]
+          - Add sticky positioning to HorizontalNav: sticky top-16
+          - Test scroll behavior (HorizontalNav stays, content scrolls)
+          - Test on mobile (adjust for bottom tabs)
+        </task>
+      </phase>
+      <phase n="5" title="Mobile Responsiveness">
+        <task id="5" acs="9">Ensure mobile layout works correctly
+          - Test TopHeaderBar on mobile (< 768px)
+          - Verify sidebar hidden (drawer instead)
+          - Verify TopHeaderBar at left: 0 (no sidebar offset)
+          - Test with BottomTabBar (no overlap)
+          - Test with MobileNavigation drawer
+          - Adjust ContentWrapper padding for mobile
+        </task>
+      </phase>
+      <phase n="6" title="Animation Coordination">
+        <task id="6" acs="10,11">Coordinate all layout animations
+          - Ensure sidebar, header, content animate together
+          - Use consistent duration (200ms) and easing [0.4, 0, 0.2, 1]
+          - Test rapid collapse/expand (no jank)
+          - Verify no content shift during animation
+          - Check for any flicker or reflow
+        </task>
+      </phase>
+      <phase n="7" title="Spacing & Overflow">
+        <task id="7" acs="12,13">Verify spacing and prevent overflow
+          - Audit all page containers for proper spacing
+          - Check padding follows 4px/8px grid
+          - Test on various screen sizes (320px to 2560px)
+          - Verify no horizontal scroll
+          - Check for any overflow issues
+          - Test zoom levels (100%, 150%, 200%)
+        </task>
+      </phase>
+      <phase n="8" title="Cross-Page Testing">
+        <task id="8" acs="1,2,3,4">Test on all page types
+          - Test dashboard page (no nested nav)
+          - Test project list page (no nested nav)
+          - Test project detail pages (with HorizontalNav)
+          - Test settings pages (with nested sidebar)
+          - Test auth pages (login, register)
+          - Test admin pages
+          - Document any edge cases
+        </task>
+      </phase>
+      <phase n="9" title="Documentation">
+        <task id="9">Update documentation
+          - Document two-tier header architecture
+          - Update layout diagram in docs
+          - Add usage guidelines for new pages
+          - Document z-index layering system
+          - Add troubleshooting guide
+        </task>
+      </phase>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <ac id="1" category="functional">Global TopHeaderBar fixed at top of all pages</ac>
+    <ac id="2" category="functional">ContentWrapper adjusts margin-left for sidebar AND margin-top for header</ac>
+    <ac id="3" category="functional">HorizontalNav appears below TopHeaderBar on project pages</ac>
+    <ac id="4" category="functional">No layout overlap between headers and content</ac>
+    <ac id="5" category="functional">Sidebar collapse/expand affects ContentWrapper margin-left</ac>
+    <ac id="6" category="integration">Root layout includes TopHeaderBar in correct z-index order</ac>
+    <ac id="7" category="integration">ContentWrapper animation accounts for both sidebar and header</ac>
+    <ac id="8" category="integration">Project layout positions HorizontalNav correctly</ac>
+    <ac id="9" category="integration">Mobile behavior: TopHeaderBar adapts, bottom tabs unaffected</ac>
+    <ac id="10" category="quality">Smooth transitions when sidebar collapses (200ms)</ac>
+    <ac id="11" category="quality">No content shift or flicker during animations</ac>
+    <ac id="12" category="quality">No horizontal scroll on any screen size</ac>
+    <ac id="13" category="quality">Consistent spacing follows 4px/8px grid</ac>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <artifact>
+        <path>docs/epics/EPIC-10.2-Design-Alignment.md</path>
+        <title>EPIC 10.2: Design Alignment with Target Specification</title>
+        <section>Story 10.12: Layout Integration - Two-Tier Header System (lines 111-129)</section>
+        <snippet>Goal: Integrate TopHeaderBar into root layout, update ContentWrapper for header offset, coordinate sidebar and header animations, ensure HorizontalNav works below TopHeaderBar. Two-tier navigation is core architecture. Medium risk - multiple component coordination required.</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/design/NAVIGATION_GAP_ANALYSIS.md</path>
+        <title>Navigation Design Gap Analysis</title>
+        <section>Layout & Spacing Requirements</section>
+        <snippet>Two-tier header system requirements: global header (TopHeaderBar) always visible at top, contextual navigation (HorizontalNav) below header on specific pages. Content must start below global header (64px offset), expand/contract with sidebar collapse, handle nested navigation correctly, work on mobile and desktop. No layout overlap between headers and content. Proper z-index layering to prevent visual conflicts.</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/stories/10.10.story.md</path>
+        <title>Story 10.10: Top Header Bar - Global Search & Actions</title>
+        <section>Dev Agent Record - Implementation Details</section>
+        <snippet>Created TopHeaderBar component at z-30 with fixed positioning and 64px height. ContentWrapper updated with pt-16 for header offset. Framer Motion animations with 200ms duration standard and easing [0.4, 0, 0.2, 1]. Mobile adaptations hide search/CTA, show icon buttons. Header coordinates with Sidebar collapse state via margin-left adjustment.</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/stories/10.11.story.md</path>
+        <title>Story 10.11: Enhanced Sidebar - User Profile & Tools Navigation</title>
+        <section>Senior Developer Review - Architectural Decisions</section>
+        <snippet>Sidebar refactored to maintain z-40 (critical for TopHeaderBar coordination). Hamburger toggle moved from bottom to header. Framer Motion animations continue 200ms duration standard. Mobile-responsive patterns: sidebar hidden on mobile, full-width header. APPROVED with two LOW severity observations about type handling patterns.</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/architecture/coding-standards.md</path>
+        <title>Coding Standards</title>
+        <section>Responsive Design, Animation Standards</section>
+        <snippet>Mobile-first responsive design starting at 375px minimum width. Test at 375px/768px/1024px breakpoints. All touch targets minimum 44x44px. Animation standards: 200ms duration with smooth easing. TypeScript strict mode required. Component tests with AAA pattern using Vitest + React Testing Library.</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/architecture/testing-strategy.md</path>
+        <title>Testing Strategy</title>
+        <section>Test Organization and Integration Tests</section>
+        <snippet>Component tests co-located in __tests__/ subfolder. Integration tests for layout coordination required. Visual regression tests for layout changes. Cross-browser testing requirements. AAA pattern (Arrange-Act-Assert) mandatory for all tests.</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/architecture/unified-project-structure.md</path>
+        <title>Unified Project Structure</title>
+        <section>Monorepo Structure</section>
+        <snippet>Turborepo monorepo. Working in apps/web/ (Next.js fullstack). App Router structure at apps/web/src/app/ for layouts and pages. Components at apps/web/src/components/. Import patterns: @/components/layout/* for layout components, @/hooks/* for custom hooks, framer-motion for animations.</snippet>
+      </artifact>
+    </docs>
+    <code>
+      <artifact>
+        <path>apps/web/src/components/layout/ContentWrapper.tsx</path>
+        <kind>component</kind>
+        <symbol>ContentWrapper</symbol>
+        <lines>1-50</lines>
+        <reason>Existing ContentWrapper component managing content margin/padding. Already has pt-16 for TopHeaderBar offset (Story 10.10). Uses Framer Motion for margin-left animation (256px ↔ 64px) based on sidebar state. Needs verification that padding and animation work together correctly for two-tier layout.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/web/src/app/layout.tsx</path>
+        <kind>layout</kind>
+        <symbol>RootLayout</symbol>
+        <lines>1-73</lines>
+        <reason>Root layout already includes Sidebar (line 54) and TopHeaderBar (line 57) with ContentWrapper wrapping children (line 60). Component tree hierarchy already established. Needs verification of z-index layering and component ordering. No changes expected unless z-index issues discovered.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/web/src/components/layout/TopHeaderBar.tsx</path>
+        <kind>component</kind>
+        <symbol>TopHeaderBar</symbol>
+        <lines>all</lines>
+        <reason>TopHeaderBar component created in Story 10.10. Fixed positioning at z-30. Currently has fixed left position - needs animation to coordinate with sidebar collapse/expand. Must add useCollapsedSidebar hook and Framer Motion variants for left offset (left-256 → left-64).</reason>
+      </artifact>
+      <artifact>
+        <path>apps/web/src/app/projects/[id]/layout.tsx</path>
+        <kind>layout</kind>
+        <symbol>ProjectDetailLayout</symbol>
+        <lines>1-34</lines>
+        <reason>Project layout wrapping detail pages with HorizontalNav. Currently uses h-[calc(100vh-4rem)] for height calculation (64px BottomTabBar). Needs update to h-[calc(100vh-8rem)] to account for both TopHeaderBar (64px) and BottomTabBar (64px). HorizontalNav needs sticky top-16 positioning to stay below TopHeaderBar.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/web/src/components/navigation/HorizontalNav.tsx</path>
+        <kind>component</kind>
+        <symbol>HorizontalNav</symbol>
+        <lines>all</lines>
+        <reason>Contextual navigation for project subsections. Currently positioned at top of project layout container. Needs sticky positioning (sticky top-16) to remain visible below TopHeaderBar during scroll. Z-index should be z-20 (below Sidebar z-40 and TopHeaderBar z-30).</reason>
+      </artifact>
+      <artifact>
+        <path>apps/web/src/hooks/useCollapsedSidebar.ts</path>
+        <kind>hook</kind>
+        <symbol>useCollapsedSidebar</symbol>
+        <lines>all</lines>
+        <reason>Existing hook managing sidebar collapse state with localStorage persistence. Provides isCollapsed boolean and toggle function. Used by ContentWrapper for margin-left animation. TopHeaderBar needs to use same hook for coordinated left offset animation.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/web/src/hooks/useViewport.ts</path>
+        <kind>hook</kind>
+        <symbol>useViewport</symbol>
+        <lines>all</lines>
+        <reason>Hook detecting viewport size (isMobile, isTablet, isDesktop). Used by ContentWrapper to disable animations on mobile. TopHeaderBar should use for mobile adaptations (left: 0 on mobile, no sidebar offset).</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <framework name="Next.js" version="15.5.4">App Router, layouts (nested routing), React Server Components, client components</framework>
+      <framework name="React" version="18.3.0">Hooks (useState, useEffect), Context API, component patterns</framework>
+      <ui>
+        <library name="framer-motion" version="12.23.24">Animation library for layout transitions - motion.div, motion.header, variants, transitions. Standard: 200ms duration with easing [0.4, 0, 0.2, 1]</library>
+        <library name="tailwindcss" version="3.4.0">Utility-first CSS - responsive breakpoints (md:, lg:), spacing utilities (pt-16, ml-64), z-index classes</library>
+        <library name="lucide-react" version="0.544.0">Icon library for navigation icons</library>
+      </ui>
+      <testing>
+        <library name="vitest" version="3.2.4">Test runner for integration and layout tests</library>
+        <library name="@testing-library/react" version="16.3.0">Component testing utilities, render, screen, fireEvent</library>
+        <library name="@testing-library/jest-dom" version="6.8.0">DOM matchers for assertions</library>
+      </testing>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <architectural>
+      <constraint critical="true">MUST maintain z-index layering: Sidebar z-40, TopHeaderBar z-30, HorizontalNav z-20, modals z-50</constraint>
+      <constraint critical="true">MUST preserve 200ms animation duration with easing [0.4, 0, 0.2, 1] for all layout transitions</constraint>
+      <constraint critical="true">ContentWrapper pt-16 (64px) for TopHeaderBar height MUST remain - already established in Story 10.10</constraint>
+      <constraint critical="true">Sidebar collapse/expand MUST trigger coordinated animations in both TopHeaderBar (left offset) AND ContentWrapper (margin-left)</constraint>
+      <constraint>TopHeaderBar left offset animation: left-256 when sidebar expanded, left-64 when collapsed (desktop only)</constraint>
+      <constraint>HorizontalNav sticky positioning: sticky top-16 to stay below TopHeaderBar (64px height)</constraint>
+      <constraint>Mobile behavior: TopHeaderBar left: 0 (full width), ContentWrapper margin-left: 0, no sidebar offset animations</constraint>
+      <constraint>No layout changes to Sidebar component - already refactored in Story 10.11 with z-40</constraint>
+    </architectural>
+    <ui-ux>
+      <constraint>Mobile-first responsive design: 375px minimum width, test at 375px/768px/1024px breakpoints</constraint>
+      <constraint>No horizontal scroll on any screen size (320px to 2560px)</constraint>
+      <constraint>All animations must be smooth with no content shift or flicker</constraint>
+      <constraint>Spacing must follow 4px/8px grid system (Tailwind's default spacing scale)</constraint>
+      <constraint>Project layout height calculation must account for both headers: h-[calc(100vh-8rem)] for TopHeaderBar + BottomTabBar</constraint>
+      <constraint>Touch targets minimum 44x44px for mobile usability (applies to navigation items)</constraint>
+    </ui-ux>
+    <code-quality>
+      <constraint>TypeScript strict mode - all functions must have explicit return types</constraint>
+      <constraint>JSDoc comments required for all modified layout components</constraint>
+      <constraint>Preserve existing component APIs - ContentWrapper, TopHeaderBar props unchanged</constraint>
+      <constraint>Use Framer Motion motion.div and motion.header consistently for animated elements</constraint>
+      <constraint>Co-locate integration tests with layout components in __tests__/ folders</constraint>
+    </code-quality>
+    <testing>
+      <constraint>AAA pattern (Arrange-Act-Assert) for all test cases</constraint>
+      <constraint>Integration tests required for layout coordination (sidebar + header + content animations)</constraint>
+      <constraint>Visual regression tests for layout changes across different screen sizes</constraint>
+      <constraint>Cross-page testing: dashboard, project pages, settings, auth pages, admin pages</constraint>
+      <constraint>Mock useCollapsedSidebar and useViewport hooks for unit tests</constraint>
+      <constraint>Test rapid collapse/expand to verify no jank or layout thrashing</constraint>
+    </testing>
+    <performance>
+      <constraint>Layout animations must not cause jank (maintain 60fps)</constraint>
+      <constraint>Avoid layout thrashing - batch DOM reads and writes</constraint>
+      <constraint>Use CSS transforms for animations when possible (better GPU acceleration)</constraint>
+      <constraint>Minimize reflows during sidebar collapse/expand transitions</constraint>
+    </performance>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>useCollapsedSidebar</name>
+      <kind>React Hook</kind>
+      <signature>() => { isCollapsed: boolean, toggle: () => void, setCollapsed: (value: boolean) => void }</signature>
+      <path>apps/web/src/hooks/useCollapsedSidebar.ts</path>
+      <usage>Manages sidebar collapse state with localStorage persistence. ContentWrapper uses for margin-left animation. TopHeaderBar must use for coordinated left offset animation. Returns isCollapsed boolean (true = 64px, false = 256px).</usage>
+    </interface>
+    <interface>
+      <name>useViewport</name>
+      <kind>React Hook</kind>
+      <signature>() => { isMobile: boolean, isTablet: boolean, isDesktop: boolean, width: number }</signature>
+      <path>apps/web/src/hooks/useViewport.ts</path>
+      <usage>Detects viewport size with breakpoints. isMobile = width < 768px. ContentWrapper uses to disable animations on mobile. TopHeaderBar should use for mobile adaptations (left: 0, no sidebar offset).</usage>
+    </interface>
+    <interface>
+      <name>ContentWrapper Props</name>
+      <kind>Component Props</kind>
+      <signature>{ children: ReactNode }</signature>
+      <path>apps/web/src/components/layout/ContentWrapper.tsx</path>
+      <usage>Wrapper component for page content. Provides margin-left animation (256px ↔ 64px) based on sidebar state. Has pt-16 (64px) for TopHeaderBar. No changes to props expected.</usage>
+    </interface>
+    <interface>
+      <name>Framer Motion Variants</name>
+      <kind>Animation Configuration</kind>
+      <signature>{ expanded: { marginLeft: 256 }, collapsed: { marginLeft: 64 } }</signature>
+      <path>apps/web/src/components/layout/ContentWrapper.tsx</path>
+      <usage>Existing animation variants for ContentWrapper margin-left. TopHeaderBar needs similar variants for left offset: { expanded: { left: 256 }, collapsed: { left: 64 } }.</usage>
+    </interface>
+    <interface>
+      <name>TopHeaderBar Animation Pattern</name>
+      <kind>Implementation Pattern</kind>
+      <signature>motion.header with variants { expanded: { left: 256 }, collapsed: { left: 64 } }, transition: { duration: 0.2, ease: [0.4, 0, 0.2, 1] }</signature>
+      <path>apps/web/src/components/layout/TopHeaderBar.tsx (to be modified)</path>
+      <usage>TopHeaderBar must animate left offset to coordinate with sidebar. Use Framer Motion motion.header with animate prop controlled by isCollapsed from useCollapsedSidebar hook. Mobile: style={{ left: 0 }} to override animation.</usage>
+    </interface>
+    <interface>
+      <name>HorizontalNav Positioning</name>
+      <kind>Layout Pattern</kind>
+      <signature>className="sticky top-16 z-20 bg-background border-b"</signature>
+      <path>apps/web/src/components/navigation/HorizontalNav.tsx (to be modified)</path>
+      <usage>HorizontalNav needs sticky positioning at top-16 (64px below viewport top) to stay below TopHeaderBar. Z-index z-20 ensures it's below Sidebar (z-40) and TopHeaderBar (z-30). Background color prevents content showing through during scroll.</usage>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+Integration tests must verify layout coordination between sidebar, header, and content. Test sidebar collapse/expand triggers coordinated animations in TopHeaderBar (left offset) AND ContentWrapper (margin-left). Use Vitest with React Testing Library following AAA pattern. Mock useCollapsedSidebar and useViewport hooks for predictable state. Visual regression tests required for different screen sizes (375px, 768px, 1024px, 1920px). Test rapid collapse/expand to verify no jank or layout thrashing. Cross-page testing on dashboard, project pages, settings, auth pages, admin pages. Verify no horizontal scroll, no content shift, no flicker during animations. Test HorizontalNav sticky positioning on project pages (stays below TopHeaderBar during scroll). Performance testing: animations maintain 60fps, no layout thrashing.</standards>
+    <locations>
+      <location>apps/web/src/components/layout/__tests__/ContentWrapper.test.tsx (update with header padding tests)</location>
+      <location>apps/web/src/components/layout/__tests__/TopHeaderBar.test.tsx (update with left offset animation tests)</location>
+      <location>apps/web/src/app/__tests__/layout.integration.test.tsx (create for end-to-end layout coordination)</location>
+      <location>apps/web/src/app/projects/[id]/__tests__/layout.test.tsx (update with HorizontalNav positioning tests)</location>
+    </locations>
+    <ideas>
+      <test ac="1">TopHeaderBar renders at top of all pages (dashboard, project list, project detail, settings, auth)</test>
+      <test ac="1">TopHeaderBar has fixed positioning with z-30</test>
+      <test ac="1">TopHeaderBar height is 64px (h-16)</test>
+      <test ac="2">ContentWrapper has pt-16 (64px top padding) for TopHeaderBar offset</test>
+      <test ac="2">ContentWrapper margin-left is 256px when sidebar expanded</test>
+      <test ac="2">ContentWrapper margin-left is 64px when sidebar collapsed</test>
+      <test ac="2">ContentWrapper margin-left is 0 on mobile (< 768px)</test>
+      <test ac="3">HorizontalNav appears on project detail pages</test>
+      <test ac="3">HorizontalNav positioned below TopHeaderBar (sticky top-16)</test>
+      <test ac="3">HorizontalNav does not appear on dashboard or project list pages</test>
+      <test ac="4">No overlap between TopHeaderBar and content (pt-16 offset verified)</test>
+      <test ac="4">No overlap between HorizontalNav and content on project pages</test>
+      <test ac="4">No overlap between Sidebar and TopHeaderBar (z-index verified)</test>
+      <test ac="5">Sidebar collapse triggers ContentWrapper margin-left animation</test>
+      <test ac="5">Sidebar expand triggers ContentWrapper margin-left animation</test>
+      <test ac="6">Root layout includes Sidebar before TopHeaderBar in DOM</test>
+      <test ac="6">Root layout includes TopHeaderBar before ContentWrapper in DOM</test>
+      <test ac="6">Z-index layering correct: Sidebar z-40 > TopHeaderBar z-30 > HorizontalNav z-20</test>
+      <test ac="7">Sidebar collapse triggers TopHeaderBar left offset animation (left-256 → left-64)</test>
+      <test ac="7">Sidebar expand triggers TopHeaderBar left offset animation (left-64 → left-256)</test>
+      <test ac="7">TopHeaderBar and ContentWrapper animate together (coordinated transitions)</test>
+      <test ac="8">Project layout renders HorizontalNav with sticky top-16</test>
+      <test ac="8">HorizontalNav stays visible during content scroll</test>
+      <test ac="8">HorizontalNav z-index is z-20 (below TopHeaderBar)</test>
+      <test ac="9">TopHeaderBar has left: 0 on mobile (no sidebar offset)</test>
+      <test ac="9">ContentWrapper has margin-left: 0 on mobile</test>
+      <test ac="9">BottomTabBar not affected by TopHeaderBar (both visible on mobile)</test>
+      <test ac="10">All animations use 200ms duration</test>
+      <test ac="10">All animations use easing [0.4, 0, 0.2, 1]</test>
+      <test ac="10">Sidebar collapse animation is smooth (no jank)</test>
+      <test ac="11">No content shift during sidebar collapse/expand</test>
+      <test ac="11">No flicker during TopHeaderBar left offset animation</test>
+      <test ac="11">No layout reflow during coordinated animations</test>
+      <test ac="12">No horizontal scroll at 375px width</test>
+      <test ac="12">No horizontal scroll at 768px width</test>
+      <test ac="12">No horizontal scroll at 1024px width</test>
+      <test ac="12">No horizontal scroll at 1920px width</test>
+      <test ac="13">Spacing follows 4px/8px grid (Tailwind defaults)</test>
+      <test ac="13">TopHeaderBar height is 64px (multiple of 8px)</test>
+      <test ac="13">ContentWrapper pt-16 is 64px (multiple of 8px)</test>
+      <test>Rapid sidebar collapse/expand maintains smooth animations (stress test)</test>
+      <test>Layout works on dashboard page (no HorizontalNav)</test>
+      <test>Layout works on project pages (with HorizontalNav)</test>
+      <test>Layout works on settings pages (potential nested layouts)</test>
+      <test>Layout works on auth pages (minimal layout)</test>
+      <test>Performance: Animations maintain 60fps during transitions</test>
+      <test>Accessibility: Focus order follows visual order (Sidebar → TopHeaderBar → Content)</test>
+    </ideas>
+  </tests>
+</story-context>

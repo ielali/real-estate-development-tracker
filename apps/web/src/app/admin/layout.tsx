@@ -87,7 +87,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* Main Content */}
       <main className="flex-1">
-        <div className="container max-w-7xl py-6 lg:py-8">
+        <div className="px-6 py-6 lg:py-8 max-w-7xl">
           {/* Mobile navigation - shown on small screens */}
           <div className="mb-6 lg:hidden">
             <div className="flex items-center gap-2 mb-4">

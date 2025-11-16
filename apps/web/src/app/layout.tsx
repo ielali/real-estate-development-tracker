@@ -6,7 +6,10 @@ import { ErrorBoundary } from "@/components/error-boundary"
 import { OfflineBanner } from "@/components/ui/offline-banner"
 import { CommandPalette } from "@/components/search/CommandPalette"
 import { BottomTabBar } from "@/components/navigation/BottomTabBar"
-import { MobileNavigationDrawer } from "@/components/navigation/MobileNavigationDrawer"
+import { MobileNavigation } from "@/components/layout/MobileNavigation"
+import { Sidebar } from "@/components/layout/Sidebar"
+import { TopHeaderBar } from "@/components/layout/TopHeaderBar"
+import { ContentWrapper } from "@/components/layout/ContentWrapper"
 import "../styles/globals.css"
 
 // Configure Inter font with optimized loading strategy (Epic 10)
@@ -21,14 +24,14 @@ export const metadata = {
   title: "Real Estate Development Tracker",
   description: "Manage real estate development projects with ease",
   icons: {
-    icon: "/favicon.png",
-    apple: "/apple-touch-icon.png",
+    icon: "/assets/favicon.png",
+    apple: "/assets/apple-touch-icon.png",
   },
   openGraph: {
     title: "Real Estate Development Tracker",
     description: "Manage real estate development projects with ease",
     type: "website",
-    images: ["/og-image.png"],
+    images: ["/assets/og-image.png"],
   },
 }
 
@@ -37,6 +40,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <html lang="en" className={inter.variable}>
+      <head>
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap"
+        />
+      </head>
       <body className="font-sans">
         {googleMapsApiKey && (
           <Script
@@ -47,10 +56,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ErrorBoundary>
           <OfflineBanner />
           <Providers>
-            {children}
+            {/* Desktop Sidebar - Story 10.3, 10.11 (z-40) */}
+            <Sidebar />
+
+            {/* Top Header Bar - Story 10.10, 10.12 (z-30, fixed top) */}
+            <TopHeaderBar />
+
+            {/* Content Wrapper - Story 10.9, 10.10, 10.12 (adjusts for sidebar + header) */}
+            <ContentWrapper>{children}</ContentWrapper>
+
+            {/* Global Components */}
             <CommandPalette />
             <BottomTabBar />
-            <MobileNavigationDrawer />
+            <MobileNavigation />
           </Providers>
           <Toaster />
         </ErrorBoundary>

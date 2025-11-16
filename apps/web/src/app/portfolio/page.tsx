@@ -18,7 +18,6 @@ import { PortfolioFilters } from "@/components/portfolio/PortfolioFilters"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
-import { Navbar } from "@/components/layout/Navbar"
 import { Breadcrumb, breadcrumbHelpers } from "@/components/ui/breadcrumb"
 
 /**
@@ -130,7 +129,6 @@ export default function PortfolioPage() {
   if (sessionLoading) {
     return (
       <>
-        <Navbar />
         <div className="flex items-center justify-center min-h-screen">
           <Loader2 className="w-8 h-8 animate-spin" />
         </div>
@@ -147,8 +145,7 @@ export default function PortfolioPage() {
   if (!projectsLoading && projectsData && projectsData.totalCount < 2) {
     return (
       <>
-        <Navbar />
-        <div className="container mx-auto p-6">
+        <div className="px-6 py-6 max-w-7xl">
           <div className="mb-6">
             <Breadcrumb items={breadcrumbHelpers.portfolio()} />
           </div>
@@ -177,8 +174,7 @@ export default function PortfolioPage() {
   if (projectsLoading || analyticsLoading) {
     return (
       <>
-        <Navbar />
-        <div className="container mx-auto p-6">
+        <div className="px-6 py-6 max-w-7xl">
           <div className="mb-6">
             <Breadcrumb items={breadcrumbHelpers.portfolio()} />
           </div>
@@ -202,8 +198,7 @@ export default function PortfolioPage() {
   if (projectsError) {
     return (
       <>
-        <Navbar />
-        <div className="container mx-auto p-6">
+        <div className="px-6 py-6 max-w-7xl">
           <div className="mb-6">
             <Breadcrumb items={breadcrumbHelpers.portfolio()} />
           </div>
@@ -225,8 +220,7 @@ export default function PortfolioPage() {
 
   return (
     <>
-      <Navbar />
-      <div className="container mx-auto p-6">
+      <div className="px-6 py-6 max-w-7xl">
         <div className="mb-6">
           <Breadcrumb items={breadcrumbHelpers.portfolio()} />
         </div>

@@ -155,7 +155,7 @@ export default function VendorDetailPage({ params }: VendorDetailPageProps): JSX
   // Loading state
   if (!vendorId || contactLoading || metricsLoading || ratingsLoading) {
     return (
-      <div className="container mx-auto py-6 px-4 sm:px-6 lg:px-8">
+      <div className="px-6 py-6 max-w-7xl">
         <div className="flex items-center justify-center py-12">
           <Spinner />
         </div>
@@ -166,7 +166,7 @@ export default function VendorDetailPage({ params }: VendorDetailPageProps): JSX
   // Error state
   if (contactError || !contactData) {
     return (
-      <div className="container mx-auto py-6 px-4 sm:px-6 lg:px-8">
+      <div className="px-6 py-6 max-w-7xl">
         <ErrorState
           message="Failed to load vendor details"
           action={<Button onClick={() => refetchContact()}>Try Again</Button>}
@@ -178,7 +178,7 @@ export default function VendorDetailPage({ params }: VendorDetailPageProps): JSX
   // Check if contact is actually a vendor (has associated costs)
   if (metricsError || !metricsData) {
     return (
-      <div className="container mx-auto py-6 px-4 sm:px-6 lg:px-8">
+      <div className="px-6 py-6 max-w-7xl">
         <div className="mb-6">
           <Button variant="ghost" onClick={() => router.back()}>
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -211,7 +211,7 @@ export default function VendorDetailPage({ params }: VendorDetailPageProps): JSX
   )
 
   return (
-    <div className="container mx-auto py-6 px-4 sm:px-6 lg:px-8">
+    <div className="px-6 py-6 max-w-7xl">
       {/* Breadcrumb */}
       <div className="mb-6">
         <Breadcrumb

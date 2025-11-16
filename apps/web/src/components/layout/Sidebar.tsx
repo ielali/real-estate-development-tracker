@@ -1,22 +1,32 @@
 "use client"
 
 /**
- * Sidebar - Collapsible Navigation Component
+ * Sidebar - Collapsible Navigation Component with User Profile & Tools
  * Story 10.3: Collapsible Sidebar Navigation
+ * Story 10.11: Enhanced Sidebar - User Profile & Tools Navigation
+ * Story 10.13: Active states updated to use primary-light color
  *
  * Features:
  * - Toggles between 256px (expanded) and 64px (collapsed)
- * - Smooth animations with Framer Motion
+ * - Hamburger menu toggle in header (replaces bottom toggle)
+ * - User profile section with avatar, name, role, and dropdown menu
+ * - Secondary "Tools" navigation (Notifications, Settings, Help)
+ * - Smooth animations with Framer Motion (200ms)
  * - Tooltips in collapsed state
  * - Keyboard shortcut (Cmd/Ctrl + B)
  * - localStorage persistence
  * - Active route highlighting
+ *
+ * @param notificationCount - Optional notification count for badge (default: 0)
+ *
+ * @example
+ * <Sidebar notificationCount={3} />
  */
 
 import React, { useEffect } from "react"
 import Link from "next/link"
 import type { Route } from "next"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import {
   Home,
@@ -25,12 +35,26 @@ import {
   Users,
   Building2,
   Grid2x2,
-  ChevronLeft,
+  Menu,
+  Bell,
+  Settings,
+  HelpCircle,
+  FilledIcon,
   type LucideIcon,
-} from "lucide-react"
+} from "@/components/icons"
 import { useCollapsedSidebar } from "@/hooks/useCollapsedSidebar"
 import { useAuth } from "@/components/providers/AuthProvider"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 
@@ -39,8 +63,10 @@ export interface NavItem {
   label: string
   icon: LucideIcon
   requiresAuth?: boolean
+  badge?: boolean // For showing notification badge
 }
 
+// Main navigation items
 const NAV_ITEMS: NavItem[] = [
   { href: "/", label: "Home", icon: Home },
   { href: "/projects", label: "Projects", icon: FolderKanban, requiresAuth: true },
@@ -50,7 +76,20 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/categories", label: "Categories", icon: Grid2x2, requiresAuth: true },
 ]
 
-// Animation variants (AC: 7 - 200ms ease-in-out)
+// Tools navigation items (Story 10.11)
+const TOOLS_NAV_ITEMS: NavItem[] = [
+  {
+    href: "/notifications" as Route<string>,
+    label: "Notifications",
+    icon: Bell,
+    requiresAuth: true,
+    badge: true,
+  },
+  { href: "/settings", label: "Settings", icon: Settings, requiresAuth: true },
+  { href: "/help" as Route<string>, label: "Help", icon: HelpCircle },
+]
+
+// Animation variants (200ms ease-in-out standard)
 const sidebarVariants = {
   expanded: {
     width: 256,
@@ -71,13 +110,35 @@ const textVariants = {
   },
 }
 
-export function Sidebar() {
-  const { user } = useAuth()
+export interface SidebarProps {
+  /** Notification count for badge indicator */
+  notificationCount?: number
+}
+
+/**
+ * Generate user initials from full name
+ * @param name - User's full name
+ * @returns Initials (max 2 characters)
+ */
+function getInitials(name: string): string {
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2)
+}
+
+export function Sidebar({ notificationCount = 0 }: SidebarProps) {
+  const { user, logout } = useAuth()
   const pathname = usePathname()
+  const router = useRouter()
   const { isCollapsed, toggle } = useCollapsedSidebar()
 
-  // Keyboard shortcut (AC: 3 - Cmd/Ctrl + B)
+  // Keyboard shortcut (Cmd/Ctrl + B)
   useEffect(() => {
+    if (!user) return
+
     const handleKeyPress = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "b") {
         e.preventDefault()
@@ -87,12 +148,13 @@ export function Sidebar() {
 
     window.addEventListener("keydown", handleKeyPress)
     return () => window.removeEventListener("keydown", handleKeyPress)
-  }, [toggle])
+  }, [toggle, user])
 
-  // Filter navigation items based on auth status (AC: 4)
+  // Filter navigation items based on auth status
   const visibleNavItems = NAV_ITEMS.filter((item) => !item.requiresAuth || user)
+  const visibleToolsItems = TOOLS_NAV_ITEMS.filter((item) => !item.requiresAuth || user)
 
-  // Check if route is active (AC: 8)
+  // Check if route is active
   const isActive = (href: string) => {
     if (href === "/") {
       return pathname === "/"
@@ -100,9 +162,28 @@ export function Sidebar() {
     return pathname === href || pathname?.startsWith(href + "/")
   }
 
+  // Handle dropdown menu actions
+  const handleProfileClick = () => {
+    router.push("/profile" as Route<string>)
+  }
+
+  const handleSettingsClick = () => {
+    router.push("/settings")
+  }
+
+  const handleLogout = async () => {
+    await logout()
+    router.push("/")
+  }
+
+  // Hide sidebar for unauthenticated users (after all hooks)
+  if (!user) {
+    return null
+  }
+
   return (
     <TooltipProvider delayDuration={500}>
-      {/* AC: 1 - Toggles between 256px and 64px */}
+      {/* Sidebar container - maintains z-40 (above TopHeaderBar z-30) */}
       <motion.aside
         role="complementary"
         aria-label="Main navigation sidebar"
@@ -113,25 +194,144 @@ export function Sidebar() {
         className="fixed left-0 top-0 z-40 h-screen flex flex-col bg-card border-r border-border hidden md:flex"
         data-collapsed={isCollapsed}
       >
-        {/* Logo/Brand */}
-        <div className="flex items-center h-16 px-4 border-b border-border">
-          {!isCollapsed ? (
-            <motion.div
-              initial={false}
-              animate="expanded"
-              variants={textVariants}
-              transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
-              className="flex items-center gap-2 overflow-hidden"
-            >
-              <Building2 className="w-6 h-6 shrink-0 text-primary" />
-              <span className="font-semibold text-sm whitespace-nowrap">Real Estate Tracker</span>
-            </motion.div>
-          ) : (
-            <Building2 className="w-6 h-6 text-primary mx-auto" />
-          )}
-        </div>
+        {/* Header with Logo and Hamburger Toggle (Story 10.11, 10.16) */}
+        {!isCollapsed ? (
+          <div className="flex items-center justify-between h-16 px-4 border-b border-border">
+            <div className="flex items-center gap-2 overflow-hidden">
+              <motion.div
+                initial={false}
+                animate="expanded"
+                variants={textVariants}
+                transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+                className="overflow-hidden"
+              >
+                <img
+                  src="/assets/logo.png"
+                  alt="Real Estate Development Tracker"
+                  className="h-10 w-auto object-contain"
+                />
+              </motion.div>
+            </div>
 
-        {/* Navigation Items */}
+            {/* Hamburger toggle button */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  onClick={toggle}
+                  variant="ghost"
+                  size="icon"
+                  className="shrink-0"
+                  aria-label="Collapse sidebar"
+                  aria-expanded={true}
+                >
+                  <Menu className="w-5 h-5" aria-hidden="true" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right" className="font-medium">
+                Collapse (⌘B)
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        ) : (
+          <div className="flex flex-col border-b border-border">
+            {/* Logo - Full Width */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex items-center justify-center py-4 hover:bg-accent/50 transition-colors cursor-pointer">
+                  <img
+                    src="/assets/logo.png"
+                    alt="Real Estate Development Tracker"
+                    className="h-12 w-12 object-cover object-top rounded"
+                  />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                <p>Real Estate Development Tracker</p>
+              </TooltipContent>
+            </Tooltip>
+
+            {/* Hamburger toggle button - Full Width */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  onClick={toggle}
+                  variant="ghost"
+                  size="icon"
+                  className="w-full h-12 rounded-none"
+                  aria-label="Expand sidebar"
+                  aria-expanded={false}
+                >
+                  <Menu className="w-5 h-5" aria-hidden="true" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right" className="font-medium">
+                Expand (⌘B)
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        )}
+
+        {/* User Profile Section (Story 10.11 - AC: 2,3,7,8) */}
+        <DropdownMenu>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <DropdownMenuTrigger asChild>
+                <button
+                  className={cn(
+                    "w-full p-4 border-b border-border",
+                    "flex items-center gap-3",
+                    "hover:bg-accent transition-colors",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    isCollapsed && "justify-center"
+                  )}
+                  aria-label={user ? `${user.name} profile menu` : "User profile menu"}
+                >
+                  <Avatar className="w-10 h-10 shrink-0">
+                    <AvatarImage src={undefined} alt={user?.name ?? "User"} />
+                    <AvatarFallback className="bg-primary text-primary-foreground">
+                      {user?.name ? getInitials(user.name) : "U"}
+                    </AvatarFallback>
+                  </Avatar>
+
+                  {!isCollapsed && (
+                    <motion.div
+                      initial={false}
+                      animate="expanded"
+                      variants={textVariants}
+                      transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+                      className="text-left overflow-hidden"
+                    >
+                      <div className="font-medium text-sm truncate">
+                        {user?.name ?? "Guest User"}
+                      </div>
+                      <div className="text-xs text-muted-foreground truncate">
+                        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                        {(user as any)?.role ?? "Member"}
+                      </div>
+                    </motion.div>
+                  )}
+                </button>
+              </DropdownMenuTrigger>
+            </TooltipTrigger>
+
+            {isCollapsed && (
+              <TooltipContent side="right" className="font-medium">
+                {user?.name ?? "Guest User"}
+              </TooltipContent>
+            )}
+          </Tooltip>
+
+          <DropdownMenuContent side="right" align="start" className="w-56">
+            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleProfileClick}>Profile</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleSettingsClick}>Settings</DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {/* Main Navigation */}
         <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
           {visibleNavItems.map((item) => {
             const active = isActive(item.href)
@@ -145,17 +345,19 @@ export function Sidebar() {
                     className={cn(
                       "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors",
                       "hover:bg-accent hover:text-accent-foreground",
-                      // AC: 8 - Active state indication
-                      active && "bg-accent text-accent-foreground border-l-4 border-primary",
+                      active && "bg-primary-light text-primary border-l-4 border-primary",
                       !active && "text-muted-foreground",
                       isCollapsed && "justify-center"
                     )}
                     aria-current={active ? "page" : undefined}
                   >
-                    {/* AC: 5 - Icons remain visible */}
-                    <Icon className="w-5 h-5 shrink-0" aria-hidden="true" />
+                    <FilledIcon
+                      icon={Icon}
+                      filled={active}
+                      className="w-5 h-5 shrink-0"
+                      aria-hidden="true"
+                    />
 
-                    {/* AC: 4,5 - Text hidden in collapsed state */}
                     {!isCollapsed && (
                       <motion.span
                         initial={false}
@@ -170,7 +372,6 @@ export function Sidebar() {
                   </Link>
                 </TooltipTrigger>
 
-                {/* AC: 5 - Tooltips in collapsed state */}
                 {isCollapsed && (
                   <TooltipContent side="right" className="font-medium">
                     {item.label}
@@ -181,49 +382,99 @@ export function Sidebar() {
           })}
         </nav>
 
-        {/* AC: 2 - Toggle button at bottom */}
-        <div className="p-2 border-t border-border">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                onClick={toggle}
-                variant="ghost"
-                size="sm"
-                className={cn(
-                  "w-full justify-center hover:bg-accent",
-                  !isCollapsed && "justify-start"
-                )}
-                aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-                aria-expanded={!isCollapsed}
-              >
-                <ChevronLeft
-                  className={cn(
-                    "w-4 h-4 transition-transform duration-200",
-                    isCollapsed && "rotate-180"
+        {/* Tools Navigation Section (Story 10.11 - AC: 4,5,9) */}
+        <div className="border-t border-border">
+          {!isCollapsed && (
+            <motion.div
+              initial={false}
+              animate="expanded"
+              variants={textVariants}
+              transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+              className="px-5 py-2 overflow-hidden"
+            >
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Tools
+              </span>
+            </motion.div>
+          )}
+
+          <nav className="px-2 py-2 space-y-1">
+            {visibleToolsItems.map((item) => {
+              const active = isActive(item.href)
+              const Icon = item.icon
+              const showBadge = item.badge && notificationCount > 0
+
+              return (
+                <Tooltip key={item.href}>
+                  <TooltipTrigger asChild>
+                    <Link
+                      href={item.href}
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors relative",
+                        "hover:bg-accent hover:text-accent-foreground",
+                        active && "bg-primary-light text-primary border-l-4 border-primary",
+                        !active && "text-muted-foreground",
+                        isCollapsed && "justify-center"
+                      )}
+                      aria-current={active ? "page" : undefined}
+                    >
+                      <FilledIcon
+                        icon={Icon}
+                        filled={active}
+                        className="w-5 h-5 shrink-0"
+                        aria-hidden="true"
+                      />
+
+                      {!isCollapsed && (
+                        <>
+                          <motion.span
+                            initial={false}
+                            animate="expanded"
+                            variants={textVariants}
+                            transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+                            className="text-sm font-medium whitespace-nowrap overflow-hidden flex-1"
+                          >
+                            {item.label}
+                          </motion.span>
+
+                          {/* Notification badge in expanded state */}
+                          {showBadge && (
+                            <motion.div
+                              initial={{ scale: 0.8, opacity: 0 }}
+                              animate={{ scale: 1, opacity: 1 }}
+                              transition={{ duration: 0.2 }}
+                            >
+                              <Badge variant="destructive" className="ml-auto">
+                                {notificationCount}
+                              </Badge>
+                            </motion.div>
+                          )}
+                        </>
+                      )}
+
+                      {/* Notification badge in collapsed state */}
+                      {isCollapsed && showBadge && (
+                        <motion.span
+                          initial={{ scale: 0.8, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          transition={{ duration: 0.2 }}
+                          className="absolute top-1 right-1 w-2 h-2 bg-destructive rounded-full"
+                          aria-hidden="true"
+                        />
+                      )}
+                    </Link>
+                  </TooltipTrigger>
+
+                  {isCollapsed && (
+                    <TooltipContent side="right" className="font-medium">
+                      {item.label}
+                      {showBadge && ` (${notificationCount})`}
+                    </TooltipContent>
                   )}
-                  aria-hidden="true"
-                />
-                {!isCollapsed && (
-                  <motion.span
-                    initial={false}
-                    animate="expanded"
-                    variants={textVariants}
-                    transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
-                    className="ml-2 text-sm overflow-hidden whitespace-nowrap"
-                  >
-                    Collapse
-                  </motion.span>
-                )}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="right" className="font-medium">
-              {isCollapsed ? "Expand" : "Collapse"} (
-              {typeof navigator !== "undefined" && navigator.platform.toLowerCase().includes("mac")
-                ? "⌘B"
-                : "Ctrl+B"}
+                </Tooltip>
               )
-            </TooltipContent>
-          </Tooltip>
+            })}
+          </nav>
         </div>
       </motion.aside>
     </TooltipProvider>

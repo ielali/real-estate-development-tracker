@@ -72,7 +72,7 @@ export default function UnsubscribePage() {
   // Loading state
   if (!userId && !error) {
     return (
-      <div className="container max-w-2xl py-16">
+      <div className="px-6 py-16 max-w-2xl">
         <Card>
           <CardContent className="flex items-center justify-center h-64">
             <p className="text-muted-foreground">Verifying unsubscribe link...</p>
@@ -85,7 +85,7 @@ export default function UnsubscribePage() {
   // Error state
   if (error) {
     return (
-      <div className="container max-w-2xl py-16">
+      <div className="px-6 py-16 max-w-2xl">
         <Card>
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
@@ -115,7 +115,7 @@ export default function UnsubscribePage() {
   // Success state
   if (success) {
     return (
-      <div className="container max-w-2xl py-16">
+      <div className="px-6 py-16 max-w-2xl">
         <Card>
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
@@ -150,7 +150,7 @@ export default function UnsubscribePage() {
 
   // Confirmation state
   return (
-    <div className="container max-w-2xl py-16">
+    <div className="px-6 py-16 max-w-2xl">
       <Card>
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">

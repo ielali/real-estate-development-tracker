@@ -21,7 +21,7 @@ export default function ProjectDocumentsPage() {
 
   if (isLoading) {
     return (
-      <div className="container max-w-4xl py-10">
+      <div className="px-6 py-10 max-w-4xl">
         <div className="animate-pulse space-y-4">
           <div className="h-8 bg-gray-200 rounded w-1/3"></div>
           <div className="h-64 bg-gray-200 rounded"></div>
@@ -32,7 +32,7 @@ export default function ProjectDocumentsPage() {
 
   if (error || !project) {
     return (
-      <div className="container max-w-4xl py-10">
+      <div className="px-6 py-10 max-w-4xl">
         <div className="text-center py-12">
           <p className="text-red-600 mb-4">Failed to load project</p>
           <button
@@ -47,7 +47,7 @@ export default function ProjectDocumentsPage() {
   }
 
   return (
-    <div className="container max-w-4xl py-10">
+    <div className="px-6 py-10 max-w-4xl">
       {/* Breadcrumb */}
       <div className="mb-6">
         <Breadcrumb items={breadcrumbHelpers.projectDocuments(project.name, projectId)} />
