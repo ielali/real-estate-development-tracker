@@ -10,9 +10,19 @@ import { BottomTabBar } from "../BottomTabBar"
 
 // Mock dependencies
 const mockUsePathname = vi.fn(() => "/")
+const mockPush = vi.fn()
+const mockRouter = {
+  push: mockPush,
+  replace: vi.fn(),
+  back: vi.fn(),
+  forward: vi.fn(),
+  refresh: vi.fn(),
+  prefetch: vi.fn(),
+}
 
 vi.mock("next/navigation", () => ({
   usePathname: () => mockUsePathname(),
+  useRouter: () => mockRouter,
 }))
 
 describe("BottomTabBar", () => {
@@ -36,13 +46,13 @@ describe("BottomTabBar", () => {
     expect(nav).toHaveClass("h-14") // 56px = h-14 (3.5rem)
   })
 
-  // AC #2: 5 tabs implemented
+  // AC #2: 5 tabs implemented (4 nav tabs + 1 FAB button)
   test("renders all 5 navigation tabs", () => {
     render(<BottomTabBar />)
 
     expect(screen.getByLabelText("Home")).toBeInTheDocument()
     expect(screen.getByLabelText("Projects")).toBeInTheDocument()
-    expect(screen.getByLabelText("Add")).toBeInTheDocument()
+    expect(screen.getByLabelText("Open quick actions menu")).toBeInTheDocument() // FAB button
     expect(screen.getByLabelText("Vendors")).toBeInTheDocument()
     expect(screen.getByLabelText("Profile")).toBeInTheDocument()
   })
@@ -51,14 +61,12 @@ describe("BottomTabBar", () => {
   test("renders center FAB button with elevation", () => {
     render(<BottomTabBar />)
 
-    const fabLink = screen.getByLabelText("Add")
-    expect(fabLink).toHaveClass("relative")
-    expect(fabLink).toHaveClass("-top-4") // Raised positioning
-
-    const fabDiv = fabLink.querySelector("div")
-    expect(fabDiv).toHaveClass("shadow-lg") // Shadow effect
-    expect(fabDiv).toHaveClass("rounded-full") // Circular
-    expect(fabDiv).toHaveClass("bg-primary") // Primary color
+    const fabButton = screen.getByLabelText("Open quick actions menu")
+    expect(fabButton).toHaveClass("relative")
+    expect(fabButton).toHaveClass("-top-4") // Raised positioning
+    expect(fabButton).toHaveClass("shadow-lg") // Shadow effect
+    expect(fabButton).toHaveClass("rounded-full") // Circular
+    expect(fabButton).toHaveClass("bg-primary") // Primary color
   })
 
   // AC #4: Active state with filled icon and primary color
@@ -103,7 +111,8 @@ describe("BottomTabBar", () => {
 
     expect(screen.getByLabelText("Home")).toHaveAttribute("href", "/")
     expect(screen.getByLabelText("Projects")).toHaveAttribute("href", "/projects")
-    expect(screen.getByLabelText("Add")).toHaveAttribute("href", "/projects/new")
+    // FAB button is a button element with speed dial, not a link
+    expect(screen.getByLabelText("Open quick actions menu")).toBeInTheDocument()
     expect(screen.getByLabelText("Vendors")).toHaveAttribute("href", "/vendors/dashboard")
     expect(screen.getByLabelText("Profile")).toHaveAttribute("href", "/settings/profile")
   })
@@ -161,13 +170,12 @@ describe("BottomTabBar", () => {
   test("FAB has correct size and colors", () => {
     render(<BottomTabBar />)
 
-    const fabLink = screen.getByLabelText("Add")
-    const fabDiv = fabLink.querySelector("div")
+    const fabButton = screen.getByLabelText("Open quick actions menu")
 
-    expect(fabDiv).toHaveClass("w-14") // 56px width
-    expect(fabDiv).toHaveClass("h-14") // 56px height
-    expect(fabDiv).toHaveClass("bg-primary")
-    expect(fabDiv).toHaveClass("text-primary-foreground")
+    expect(fabButton).toHaveClass("w-14") // 56px width
+    expect(fabButton).toHaveClass("h-14") // 56px height
+    expect(fabButton).toHaveClass("bg-primary")
+    expect(fabButton).toHaveClass("text-primary-foreground")
   })
 
   // Transition animations

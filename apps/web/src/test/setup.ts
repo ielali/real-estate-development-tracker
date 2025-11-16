@@ -1,12 +1,27 @@
 import "@testing-library/jest-dom"
 import { cleanup } from "@testing-library/react"
-import { afterAll, afterEach } from "vitest"
+import { afterAll, afterEach, vi } from "vitest"
 import { cleanupAllTestDatabases } from "./test-db"
 
 // Cleanup DOM after each test to prevent pollution
 afterEach(() => {
   cleanup()
 })
+
+// Global mock for Next.js navigation
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    back: vi.fn(),
+    forward: vi.fn(),
+    refresh: vi.fn(),
+    prefetch: vi.fn(),
+  }),
+  usePathname: () => "/",
+  useSearchParams: () => new URLSearchParams(),
+  useParams: () => ({}),
+}))
 
 // Mock ResizeObserver for jsdom
 global.ResizeObserver = class ResizeObserver {

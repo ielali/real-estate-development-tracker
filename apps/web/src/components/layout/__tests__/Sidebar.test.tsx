@@ -467,7 +467,7 @@ describe("Sidebar - Story 10.11", () => {
     test("renders brand logo/title", () => {
       render(<Sidebar />)
 
-      expect(screen.getByText("Real Estate Tracker")).toBeInTheDocument()
+      expect(screen.getByAltText("Real Estate Development Tracker")).toBeInTheDocument()
     })
 
     test("handles keyboard shortcut (Cmd+B)", () => {
