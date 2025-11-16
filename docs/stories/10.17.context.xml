@@ -1,0 +1,323 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>10</epicId>
+    <storyId>17</storyId>
+    <title>Project Costs Screen Enhancement</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-15</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/10.17.story.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>project manager</asA>
+    <iWant>a clear visual overview of project costs with interactive charts, organized data, and efficient editing capabilities</iWant>
+    <soThat>I can quickly understand budget health, make informed financial decisions, and manage costs efficiently</soThat>
+    <tasks>
+      <phase name="Phase 1: Summary Cards Component">
+        <task id="1" ac="1,2,3,4">Create SummaryCard component</task>
+        <task id="2" ac="1,2,3,4">Implement summary cards grid</task>
+      </phase>
+      <phase name="Phase 2: Chart Infrastructure">
+        <task id="3" ac="5,6,7,14">Set up Recharts with dark mode detection</task>
+      </phase>
+      <phase name="Phase 3: Cost Breakdown Chart">
+        <task id="4" ac="5">Implement pie/doughnut chart</task>
+      </phase>
+      <phase name="Phase 4: Budget vs Actual Chart">
+        <task id="5" ac="6">Implement bar chart</task>
+      </phase>
+      <phase name="Phase 5: Spending Trend Chart">
+        <task id="6" ac="7">Implement line chart</task>
+      </phase>
+      <phase name="Phase 6: Cost Table Structure">
+        <task id="7" ac="8,9,10">Build cost table layout</task>
+      </phase>
+      <phase name="Phase 7: Table Functionality">
+        <task id="8" ac="9,10">Implement filtering and search</task>
+        <task id="9" ac="8">Implement table sorting</task>
+      </phase>
+      <phase name="Phase 8: Category Badges">
+        <task id="10" ac="13">Create category badge component</task>
+      </phase>
+      <phase name="Phase 9: Header Actions">
+        <task id="11" ac="11">Implement Export functionality</task>
+        <task id="12" ac="12">Implement Add Cost button</task>
+      </phase>
+      <phase name="Phase 10: Dark Mode Implementation">
+        <task id="13" ac="14">Implement dark mode support</task>
+      </phase>
+      <phase name="Phase 11: Mobile Responsiveness">
+        <task id="14" ac="15">Optimize for mobile</task>
+      </phase>
+      <phase name="Phase 12: Accessibility">
+        <task id="15" ac="16">Implement accessibility features</task>
+      </phase>
+      <phase name="Phase 13: Data Integration">
+        <task id="16" ac="17">Connect to existing cost API</task>
+        <task id="17" ac="17">Verify financial calculations</task>
+      </phase>
+      <phase name="Phase 14: Inline Editing Implementation">
+        <task id="20" ac="18">Implement inline editing mode</task>
+      </phase>
+      <phase name="Phase 15: Bulk Selection and Actions">
+        <task id="21" ac="19">Implement bulk selection</task>
+        <task id="22" ac="20">Implement bulk actions</task>
+      </phase>
+      <phase name="Phase 16: Testing & Validation">
+        <task id="18">Manual testing</task>
+        <task id="19">Automated testing</task>
+      </phase>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criteria id="1">Four summary cards at top: Total Budget, Total Spent, Remaining, Variance</criteria>
+    <criteria id="2">Summary cards show amount, percentage, and status indicator</criteria>
+    <criteria id="3">Color-coded indicators (green=good, orange=warning, red=over budget)</criteria>
+    <criteria id="4">Icon badges for each summary card (wallet, payments, check, trending)</criteria>
+    <criteria id="5">Cost Breakdown pie/doughnut chart by category</criteria>
+    <criteria id="6">Budget vs Actual comparison bar chart</criteria>
+    <criteria id="7">Spending Trend line chart over time</criteria>
+    <criteria id="8">Detailed cost table with sortable columns</criteria>
+    <criteria id="9">Category filter dropdown (All, Construction, Materials, Labor, Permits, Professional Services)</criteria>
+    <criteria id="10">Search input for cost descriptions/vendors</criteria>
+    <criteria id="11">Export button (CSV/PDF functionality)</criteria>
+    <criteria id="12">Add Cost button to create new cost entry</criteria>
+    <criteria id="13">Category badges with distinct colors per type</criteria>
+    <criteria id="14">Dark mode support for all elements including charts</criteria>
+    <criteria id="15">Mobile responsive: cards stack 1 column, charts stack vertically, table scrolls horizontally</criteria>
+    <criteria id="16">WCAG AA accessibility: keyboard navigation, screen reader support, color contrast</criteria>
+    <criteria id="17">Financial calculations preserved: all existing cost logic maintained, no rounding errors</criteria>
+    <criteria id="18">Inline editing: Click table row to edit cost fields (description, category, vendor, budget, actual) directly without navigation</criteria>
+    <criteria id="19">Bulk selection: Checkbox column to select multiple costs, with "Select All" option</criteria>
+    <criteria id="20">Bulk actions: Actions bar appears when costs selected (bulk delete, bulk export, bulk categorize)</criteria>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/epics/EPIC-10.3-Screen-Design-Improvements.md</path>
+        <title>Epic 10.3 - Screen Design Improvements</title>
+        <section>Story 10.17 Description (lines 115-150)</section>
+        <snippet>Redesign cost screen with visual data presentation. Add summary cards, interactive charts (breakdown, comparison, trend), inline editing, bulk actions, and export functionality.</snippet>
+      </doc>
+      <doc>
+        <path>docs/design/epic-10.3-component-specifications.md</path>
+        <title>Component Specifications - Epic 10.3</title>
+        <section>Component Specifications</section>
+        <snippet>Detailed specifications for SummaryCard, DataTable, StatusBadge components including purpose, data requirements, user actions, states, variants, and accessibility requirements.</snippet>
+      </doc>
+      <doc>
+        <path>docs/design/epic-10.3-mockups/project-costs.html</path>
+        <title>Project Costs Screen Mockup</title>
+        <section>Complete Design Reference</section>
+        <snippet>Full mockup implementation showing four summary cards, pie chart, bar chart, line chart, detailed table with filtering and search, dark mode support, mobile responsive layout.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture/testing-strategy.md</path>
+        <title>Testing Strategy</title>
+        <section>Test Organization and Examples</section>
+        <snippet>Testing pyramid with E2E (Playwright), Integration (API), and Unit tests (Vitest). Frontend tests in src/components/__tests__, backend tests in src/server/__tests__, E2E in e2e/tests/.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture/coding-standards.md</path>
+        <title>Coding Standards</title>
+        <section>Code Quality Standards</section>
+        <snippet>TypeScript strict mode, avoid any type, PascalCase for components, camelCase for variables, JSDoc required for public functions, co-locate tests with components.</snippet>
+      </doc>
+      <doc>
+        <path>docs/testing/color-contrast-testing-guide.md</path>
+        <title>WCAG AA Color Contrast Testing Guide</title>
+        <section>Accessibility Testing Approach</section>
+        <snippet>Comprehensive guide for WCAG AA compliance testing using axe-core and manual verification. Created in Story 10.16.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>apps/web/src/server/db/schema/costs.ts</path>
+        <kind>database-schema</kind>
+        <symbol>costs</symbol>
+        <lines>15-32</lines>
+        <reason>Cost data model: projectId, amount, description, categoryId, date, contactId, search_vector. This is the core data structure for all cost operations.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/web/src/server/api/routers/cost.ts</path>
+        <kind>api-router</kind>
+        <symbol>costRouter</symbol>
+        <lines>1-100+</lines>
+        <reason>Existing cost CRUD API router with tRPC procedures: create, update, delete, list, getCostById. Includes project ownership verification and partner access logic.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/web/src/components/costs/CostsList.tsx</path>
+        <kind>component</kind>
+        <symbol>CostsList</symbol>
+        <lines>all</lines>
+        <reason>Existing cost list component that may need to be replaced or refactored for new design.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/web/src/components/costs/CostEntryForm.tsx</path>
+        <kind>component</kind>
+        <symbol>CostEntryForm</symbol>
+        <lines>all</lines>
+        <reason>Existing cost entry form component - reference for cost data structure and validation patterns.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/web/src/lib/validations/cost.ts</path>
+        <kind>validation</kind>
+        <symbol>createCostSchema, updateCostSchema</symbol>
+        <lines>all</lines>
+        <reason>Zod validation schemas for cost creation and updates. Use these schemas for inline editing and bulk operations validation.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/web/src/hooks/useCostFilters.ts</path>
+        <kind>hook</kind>
+        <symbol>useCostFilters</symbol>
+        <lines>all</lines>
+        <reason>Existing cost filtering hook - may be reusable for category filter and search functionality.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/web/src/lib/utils/cost-filters.ts</path>
+        <kind>utility</kind>
+        <symbol>cost filter utilities</symbol>
+        <lines>all</lines>
+        <reason>Cost filtering utility functions - reference for implementing category and search filters.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <framework>
+        <name>Next.js</name>
+        <version>^15.5.4</version>
+        <purpose>React framework with App Router</purpose>
+      </framework>
+      <framework>
+        <name>React</name>
+        <version>^18.3.0</version>
+        <purpose>UI library</purpose>
+      </framework>
+      <library>
+        <name>recharts</name>
+        <version>^3.3.0</version>
+        <purpose>Data visualization library for pie, bar, and line charts</purpose>
+      </library>
+      <library>
+        <name>@tanstack/react-table</name>
+        <version>^8.21.3</version>
+        <purpose>Table library with sorting, filtering support</purpose>
+      </library>
+      <library>
+        <name>@trpc/client</name>
+        <version>^11.6.0</version>
+        <purpose>Type-safe API client</purpose>
+      </library>
+      <library>
+        <name>tailwindcss</name>
+        <version>latest</version>
+        <purpose>Utility-first CSS framework for styling</purpose>
+      </library>
+      <library>
+        <name>lucide-react</name>
+        <version>^0.544.0</version>
+        <purpose>Icon library (note: story requires Material Symbols)</purpose>
+      </library>
+      <library>
+        <name>date-fns</name>
+        <version>^4.1.0</version>
+        <purpose>Date formatting and manipulation</purpose>
+      </library>
+      <library>
+        <name>zod</name>
+        <version>^3.23.8</version>
+        <purpose>Schema validation for forms and API</purpose>
+      </library>
+      <library>
+        <name>react-hook-form</name>
+        <version>^7.63.0</version>
+        <purpose>Form state management</purpose>
+      </library>
+      <library>
+        <name>drizzle-orm</name>
+        <version>^0.44.5</version>
+        <purpose>Database ORM</purpose>
+      </library>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>Use Epic 10.3 design system: Inter font, Material Symbols icons, navy/primary color palette</constraint>
+    <constraint>WCAG AA accessibility compliance non-negotiable: keyboard navigation, screen reader support, color contrast 4.5:1 minimum</constraint>
+    <constraint>Financial calculations must be precise - use Decimal.js to avoid rounding errors</constraint>
+    <constraint>Preserve all existing cost functionality - no data loss, calculations must match existing logic</constraint>
+    <constraint>Mobile-first responsive approach: 1 col mobile, 2 col tablet, 4 col desktop for summary cards</constraint>
+    <constraint>Dark mode support required for all elements including charts</constraint>
+    <constraint>Charts must adapt to sidebar collapse (192px width gain)</constraint>
+    <constraint>Maintain 200ms animation standards for transitions</constraint>
+    <constraint>Touch targets minimum 40px on mobile devices</constraint>
+    <constraint>Export functionality must respect current filters/search</constraint>
+    <constraint>Use tRPC for all API calls - maintain type safety</constraint>
+    <constraint>Follow ContentWrapper pattern from Story 10.15 (px-6 py-6 max-w-7xl)</constraint>
+    <constraint>Verify ContentWrapper padding changes from Story 10.16 don't break layout</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>Cost API - getCostsByProject</name>
+      <kind>tRPC procedure</kind>
+      <signature>getCostsByProject(projectId: string): Promise&lt;Cost[]&gt;</signature>
+      <path>apps/web/src/server/api/routers/cost.ts</path>
+    </interface>
+    <interface>
+      <name>Cost API - createCost</name>
+      <kind>tRPC procedure</kind>
+      <signature>createCost(input: CreateCostInput): Promise&lt;Cost&gt;</signature>
+      <path>apps/web/src/server/api/routers/cost.ts</path>
+    </interface>
+    <interface>
+      <name>Cost API - updateCost</name>
+      <kind>tRPC procedure</kind>
+      <signature>updateCost(input: UpdateCostInput): Promise&lt;Cost&gt;</signature>
+      <path>apps/web/src/server/api/routers/cost.ts</path>
+    </interface>
+    <interface>
+      <name>Cost API - deleteCost</name>
+      <kind>tRPC procedure</kind>
+      <signature>deleteCost(costId: string): Promise&lt;void&gt;</signature>
+      <path>apps/web/src/server/api/routers/cost.ts</path>
+    </interface>
+    <interface>
+      <name>Cost Data Model</name>
+      <kind>database-schema</kind>
+      <signature>{ id, projectId, amount, description, categoryId, date, contactId, documentIds, createdById, search_vector }</signature>
+      <path>apps/web/src/server/db/schema/costs.ts</path>
+    </interface>
+    <interface>
+      <name>Recharts Components</name>
+      <kind>library-api</kind>
+      <signature>PieChart, BarChart, LineChart, ResponsiveContainer, Tooltip, Legend</signature>
+      <path>node_modules/recharts</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>Use Vitest for unit and integration tests. Frontend tests in src/components/__tests__, backend tests in src/server/__tests__. E2E tests with Playwright in e2e/tests/. Required: unit tests for calculation functions, integration tests for API CRUD operations, component tests for interactive elements, accessibility tests with axe-core, visual regression tests. Test coverage thresholds defined in vitest.config.ts.</standards>
+    <locations>
+      <location>apps/web/src/components/projects/__tests__/ - Component tests for new cost components</location>
+      <location>apps/web/src/lib/__tests__/ - Unit tests for calculation and utility functions</location>
+      <location>apps/web/src/server/api/routers/__tests__/ - Integration tests for cost API</location>
+      <location>e2e/tests/ - E2E tests for complete cost management workflow</location>
+    </locations>
+    <ideas>
+      <idea ac="1,2,3,4">Test summary card calculations with various cost data scenarios (zero costs, over budget, under budget, edge cases)</idea>
+      <idea ac="5,6,7">Test chart data transformations and rendering in light/dark modes</idea>
+      <idea ac="8,9,10">Test table sorting, filtering, and search functionality with large datasets (100+ costs)</idea>
+      <idea ac="11">Test CSV export with filtered and unfiltered data, verify all columns included</idea>
+      <idea ac="14">Test dark mode switching for all elements including charts</idea>
+      <idea ac="15">Test responsive layout breakpoints (mobile, tablet, desktop)</idea>
+      <idea ac="16">Test keyboard navigation through table, filters, and charts; verify screen reader announcements</idea>
+      <idea ac="17">Test financial calculations match existing logic, no rounding errors (use Decimal.js)</idea>
+      <idea ac="18">Test inline editing: edit mode activation, field validation, save/cancel, optimistic updates</idea>
+      <idea ac="19">Test bulk selection: individual checkboxes, select all, range selection (Shift+click)</idea>
+      <idea ac="20">Test bulk actions: delete confirmation, export selected, bulk categorize with proper notifications</idea>
+    </ideas>
+  </tests>
+</story-context>
